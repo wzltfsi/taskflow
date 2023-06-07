@@ -1,5 +1,4 @@
-// This program demonstrates how to pipeline a sequence of linearly dependent
-// tasks (stage function) over a directed acyclic graph.
+// 该程序演示了如何在有向无环图上流水线化一系列线性相关任务（stage function）
 
 #include <taskflow/taskflow.hpp>
 #include <taskflow/algorithm/pipeline.hpp>
@@ -32,8 +31,7 @@ int main() {
   //    |-> C
   const std::vector<std::string> nodes = {"A", "B", "C"};
 
-  // the pipeline consists of three serial pipes
-  // and up to two concurrent scheduling tokens
+  // 管道由三个串行管道和最多两个并发调度令牌组成
   tf::Pipeline pl(num_lines,
 
     // first pipe calls f1
@@ -58,21 +56,15 @@ int main() {
   );
 
   // build the pipeline graph using composition
-  tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; })
-                          .name("starting pipeline");
-  tf::Task task = taskflow.composed_of(pl)
-                          .name("pipeline");
-  tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; })
-                          .name("pipeline stopped");
-
-  // create task dependency
+  tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; }).name("starting pipeline");
+  tf::Task task = taskflow.composed_of(pl).name("pipeline");
+  tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; }).name("pipeline stopped");
+ 
   init.precede(task);
   task.precede(stop);
-
-  // dump the pipeline graph structure (with composition)
+ 
   taskflow.dump(std::cout);
-
-  // run the pipeline
+ 
   executor.run(taskflow).wait();
 
   return 0;

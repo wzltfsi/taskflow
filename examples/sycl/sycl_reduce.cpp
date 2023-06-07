@@ -1,5 +1,4 @@
-// This program demonstrates how to performs a parallel reduction
-// using syclFlow.
+// 该程序演示了如何使用 syclFlow 执行并行归约
 
 #include <taskflow/sycl/syclflow.hpp>
 #include <taskflow/sycl/algorithm/reduce.hpp>

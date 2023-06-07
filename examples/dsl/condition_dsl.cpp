@@ -1,6 +1,6 @@
 // 2020/08/28 - Created by netcan: https://github.com/netcan
 // Task DSL demo
-// The example creates the following cyclic graph:
+// 该示例创建了以下循环图：
 //
 //       A
 //       |
@@ -13,11 +13,11 @@
 //       v
 //       D
 //
-// - A is a task that initializes a counter to zero
-// - B is a task that increments the counter
-// - C is a condition task that loops around B until the counter
-//   reaches a breaking number
-// - D is a task that wraps up the result
+// - A 是一个将计数器初始化为零的任务
+// - B 是一个递增计数器的任务
+// - C 是一个条件任务，它会在 B 周围循环，直到计数器达到一个突破数字
+// - D 是一个包含结果的任务
+
 #include <taskflow/taskflow.hpp>
 #include <taskflow/dsl.hpp>
 
@@ -63,10 +63,9 @@ int main() {
   tasks.get_task<C>().name("C");
   tasks.get_task<D>().name("D");
 
-  // visualizes the taskflow
-  taskflow.dump(std::cout);
 
-  // executes the taskflow
+  taskflow.dump(std::cout);
+ 
   executor.run(taskflow).wait();
 
   assert(counter == 5);

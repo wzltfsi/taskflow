@@ -1,7 +1,5 @@
 // 2020/08/28 - Created by netcan: https://github.com/netcan
-// This example demonstrates how to use 'dump' method to inspect
-// a taskflow graph.
-// use task dsl
+// 此示例演示如何使用“转储”方法检查任务流图。 使用任务 dsl
 #include <taskflow/taskflow.hpp>
 #include <taskflow/dsl.hpp> // for support dsl
 

@@ -1,5 +1,4 @@
-// A simple example with a semaphore constraint that only one task can
-// execute at a time.
+// 一个带有信号量约束的简单示例，一次只能执行一个任务。
 
 #include <taskflow/taskflow.hpp>
 
@@ -12,10 +11,10 @@ int main() {
   tf::Executor executor(4);
   tf::Taskflow taskflow;
 
-  // define a critical region of 1 worker
+  // 定义 1 个 worker 的临界区
   tf::Semaphore semaphore(1);
 
-  // create give tasks in taskflow
+  // 在  taskflow 中创建 task
   std::vector<tf::Task> tasks {
     taskflow.emplace([](){ sl(); std::cout << "A" << std::endl; }),
     taskflow.emplace([](){ sl(); std::cout << "B" << std::endl; }),

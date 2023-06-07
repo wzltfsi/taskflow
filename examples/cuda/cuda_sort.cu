@@ -1,4 +1,4 @@
-// This program demonstrates how to perform parallel sort with CUDA.
+// 该程序演示了如何使用 CUDA 执行并行排序。
 
 #include <taskflow/cuda/cudaflow.hpp>
 #include <taskflow/cuda/algorithm/sort.hpp>

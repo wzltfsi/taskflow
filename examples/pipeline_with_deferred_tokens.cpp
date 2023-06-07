@@ -1,8 +1,7 @@
-// This program demonstrates how to create a pipeline scheduling framework
-// that defers the exection of current scheuling token to the future.  
-//
-// The pipeline has the following structure:
-//
+// 这个程序演示了如何创建一个管道调度框架，将当前调度令牌的执行推迟到 future 
+// 
+// 管道具有以下结构：
+// 
 // o -> o -> o
 // |    |    |
 // v    v    v
@@ -14,7 +13,7 @@
 // v    v    v
 // o -> o -> o
 
-// The scheduling token has the following dependencies:
+// 调度令牌具有以下依赖项：
 //    ___________
 //   |           |
 //   V _____     |
@@ -40,16 +39,15 @@ int main() {
 
   const size_t num_lines = 4;
 
-  // the pipeline consists of three pipes (serial-parallel-serial)
-  // and up to four concurrent scheduling tokens
+  //  管道由三个管道（串行-并行-串行）和最多四个并发调度令牌组成
   tf::Pipeline pl(num_lines,
     tf::Pipe{tf::PipeType::SERIAL, [](tf::Pipeflow& pf) {
-      // generate only 15 scheduling tokens
+      // 只生成 15 个调度令牌
       if(pf.token() == 15) {
         pf.stop();
       }
       else {
-        // Token 5 is deferred
+        // 令牌 5 被推迟
         if (pf.token() == 5) {
           switch(pf.num_deferrals()) {
             case 0:
@@ -96,23 +94,17 @@ int main() {
       printf("stage 3: input token %zu\n", pf.token());
     }}
   );
-  
-  // build the pipeline graph using composition
-  tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; })
-                          .name("starting pipeline");
-  tf::Task task = taskflow.composed_of(pl)
-                          .name("deferred_pipeline");
-  tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; })
-                          .name("pipeline stopped");
-
-  // create task dependency
+   
+   
+  tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; }).name("starting pipeline");
+  tf::Task task = taskflow.composed_of(pl).name("deferred_pipeline");
+  tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; }).name("pipeline stopped");
+ 
   init.precede(task);
   task.precede(stop);
-  
-  // dump the pipeline graph structure (with composition)
+   
   taskflow.dump(std::cout);
-
-  // run the pipeline
+ 
   executor.run(taskflow).wait();
   
   return 0;

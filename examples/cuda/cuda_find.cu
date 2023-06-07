@@ -1,5 +1,4 @@
-// This program demonstrates how to find an element in a vector
-// using the CUDA standard algorithms in Taskflow.
+// 该程序演示了如何使用 Taskflow 中的 CUDA 标准算法在向量中查找元素。
 
 #include <taskflow/cuda/cudaflow.hpp>
 #include <taskflow/cuda/algorithm/find.hpp> 
@@ -52,9 +51,7 @@ int main(int argc, char* argv[]) {
   // verify the result
   // --------------------------------------------------------------------------
   if(unsigned hfind = std::distance(hdata.begin(), hiter); *gfind != hfind) {
-    printf("gdata[%u]=%d, hdata[%u]=%d\n", 
-      *gfind, gdata[*gfind], hfind, hdata[hfind]
-    );
+    printf("gdata[%u]=%d, hdata[%u]=%d\n",  *gfind, gdata[*gfind], hfind, hdata[hfind]  );
     throw std::runtime_error("incorrect result");
   }
 

@@ -19,11 +19,9 @@ int main() {
   auto D = taskflow.emplace([&](){ std::cout << "D\n"; }).name("D");
 
   A.precede(B, C, D);
-
-  // visualizes the taskflow
+ 
   taskflow.dump(std::cout);
-
-  // executes the taskflow
+ 
   executor.run(taskflow).wait();
 
   return 0;

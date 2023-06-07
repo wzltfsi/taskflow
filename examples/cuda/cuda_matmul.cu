@@ -43,6 +43,7 @@ auto gpu(int M, int N, int K) {
     TF_CHECK_CUDA(cudaMalloc(&dc, M*K*sizeof(int)), "failed to allocate c");
   }).name("allocate_c");
   
+
   // create a cudaFlow to run the matrix multiplication
   auto cudaFlow = taskflow.emplace([&](){
 
@@ -121,6 +122,8 @@ auto cpu(int M, int N, int K) {
 
   return c;
 }
+
+ 
 
 // Function: main
 int main(int argc, char *argv[]) {

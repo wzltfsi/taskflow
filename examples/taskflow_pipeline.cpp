@@ -1,7 +1,5 @@
-// This program demonstrates how to propagates a sequence of input tokens through
-// linearly dependent taskflows to implement complex parallel algorithms.
-// Parallelism exhibits both inside and outside these taskflows, combining
-// both task graph parallelism and pipeline parallelism.
+// 该程序演示了如何通过线性相关的任务流传播一系列输入标记以实现复杂的并行算法。
+// 并行性展示了这些任务流的内部和外部，结合了任务图并行性和管道并行性。
 
 #include <taskflow/taskflow.hpp>
 #include <taskflow/algorithm/pipeline.hpp>
@@ -49,16 +47,15 @@ int main() {
   const size_t num_pipes = 3;
 
   // define the taskflow storage
-  // we use the pipe dimension because we create three 'serial' pipes
+  // 我们使用管道尺寸是因为我们创建了三个“串行”管道
   std::array<tf::Taskflow, num_pipes> taskflows;
 
-  // create three different taskflows for the three pipes
+  //为三个管道创建三个不同的任务流
   make_taskflow1(taskflows[0]);
   make_taskflow2(taskflows[1]);
   make_taskflow3(taskflows[2]);
 
-  // the pipeline consists of three serial pipes
-  // and up to two concurrent scheduling tokens
+  // 管道由三个串行管道和最多两个并发调度令牌组成
   tf::Pipeline pl(num_lines,
 
     // first pipe runs taskflow1
@@ -83,21 +80,16 @@ int main() {
   );
 
   // build the pipeline graph using composition
-  tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; })
-                          .name("starting pipeline");
-  tf::Task task = taskflow.composed_of(pl)
-                          .name("pipeline");
-  tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; })
-                          .name("pipeline stopped");
+  tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; }).name("starting pipeline");
+  tf::Task task = taskflow.composed_of(pl).name("pipeline");
+  tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; }).name("pipeline stopped");
 
-  // create task dependency
+
   init.precede(task);
   task.precede(stop);
-
-  // dump the pipeline graph structure (with composition)
+ 
   taskflow.dump(std::cout);
 
-  // run the pipeline
   executor.run(taskflow).wait();
 
   return 0;

@@ -1,6 +1,4 @@
-// This program demonstrates how to use a runtime task to forcefully
-// schedule an active task that would never be scheduled.
-
+// 这个程序演示了如何使用运行时任务来强制调度一个永远不会被调度的活动任务。  
 #include <taskflow/taskflow.hpp>
 
 int main() {
@@ -26,10 +24,9 @@ int main() {
   C.name("C");
   D.name("D");
 
-  // create conditional dependencies
+ 
   A.precede(B, C, D);
-
-  // dump the graph structure
+ 
   taskflow.dump(std::cout);
 
   // we will see both B and C in the output

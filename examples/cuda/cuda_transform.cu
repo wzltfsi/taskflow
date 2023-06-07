@@ -1,5 +1,4 @@
-// This program demonstrates how to performs a parallel transform
-// using cudaFlow.
+// 该程序演示了如何使用 cudaFlow 执行并行转换 
 
 #include <taskflow/cuda/cudaflow.hpp>
 #include <taskflow/cuda/algorithm/transform.hpp>

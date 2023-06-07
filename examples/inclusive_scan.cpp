@@ -1,4 +1,4 @@
-// This program demonstrates how to perform parallel inclusive scan.
+// 该程序演示了如何执行 parallel inclusive scan.
 
 #include <taskflow/taskflow.hpp>
 #include <taskflow/algorithm/scan.hpp>

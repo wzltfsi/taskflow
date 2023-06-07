@@ -1,15 +1,6 @@
-// This example demonstrates how to use Taskflow to create
-// dynamic workload during execution.
-//
-// We first create four tasks A, B, C, and D. During the execution
-// of B, it uses flow builder to creates another three tasks
-// B1, B2, and B3, and adds dependencies from B1 and B2 to B3.
-//
-// We use dispatch and get to wait until the graph finished.
-// Do so is difference from "wait_for_all" which will clean up the
-// finished graphs. After the graph finished, we dump the topology
-// for inspection.
-//
+// 此示例演示如何使用 Taskflow 在执行期间创建动态工作负载。
+//  我们先创建A、B、C、D四个任务，B在执行过程中，使用flow builder创建了另外三个任务B1、B2、B3，并添加了B1、B2对B3的依赖。
+// 我们使用 dispatch 并等待图表完成。 这样做不同于“wait_for_all”，后者将清理完成的图形。 图形完成后，我们转储拓扑以供检查。
 // Usage: ./subflow detach|join
 //
 
@@ -32,8 +23,7 @@ int main(int argc, char* argv[]) {
   }
 
   auto detached = (opt == "detach") ? true : false;
-
-  // Create a taskflow graph with three regular tasks and one subflow task.
+  // 创建一个包含三个常规任务和一个子流任务的任务流图。
   tf::Executor executor(4);
   tf::Taskflow taskflow("Dynamic Tasking Demo");
 
@@ -45,24 +35,21 @@ int main(int argc, char* argv[]) {
       std::cout << "TaskB is spawning B1, B2, and B3 ...\n";
 
       auto B1 = subflow.emplace([&]() {
-        printf("  Subtask B1: reduce sum = %d\n",
-                std::accumulate(cap.begin(), cap.end(), 0, std::plus<int>()));
+        printf("  Subtask B1: reduce sum = %d\n",   std::accumulate(cap.begin(), cap.end(), 0, std::plus<int>()));
       }).name("B1");
 
       auto B2 = subflow.emplace([&]() {
-        printf("  Subtask B2: reduce multiply = %d\n",
-                std::accumulate(cap.begin(), cap.end(), 1, std::multiplies<int>()));
+        printf("  Subtask B2: reduce multiply = %d\n",   std::accumulate(cap.begin(), cap.end(), 1, std::multiplies<int>()));
       }).name("B2");
 
       auto B3 = subflow.emplace([&]() {
-        printf("  Subtask B3: reduce minus = %d\n",
-                std::accumulate(cap.begin(), cap.end(), 0, std::minus<int>()));
+        printf("  Subtask B3: reduce minus = %d\n",   std::accumulate(cap.begin(), cap.end(), 0, std::minus<int>()));
       }).name("B3");
 
       B1.precede(B3);
       B2.precede(B3);
 
-      // detach or join the subflow (by default the subflow join at B)
+      // 分离或加入子流（默认子流在 B 处加入）
       if(detached) subflow.detach();
     }
   );

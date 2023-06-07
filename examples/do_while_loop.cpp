@@ -1,5 +1,6 @@
-// This program demonstrates how to implement do-while control flow
-// using condition tasks.
+// 该程序演示了如何使用条件任务实现 do-while 控制流。
+
+
 #include <taskflow/taskflow.hpp>
 
 int main() {
@@ -25,7 +26,7 @@ int main() {
   body.precede(cond);
   cond.precede(body, done);
 
-  //taskflow.dump(std::cout);
+ taskflow.dump(std::cout);
 
   executor.run(taskflow).wait();
 

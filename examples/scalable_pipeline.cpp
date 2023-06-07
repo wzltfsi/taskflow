@@ -1,8 +1,6 @@
-// This program demonstrates how to create a pipeline scheduling framework
-// that propagates a series of integers and adds one to the result at each
-// stage, using a range of pipes provided by the application.
+// 该程序演示了如何创建一个管道调度框架，该框架使用应用程序提供的一系列管道传播一系列整数并在每个阶段将结果加一。
 //
-// The pipeline has the following structure:
+// 管道具有以下结构：
 //
 // o -> o -> o
 // |    |    |
@@ -15,7 +13,7 @@
 // v    v    v
 // o -> o -> o
 //
-// Then, the program resets the pipeline to a new range of five pipes.
+// 然后，程序将管道重置为新范围的五个管道。
 //
 // o -> o -> o -> o -> o
 // |    |    |    |    |
@@ -44,8 +42,7 @@ int main() {
   // define the pipe callable
   auto pipe_callable = [&buffer] (tf::Pipeflow& pf) mutable {
     switch(pf.pipe()) {
-      // first stage generates only 5 scheduling tokens and saves the
-      // token number into the buffer.
+      // 第一阶段仅生成 5 个调度令牌并将令牌编号保存到缓冲区中。
       case 0: {
         if(pf.token() == 5) {
           pf.stop();
@@ -58,12 +55,9 @@ int main() {
       }
       break;
 
-      // other stages propagate the previous result to this pipe and
-      // increment it by one
+      // 其他阶段将先前的结果传播到此管道并将其递增 1
       default: {
-        printf(
-          "stage %zu: input buffer[%zu] = %zu\n", pf.pipe(), pf.line(), buffer[pf.line()]
-        );
+        printf(   "stage %zu: input buffer[%zu] = %zu\n", pf.pipe(), pf.line(), buffer[pf.line()] );
         buffer[pf.line()] = buffer[pf.line()] + 1;
       }
       break;
@@ -80,26 +74,19 @@ int main() {
   // create a pipeline of four parallel lines using the given vector of pipes
   tf::ScalablePipeline<decltype(pipes)::iterator> pl(num_lines, pipes.begin(), pipes.end());
 
-  // build the pipeline graph using composition
-  tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; })
-                          .name("starting pipeline");
-  tf::Task task = taskflow.composed_of(pl)
-                          .name("pipeline");
-  tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; })
-                          .name("pipeline stopped");
 
-  // create task dependency
+  tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; }).name("starting pipeline");
+  tf::Task task = taskflow.composed_of(pl).name("pipeline");
+  tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; }).name("pipeline stopped");
+ 
   init.precede(task);
   task.precede(stop);
-
-  // dump the pipeline graph structure (with composition)
+ 
   taskflow.dump(std::cout);
-
-  // run the pipeline
+ 
   executor.run(taskflow).wait();
 
-  // reset the pipeline to a new range of five pipes and starts from
-  // the initial state (i.e., token counts from zero)
+  // 将管道重置为五个管道的新范围并从初始状态开始（即令牌从零开始计数）
   for(size_t i=0; i<2; i++) {
     pipes.emplace_back(tf::PipeType::SERIAL, pipe_callable);
   }

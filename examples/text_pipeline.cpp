@@ -1,7 +1,4 @@
-// This program demonstrates how to create a pipeline scheduling framework
-// that computes the maximum occurrence of the character for each input string.
-//
-// The pipeline has the following structure:
+// 该程序演示了如何创建一个流水线调度框架来计算每个输入字符串的字符的最大出现次数。 管道具有以下结构：
 //
 // o -> o -> o
 // |         |
@@ -63,16 +60,13 @@ int main() {
   };
 
   // custom data storage
-  using data_type = std::variant<
-    std::string, std::unordered_map<char, size_t>, std::pair<char, size_t>
-  >;
+  using data_type = std::variant< std::string, std::unordered_map<char, size_t>, std::pair<char, size_t> >;
   std::array<data_type, num_lines> buffer;
 
-  // the pipeline consists of three pipes (serial-parallel-serial)
-  // and up to two concurrent scheduling tokens
+  // 管道由三个管道（串行-并行-串行）和最多两个并发调度令牌组成
   tf::Pipeline pl(num_lines,
 
-    // first pipe processes the input data
+    // 第一个管道处理输入数据
     tf::Pipe{tf::PipeType::SERIAL, [&](tf::Pipeflow& pf) {
       if(pf.token() == input.size()) {
         pf.stop();
@@ -83,7 +77,7 @@ int main() {
       }
     }},
 
-    // second pipe counts the frequency of each character
+    // 第二个管道计算每个字符的频率
     tf::Pipe{tf::PipeType::PARALLEL, [&](tf::Pipeflow& pf) {
       std::unordered_map<char, size_t> map;
       for(auto c : std::get<std::string>(buffer[pf.line()])) {
@@ -93,7 +87,7 @@ int main() {
       printf("stage 2: map = %s\n", format_map(map).c_str());
     }},
 
-    // third pipe reduces the most frequent character
+    // 第三个管道减少了最频繁的字符 
     tf::Pipe{tf::PipeType::SERIAL, [&buffer](tf::Pipeflow& pf) {
       auto& map = std::get<std::unordered_map<char, size_t>>(buffer[pf.line()]);
       auto sol = std::max_element(map.begin(), map.end(), [](auto& a, auto& b){
@@ -102,23 +96,16 @@ int main() {
       printf("stage 3: %c:%zu\n", sol->first, sol->second);
     }}
   );
-
-  // build the pipeline graph using composition
-  tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; })
-                          .name("starting pipeline");
-  tf::Task task = taskflow.composed_of(pl)
-                          .name("pipeline");
-  tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; })
-                          .name("pipeline stopped");
-
-  // create task dependency
+ 
+  tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; }).name("starting pipeline");
+  tf::Task task = taskflow.composed_of(pl).name("pipeline");
+  tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; }).name("pipeline stopped");
+ 
   init.precede(task);
   task.precede(stop);
-
-  // dump the pipeline graph structure (with composition)
+ 
   taskflow.dump(std::cout);
-
-  // run the pipeline
+ 
   executor.run(taskflow).wait();
 
   return 0;

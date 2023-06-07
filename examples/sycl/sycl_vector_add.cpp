@@ -1,5 +1,4 @@
-// This program demonstrates how to create a simple vector-add
-// application using syclFlow and unified shared memory (USM).
+// 该程序演示了如何使用 syclFlow 和统一共享内存 (USM) 创建简单的向量相加应用程序。
 
 #include <taskflow/sycl/syclflow.hpp>
 

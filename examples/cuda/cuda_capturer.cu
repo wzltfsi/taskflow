@@ -1,5 +1,4 @@
-// This program performs a simple single-precision Ax+Y operation
-// using a cudaFlow capturer and verifies its result.
+// 该程序使用 cudaFlow 捕获器执行简单的单精度 Ax+Y 运算并验证其结果。
 
 #include <taskflow/cuda/cudaflow.hpp>
 
@@ -46,15 +45,12 @@ int main() {
     max_error = std::max(max_error, abs(hy[i]-4.0f));
   }
   std::cout << "saxpy finished with max error: " << max_error << '\n';
-
-  // free memory
+ 
   tf::cuda_free(dx);
   tf::cuda_free(dy);
-  
-  // dump the cudaFlow graph
+   
   cf.dump(std::cout);
-
-  // dump the native CUDA graph
+ 
   cf.dump_native_graph(std::cout);
 
   return 0;

@@ -1,5 +1,4 @@
-// This program demonstrate how to perform a parallel reduction 
-// using cudaFlow.
+// 该程序演示了如何使用 cudaFlow 执行并行缩减
 
 #include <taskflow/cuda/cudaflow.hpp>
 #include <taskflow/cuda/algorithm/reduce.hpp>

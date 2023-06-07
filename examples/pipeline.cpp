@@ -1,9 +1,5 @@
-// This program demonstrates how to create a pipeline scheduling framework
-// that propagates a series of integers and adds one to the result at each
-// stage.
-//
-// The pipeline has the following structure:
-//
+// 该程序演示了如何创建一个流水线调度框架，该框架传播一系列整数并在每个阶段将结果加一。 管道具有以下结构：
+// 
 // o -> o -> o
 // |         |
 // v         v
@@ -28,15 +24,14 @@ int main() {
   // custom data storage
   std::array<size_t, num_lines> buffer;
 
-  // the pipeline consists of three pipes (serial-parallel-serial)
-  // and up to four concurrent scheduling tokens
+  // 管道由三个管道（串行-并行-串行）和最多四个并发调度令牌组成
   tf::Pipeline pl(num_lines,
     tf::Pipe{tf::PipeType::SERIAL, [&buffer](tf::Pipeflow& pf) {
       // generate only 5 scheduling tokens
       if(pf.token() == 5) {
         pf.stop();
       }
-      // save the result of this pipe into the buffer
+      // 将此管道的结果保存到缓冲区中
       else {
         printf("stage 1: input token = %zu\n", pf.token());
         buffer[pf.line()] = pf.token();
@@ -44,40 +39,30 @@ int main() {
     }},
 
     tf::Pipe{tf::PipeType::PARALLEL, [&buffer](tf::Pipeflow& pf) {
-      printf(
-        "stage 2: input buffer[%zu] = %zu\n", pf.line(), buffer[pf.line()]
-      );
-      // propagate the previous result to this pipe and increment
-      // it by one
+      printf(  "stage 2: input buffer[%zu] = %zu\n", pf.line(), buffer[pf.line()]);
+      // 将先前的结果传播到此管道并将其递增 1
       buffer[pf.line()] = buffer[pf.line()] + 1;
     }},
 
     tf::Pipe{tf::PipeType::SERIAL, [&buffer](tf::Pipeflow& pf) {
-      printf(
-        "stage 3: input buffer[%zu] = %zu\n", pf.line(), buffer[pf.line()]
-      );
-      // propagate the previous result to this pipe and increment
-      // it by one
+      printf( "stage 3: input buffer[%zu] = %zu\n", pf.line(), buffer[pf.line()] );
+      // 将先前的结果传播到此管道并将其递增 1
       buffer[pf.line()] = buffer[pf.line()] + 1;
     }}
   );
 
-  // build the pipeline graph using composition
-  tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; })
-                          .name("starting pipeline");
-  tf::Task task = taskflow.composed_of(pl)
-                          .name("pipeline");
-  tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; })
-                          .name("pipeline stopped");
 
-  // create task dependency
+
+
+  tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; }).name("starting pipeline");
+  tf::Task task = taskflow.composed_of(pl).name("pipeline");
+  tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; }).name("pipeline stopped");
+
   init.precede(task);
   task.precede(stop);
 
-  // dump the pipeline graph structure (with composition)
   taskflow.dump(std::cout);
 
-  // run the pipeline
   executor.run(taskflow).wait();
 
   return 0;

@@ -1,5 +1,4 @@
-// This example demonstrates how to use 'dump' method to visualize
-// a taskflow graph in DOT format.
+// 此示例演示如何使用“转储”方法以 DOT 格式可视化任务流图 
 
 #include <taskflow/taskflow.hpp>
 
@@ -30,8 +29,7 @@ int main(){
   D.name("D");
   E.name("E");
 
-  // if the graph contains solely static tasks, you can simpley dump them
-  // without running the graph
+  // 如果图表仅包含静态任务，您可以在不运行图表的情况下简单地转储它们
   taskflow.dump(std::cout);
 
   // ------------------------------------------------------
@@ -43,8 +41,7 @@ int main(){
     sf.emplace([](){ std::cout << "subflow task3"; }).name("s3");
   });
 
-  // in order to visualize subflow tasks, you need to run the taskflow
-  // to spawn the dynamic tasks first
+  // 为了可视化子流任务，您需要先运行任务流来生成动态任务
   tf::Executor executor;
   executor.run(taskflow).wait();
 

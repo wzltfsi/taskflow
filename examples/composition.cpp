@@ -1,4 +1,5 @@
-// This example shows how to compose a taskflow
+// 这个例子展示了如何组成一个任务流
+
 #include <taskflow/taskflow.hpp>
 
 void composition_example_1() {
@@ -21,6 +22,8 @@ void composition_example_1() {
   // f2A ---
   //        |----> f2C ----> f1_module_task ----> f2D
   // f2B ---
+
+  
   tf::Taskflow f2("F2");
   auto f2A = f2.emplace([](){ std::cout << "  F2 TaskA\n"; });
   auto f2B = f2.emplace([](){ std::cout << "  F2 TaskB\n"; });

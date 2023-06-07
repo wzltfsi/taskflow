@@ -28,8 +28,7 @@ int main() {
 
   executor.wait_for_all();  // wait for the two async tasks to finish
 
-  // create asynchronous tasks from a subflow
-  // all asynchronous tasks are guaranteed to finish when the subflow joins
+  // 从子流创建异步任务，所有异步任务保证在子流加入时完成
   tf::Taskflow taskflow;
 
   std::atomic<int> counter {0};
@@ -40,7 +39,7 @@ int main() {
     }
     sf.join();
 
-    // when subflow joins, all spawned tasks from the subflow will finish
+    // 当子流加入时，子流中所有派生的任务都将完成
     if(counter == 100) {
       std::cout << "async tasks spawned from the subflow all finish\n";
     }

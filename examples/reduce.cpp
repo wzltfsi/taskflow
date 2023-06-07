@@ -1,4 +1,4 @@
-// This example demonstrates how to create a parallel-reduction task.
+// 此示例演示如何创建并行缩减任务。
 
 #include <taskflow/taskflow.hpp>
 #include <taskflow/algorithm/reduce.hpp>
@@ -32,26 +32,19 @@ void reduce() {
     smin = std::min(smin, d);
   }
   auto send = std::chrono::steady_clock::now();
-  std::cout << "[sequential] reduce: "
-            << std::chrono::duration_cast<std::chrono::microseconds>(send - sbeg).count()
-            << " us\n";
+  std::cout << "[sequential] reduce: " << std::chrono::duration_cast<std::chrono::microseconds>(send - sbeg).count()  << " us\n";
 
   // taskflow
   auto tbeg = std::chrono::steady_clock::now();
   tf::Taskflow taskflow;
   tf::Executor executor;
   auto tmin = std::numeric_limits<int>::max();
-  taskflow.reduce(
-    data.begin(),
-    data.end(),
-    tmin,
-    [] (int& l, const auto& r) { return std::min(l, r); }
-  );
+  
+  taskflow.reduce( data.begin(), data.end(), tmin, [] (int& l, const auto& r) { return std::min(l, r); } );
+  
   executor.run(taskflow).get();
   auto tend = std::chrono::steady_clock::now();
-  std::cout << "[taskflow] reduce: "
-            << std::chrono::duration_cast<std::chrono::microseconds>(tend - tbeg).count()
-            << " us\n";
+  std::cout << "[taskflow] reduce: " << std::chrono::duration_cast<std::chrono::microseconds>(tend - tbeg).count()   << " us\n";
 
   // assertion
   if(tmin == smin) {
@@ -63,6 +56,8 @@ void reduce() {
 
   taskflow.dump(std::cout);
 }
+
+
 
 // Procedure: transform_reduce
 void transform_reduce() {
@@ -78,9 +73,7 @@ void transform_reduce() {
     smin = std::min(smin, d.transform());
   }
   auto send = std::chrono::steady_clock::now();
-  std::cout << "[sequential] transform_reduce "
-            << std::chrono::duration_cast<std::chrono::microseconds>(send - sbeg).count()
-            << " us\n";
+  std::cout << "[sequential] transform_reduce "  << std::chrono::duration_cast<std::chrono::microseconds>(send - sbeg).count()  << " us\n";
 
   // taskflow
   auto tbeg = std::chrono::steady_clock::now();
@@ -92,9 +85,7 @@ void transform_reduce() {
   );
   tf::Executor().run(tf).get();
   auto tend = std::chrono::steady_clock::now();
-  std::cout << "[taskflow] transform_reduce "
-            << std::chrono::duration_cast<std::chrono::microseconds>(tend - tbeg).count()
-            << " us\n";
+  std::cout << "[taskflow] transform_reduce "  << std::chrono::duration_cast<std::chrono::microseconds>(tend - tbeg).count()   << " us\n";
 
   // assertion
   assert(tmin == smin);

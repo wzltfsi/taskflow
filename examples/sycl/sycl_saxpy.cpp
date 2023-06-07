@@ -1,5 +1,4 @@
-// This program demonstrates how to create a simple SAXPY
-// ("single-precision AX+Y") task graph using syclFlow.
+// 该程序演示了如何使用 syclFlow 创建简单的 SAXPY（“单精度 AX+Y”）任务图。
 
 #include <taskflow/taskflow.hpp>
 #include <taskflow/sycl/syclflow.hpp>
@@ -32,14 +31,11 @@ int main() {
     saxpy.succeed(fillX, fillY);
 
   }, queue).name("syclFlow");
-
-  //  dump the graph without detailed syclFlow connections
+ 
   taskflow.dump(std::cout);
-  
-  // run the taskflow
+   
   executor.run(taskflow).wait();
-
-  // dump the graph with all syclFlow details (after executed)
+ 
   taskflow.dump(std::cout);
 
   // verify the result

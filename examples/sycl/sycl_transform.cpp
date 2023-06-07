@@ -1,5 +1,4 @@
-// This program demonstrates how to performs a parallel transform
-// using syclFlow.
+// 该程序演示了如何使用 syclFlow 执行并行转换。
 
 #include <taskflow/syclflow.hpp>
 
@@ -27,10 +26,10 @@ int main(int argc, char* argv[]) {
     src3[i] = 3;
   }
 
-  // perform parallel transform
+   
   tf::syclFlow syclflow(queue);
 
-  // data[i] = src1[i] + src2[i] + src3[i]
+  // data[i] = src1[i] + src2[i] + src3[i] 
   syclflow.transform(  data, data+N, [](int a, int b, int c) { return a+b+c; }, src1, src2, src3);
 
   syclflow.offload();

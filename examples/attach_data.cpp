@@ -1,5 +1,4 @@
-// This example demonstrates how to attach data to a task and run
-// the task iteratively with changing data.
+// 此示例演示如何将数据附加到任务并使用更改的数据迭代运行任务。
 
 #include <taskflow/taskflow.hpp>
 

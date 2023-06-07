@@ -1,4 +1,4 @@
-// A simple example to capture the following task dependencies.
+// 捕获以下任务依赖关系的简单示例。
 //
 //           +---+
 //     +---->| B |-----+

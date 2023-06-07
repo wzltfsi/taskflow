@@ -1,4 +1,4 @@
-// Demonstrates the use of observer to monitor worker activities.
+// 演示了使用观察者来监视 worker activities.
 
 #include <taskflow/taskflow.hpp>
 

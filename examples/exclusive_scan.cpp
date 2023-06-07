@@ -1,4 +1,4 @@
-// This program demonstrates how to perform parallel exclusive scan.
+// / 这个程序演示了如何执行 parallel exclusive scan.
 
 #include <taskflow/taskflow.hpp>
 #include <taskflow/algorithm/scan.hpp>

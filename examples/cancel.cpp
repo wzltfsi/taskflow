@@ -1,5 +1,4 @@
-// The program demonstrates how to cancel a submitted taskflow
-// graph and wait until the cancellation completes.
+// 该程序演示了如何取消提交的任务流图并等待取消完成。
 
 #include <taskflow/taskflow.hpp>
 
@@ -19,17 +18,15 @@ int main() {
   auto beg = std::chrono::steady_clock::now();
   tf::Future fu = executor.run(taskflow);
 
-  // submit a cancel request to cancel all 1000 tasks.
+  // 提交取消请求以取消所有 1000 个任务。
   fu.cancel();
 
-  // wait until the cancellation finishes
+  // 等到取消完成
   fu.get();
   auto end = std::chrono::steady_clock::now();
 
-  // the duration should be much less than 1000 seconds
-  std::cout << "taskflow completes in "
-            << std::chrono::duration_cast<std::chrono::milliseconds>(end-beg).count()
-            << " milliseconds\n";
+  // 持续时间应远小于 1000 秒
+  std::cout << "taskflow completes in "  << std::chrono::duration_cast<std::chrono::milliseconds>(end-beg).count()    << " milliseconds\n";
 
   return 0;
 }

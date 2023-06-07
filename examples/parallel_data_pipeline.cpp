@@ -1,4 +1,6 @@
 // 该程序演示了如何使用 tf::DataPipeline 创建一个管道，其中管道内数据由 Taskflow 库自动管理。
+
+
 #include <taskflow/taskflow.hpp>
 #include <taskflow/algorithm/data_pipeline.hpp>
 
@@ -33,13 +35,12 @@ int main() {
     })
   );
 
-  // build the pipeline graph using composition
+  // 使用 composition 构建 pipeline graph 
   taskflow.composed_of(pl).name("pipeline");
-
-  // dump the pipeline graph structure (with composition)
+ 
   taskflow.dump(std::cout);
 
-  // run the pipeline
+  //运行 pipeline
   executor.run(taskflow).wait();
 
   return 0;

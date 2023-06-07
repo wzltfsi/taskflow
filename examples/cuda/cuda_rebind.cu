@@ -33,8 +33,7 @@ int main() {
   }
   std::cout << "correct result after fill\n";
 
-  // Rebind the task to for-each task setting each element to 100.
-  // You can rebind a capture task to any other task type.
+  // 将任务重新绑定到 for-each 任务，将每个元素设置为 100。您可以将捕获任务重新绑定到任何其他任务类型。
   std::cout << "rebind to for_each task setting each element to 100 ...\n";
 
   cudaflow.for_each(task, data, data+N, [] __device__ (int& i){ i = 100; });

@@ -1,5 +1,5 @@
-// This example demonstrates how to use different methods to
-// run a taskflow.
+// 此示例演示如何使用不同的方法来 run a taskflow.
+ 
 #include <taskflow/taskflow.hpp>
 
 int main(){
@@ -25,7 +25,7 @@ int main(){
   B.precede(D);
   C.precede(D);
 
-  // dumpping a taskflow before execution won't visualize subflow tasks
+  // 在执行之前转储任务流不会可视化子流任务
   std::cout << "Dump the taskflow before execution:\n";
   taskflow.dump(std::cout);
 
@@ -33,7 +33,7 @@ int main(){
   executor.run(taskflow).get();
   std::cout << std::endl;
 
-  // after execution, we can visualize subflow tasks
+  // 执行后，我们可以可视化子流任务
   std::cout << "Dump the taskflow after execution:\n";
   taskflow.dump(std::cout);
   std::cout << std::endl;

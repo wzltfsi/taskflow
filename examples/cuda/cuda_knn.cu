@@ -1,8 +1,8 @@
-// This program implements the k-means clustering algorithm in three forms:
-//  - sequential cpu
-//  - parallel cpu
-//  - gpu with conditional tasking
-//  - gpu without conditional tasking
+// 这个程序以三种形式实现了k-means聚类算法：
+// - 顺序CPU
+// - 并行 CPU
+// - 带条件任务的 gpu
+// - 没有条件任务的 gpu
 
 #include <taskflow/cuda/cudaflow.hpp>
 
@@ -321,10 +321,8 @@ std::pair<std::vector<float>, std::vector<float>> gpu_predicate(
 
   stop.precede(free);
   
-  // run the taskflow
   executor.run(taskflow).wait();
 
-  //std::cout << "dumping kmeans graph ...\n";
   taskflow.dump(std::cout);
   return {h_mx, h_my};
 }

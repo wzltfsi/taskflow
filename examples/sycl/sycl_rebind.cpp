@@ -1,5 +1,4 @@
-// This program demonstrates how to rebind syclFlow tasks
-// to different device operations.
+// 该程序演示了如何将 syclFlow 任务重新绑定到不同的设备操作。
 
 #include <taskflow/syclflow.hpp>
 

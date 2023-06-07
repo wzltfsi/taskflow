@@ -1,5 +1,4 @@
-// This program inspects the indexing methods of SYCL kernels
-// through nd_range and nd_item.
+// 该程序通过 nd_range 和 nd_item 检查 SYCL 内核的索引方法。
 
 #include <taskflow/taskflow.hpp>
 #include <taskflow/sycl/syclflow.hpp>
@@ -21,15 +20,15 @@ int main() {
 
   sycl::queue queue;
 
-  auto global_id_r = sycl::malloc_shared<int>(R*C, queue);
-  auto global_id_c = sycl::malloc_shared<int>(R*C, queue);
-  auto global_linear_id = sycl::malloc_shared<int>(R*C, queue);
-  auto local_id_r = sycl::malloc_shared<int>(R*C, queue);
-  auto local_id_c = sycl::malloc_shared<int>(R*C, queue);
-  auto local_linear_id = sycl::malloc_shared<int>(R*C, queue);
-  auto group_id_r = sycl::malloc_shared<int>(R*C, queue);
-  auto group_id_c = sycl::malloc_shared<int>(R*C, queue);
-  auto group_linear_id = sycl::malloc_shared<int>(R*C, queue);
+  auto global_id_r          = sycl::malloc_shared<int>(R*C, queue);
+  auto global_id_c          = sycl::malloc_shared<int>(R*C, queue);
+  auto global_linear_id     = sycl::malloc_shared<int>(R*C, queue);
+  auto local_id_r           = sycl::malloc_shared<int>(R*C, queue);
+  auto local_id_c           = sycl::malloc_shared<int>(R*C, queue);
+  auto local_linear_id      = sycl::malloc_shared<int>(R*C, queue);
+  auto group_id_r           = sycl::malloc_shared<int>(R*C, queue);
+  auto group_id_c           = sycl::malloc_shared<int>(R*C, queue);
+  auto group_linear_id      = sycl::malloc_shared<int>(R*C, queue);
 
   queue.submit([=](sycl::handler& handler){
     handler.parallel_for(

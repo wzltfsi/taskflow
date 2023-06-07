@@ -1,5 +1,6 @@
-// This example demonstrates how to use the corun
-// method in the executor.
+// 这个例子演示了如何在执行器中使用corun方法。
+
+
 #include <taskflow/taskflow.hpp>
 
 int main(){

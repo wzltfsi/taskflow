@@ -1,4 +1,4 @@
-// The example shows how to use syclFlow to multiply two 2D matrices.
+// 该示例显示了如何使用 syclFlow 将两个 2D 矩阵相乘。
 
 #include <taskflow/taskflow.hpp>
 #include <taskflow/sycl/syclflow.hpp>
@@ -31,6 +31,7 @@ auto gpu(int M, int N, int K) {
     hc.resize(M*K);
     dc = sycl::malloc_device<int>(M*K, queue);
   }).name("allocate_c");
+
 
   // create a syclFlow to run the matrix multiplication
   auto syclFlow = taskflow.emplace_on([&](tf::syclFlow& sf){

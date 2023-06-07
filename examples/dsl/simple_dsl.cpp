@@ -1,9 +1,8 @@
 // 2020/08/28 - Created by netcan: https://github.com/netcan
-// A simple example to capture the following task dependencies.
-// using Task DSL to describe
+// 捕获以下任务依赖关系的简单示例。 使用任务 DSL 来描述
 // TaskA -> fork(TaskB, TaskC) -> TaskD
-#include <taskflow/taskflow.hpp>     // the only include you need
-#include <taskflow/dsl.hpp> // for support dsl
+#include <taskflow/taskflow.hpp>   // the only include you need
+#include <taskflow/dsl.hpp>        // for support dsl
 
 int main() {
   tf::Executor executor;

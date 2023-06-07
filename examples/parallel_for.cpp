@@ -1,4 +1,4 @@
-// This program demonstrates loop-based parallelism using:
+// 该程序演示了基于循环的并行性，使用：
 //   + STL-styled iterators
 //   + plain integral indices
 
@@ -19,7 +19,6 @@ void for_each(int N) {
   });
 
   executor.run(taskflow).get();
-
   taskflow.dump(std::cout);
 }
 
@@ -35,7 +34,6 @@ void for_each_index(int N) {
   });
 
   executor.run(taskflow).get();
-  
   taskflow.dump(std::cout);
 }
 

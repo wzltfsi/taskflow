@@ -24,6 +24,8 @@
 // v    v    v    v    v
 // o -> o -> o -> o -> o
 
+
+
 #include <taskflow/taskflow.hpp>
 #include <taskflow/algorithm/pipeline.hpp>
 
@@ -52,33 +54,33 @@ int main() {
         return input + 1;
     };
 
-  //2. Is this ok when the type in vector definition is different from the exact types of emplaced elements?
-  std::vector< ScalableDataPipeBase* > pipes;
 
+
+  //2. 当向量定义中的类型与放置元素的确切类型不同时，这可以吗？
+  std::vector< ScalableDataPipeBase* > pipes;
   pipes.emplace_back(tf::make_scalable_datapipe<void, int>(tf::PipeType::SERIAL, pipe_callable1));
   pipes.emplace_back(tf::make_scalable_datapipe<int, float>(tf::PipeType::SERIAL, pipe_callable2));
   pipes.emplace_back(tf::make_scalable_datapipe<float, int>(tf::PipeType::SERIAL, pipe_callable3));
 
-  // create a pipeline of four parallel lines using the given vector of pipes
+  // 使用给定的管道向量创建一条由四条平行线组成的管道   
   tf::ScalablePipeline<decltype(pipes)::iterator> pl(num_lines, pipes.begin(), pipes.end());
 
-  // build the pipeline graph using composition
+  // 使用组合构建管道图
   tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; }).name("starting pipeline");
   tf::Task task = taskflow.composed_of(pl).name("pipeline");
   tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; }).name("pipeline stopped");
 
-  // create task dependency
+  // 创建任务依赖
   init.precede(task);
   task.precede(stop);
 
-  // dump the pipeline graph structure (with composition)
+  // / dump 流水线图结构（带组合）
   taskflow.dump(std::cout);
 
-  // run the pipeline
+  // 运行 pipeline
   executor.run(taskflow).wait();
 
-  // reset the pipeline to a new range of five pipes and starts from
-  // the initial state (i.e., token counts from zero)
+  // 将管道重置为五个管道的新范围并从初始状态开始（即令牌从零开始计数）
   pipes.emplace_back(tf::make_scalable_datapipe<int, float>(tf::PipeType::SERIAL, pipe_callable1));
   pipes.emplace_back(tf::make_scalable_datapipe<float, int>(tf::PipeType::SERIAL, pipe_callable1));
   pl.reset(pipes.begin(), pipes.end());
