@@ -1,5 +1,4 @@
-// The program demonstrates how to create asynchronous task
-// from an executor and a subflow.
+// 该程序演示了如何从执行程序和子流创建异步任务。
 #include <taskflow/taskflow.hpp>
 
 int main() {

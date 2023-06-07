@@ -22,7 +22,7 @@ int main() {
               //<< "extensions :"
               //<< platform.get_info<sycl::info::platform::extensions>() << '\n';
 
-    // getting the list of devices from the platform
+    // 从平台获取设备列表
     std::vector<sycl::device> devices = platform.get_devices();
 
     // looping over devices

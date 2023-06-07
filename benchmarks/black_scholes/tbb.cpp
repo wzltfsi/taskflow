@@ -5,11 +5,9 @@
 
 void bs_tbb(unsigned num_threads) {
 
-  tbb::global_control control(
-    tbb::global_control::max_allowed_parallelism, num_threads
-  );
+  tbb::global_control control( tbb::global_control::max_allowed_parallelism, num_threads);
 
-	for (int j=0; j<NUM_RUNS; j++) {
+   for (int j=0; j<NUM_RUNS; j++) {
     tbb::parallel_for(0, numOptions, 1, [&](int i){
       auto price = BlkSchlsEqEuroNoDiv(
         sptprice[i], strike[i],

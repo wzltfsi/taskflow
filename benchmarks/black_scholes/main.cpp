@@ -27,11 +27,7 @@ int numError = 0;
 float* BUFFER = nullptr;
 int* BUFFER2 = nullptr;
 
-void black_scholes(
-  const std::string& model,
-  const unsigned num_threads,
-  const unsigned num_rounds
-) {
+void black_scholes(  const std::string& model, const unsigned num_threads,  const unsigned num_rounds) {
 
   std::cout << std::setw(12) << "size"
             << std::setw(12) << "runtime"

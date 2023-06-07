@@ -1,5 +1,4 @@
-// This program performs a simple single-precision Ax+Y operation
-// using cudaFlow and verifies its result.
+// 该程序使用 cudaFlow 执行简单的单精度 Ax+Y 运算并验证其结果。
 
 #include <taskflow/taskflow.hpp>
 #include <taskflow/cuda/cudaflow.hpp>

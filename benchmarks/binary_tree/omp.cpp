@@ -42,10 +42,7 @@ void binary_tree_omp(size_t num_layers, unsigned num_threads) {
   delete [] D;
 }
 
-std::chrono::microseconds measure_time_omp(
-  size_t num_layers,
-  unsigned num_threads
-) {
+std::chrono::microseconds measure_time_omp(  size_t num_layers,  unsigned num_threads) {
   auto beg = std::chrono::high_resolution_clock::now();
   binary_tree_omp(num_layers, num_threads);
   auto end = std::chrono::high_resolution_clock::now();

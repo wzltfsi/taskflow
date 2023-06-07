@@ -1,5 +1,4 @@
-// This program demonstrates how to create if-else control flow
-// using condition tasks.
+// 该程序演示了如何使用条件任务创建 if-else 控制流。
 #include <taskflow/taskflow.hpp>
 
 int main() {
@@ -7,7 +6,7 @@ int main() {
   tf::Executor executor;
   tf::Taskflow taskflow;
 
-  // create three static tasks and one condition task
+  // // 创建三个静态任务和一个条件任务
   auto [init, cond, yes, no] = taskflow.emplace(
     [] () { },
     [] () { return 0; },
@@ -22,9 +21,7 @@ int main() {
 
   cond.succeed(init);
 
-  // With this order, when cond returns 0, execution
-  // moves on to yes. When cond returns 1, execution
-  // moves on to no.
+  // 使用此命令，当 cond 返回 0 时，执行将转到 yes。 当 cond 返回 1 时，执行移至 no。
   cond.precede(yes, no);
 
   // dump the conditioned flow

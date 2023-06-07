@@ -1,5 +1,4 @@
-// This program demonstrates how to create nested if-else control flow
-// using condition tasks.
+// 该程序演示了如何使用条件任务创建嵌套的 if-else 控制流
 #include <taskflow/taskflow.hpp>
 
 int main() {
@@ -9,7 +8,7 @@ int main() {
 
   int i;
 
-  // create three condition tasks for nested control flow
+  // 为嵌套控制流创建三个条件任务
   auto initi = taskflow.emplace([&](){ i=3; });
   auto cond1 = taskflow.emplace([&](){ return i>1 ? 1 : 0; });
   auto cond2 = taskflow.emplace([&](){ return i>2 ? 1 : 0; });

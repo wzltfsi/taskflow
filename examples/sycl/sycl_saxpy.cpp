@@ -21,7 +21,7 @@ int main() {
   taskflow.emplace_on([&](tf::syclFlow& sf){
 
     tf::syclTask fillX = sf.fill(X, 1.0f, N).name("fillX");
-    tf::syclTask fillY = sf.fill(Y, 2.0f, N).name("fillY");
+    tf::syclTask fillY = sf.fill(Y, 2.0f, N).name("fillY"); 
 
     tf::syclTask saxpy = sf.parallel_for(sycl::range<1>(N),
       [=] (sycl::id<1> id) {
@@ -33,7 +33,7 @@ int main() {
 
   }, queue).name("syclFlow");
 
-  // dump the graph without detailed syclFlow connections
+  //  dump the graph without detailed syclFlow connections
   taskflow.dump(std::cout);
   
   // run the taskflow

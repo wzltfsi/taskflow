@@ -1,22 +1,4 @@
-#.rst:
-# FindComputeCpp
-#---------------
-#
-#   Copyright 2016-2018 Codeplay Software Ltd.
-#
-#   Licensed under the Apache License, Version 2.0 (the "License");
-#   you may not use these files except in compliance with the License.
-#   You may obtain a copy of the License at
-#
-#       http://www.apache.org/licenses/LICENSE-2.0
-#
-#
-#   Unless required by applicable law or agreed to in writing, software
-#   distributed under the License is distributed on an "AS IS" BASIS,
-#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#   See the License for the specific language governing permissions and
-#   limitations under the License.
-
+ 
 #########################
 #  FindComputeCpp.cmake
 #########################
@@ -37,8 +19,7 @@ set(COMPUTECPP_USER_FLAGS "" CACHE STRING "User flags for compute++")
 separate_arguments(COMPUTECPP_USER_FLAGS)
 mark_as_advanced(COMPUTECPP_USER_FLAGS)
 
-set(COMPUTECPP_BITCODE "spir64" CACHE STRING
-  "Bitcode type to use as SYCL target in compute++")
+set(COMPUTECPP_BITCODE "spir64" CACHE STRING  "Bitcode type to use as SYCL target in compute++")
 mark_as_advanced(COMPUTECPP_BITCODE)
 
 find_package(OpenCL REQUIRED)

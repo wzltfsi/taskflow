@@ -35,9 +35,7 @@ int main(int argc, char* argv[]) {
   auto beg = std::chrono::steady_clock::now();
   tf::cudaStream s;
   tf::cudaDefaultExecutionPolicy p(s);
-  tf::cuda_find_if(
-    p, gdata, gdata+N, gfind, []__device__(int v) { return v == 100; }
-  );
+  tf::cuda_find_if( p, gdata, gdata+N, gfind, []__device__(int v) { return v == 100; });
   s.synchronize();
   auto end = std::chrono::steady_clock::now();
   tgpu += std::chrono::duration_cast<std::chrono::microseconds>(end-beg).count();
@@ -46,9 +44,7 @@ int main(int argc, char* argv[]) {
   // CPU find
   // --------------------------------------------------------------------------
   beg = std::chrono::steady_clock::now();
-  auto hiter = std::find_if(
-    hdata.begin(), hdata.end(), [=](int v) { return v == 100; }
-  );
+  auto hiter = std::find_if(hdata.begin(), hdata.end(), [=](int v) { return v == 100; });
   end = std::chrono::steady_clock::now();
   tcpu += std::chrono::duration_cast<std::chrono::microseconds>(end-beg).count();
   

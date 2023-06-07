@@ -9,8 +9,7 @@ void bs_taskflow(unsigned num_threads) {
 
   auto init = taskflow.placeholder();
 
-  auto loop = taskflow.for_each_index(
-    0, numOptions, 1, [&](int i) {
+  auto loop = taskflow.for_each_index( 0, numOptions, 1, [&](int i) {
     auto price = BlkSchlsEqEuroNoDiv(
       sptprice[i], strike[i],
       rate[i], volatility[i], otime[i],

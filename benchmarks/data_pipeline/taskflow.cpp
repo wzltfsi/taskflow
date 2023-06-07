@@ -46,9 +46,10 @@ tf::PipeType to_pipe_type(char t) {
   return t == 's' ? tf::PipeType::SERIAL : tf::PipeType::PARALLEL;
 }
 
+
+
 // parallel_pipeline_taskflow_1_pipe
-std::chrono::microseconds parallel_pipeline_taskflow_1_pipe(
-  unsigned num_lines, unsigned num_threads, size_t size) {
+std::chrono::microseconds parallel_pipeline_taskflow_1_pipe( unsigned num_lines, unsigned num_threads, size_t size) {
 
   tf::Taskflow taskflow;
   tf::Executor executor(num_threads);
@@ -69,9 +70,10 @@ std::chrono::microseconds parallel_pipeline_taskflow_1_pipe(
   return std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
 }
 
+
+
 // parallel_pipeline_taskflow_2_pipes
-std::chrono::microseconds parallel_pipeline_taskflow_2_pipes(
-  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
+std::chrono::microseconds parallel_pipeline_taskflow_2_pipes( std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
 
   tf::Taskflow taskflow;
   tf::Executor executor(num_threads);
@@ -96,9 +98,10 @@ std::chrono::microseconds parallel_pipeline_taskflow_2_pipes(
   return std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
 }
 
+
+
 // parallel_pipeline_taskflow_3_pipes
-std::chrono::microseconds parallel_pipeline_taskflow_3_pipes(
-  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
+std::chrono::microseconds parallel_pipeline_taskflow_3_pipes( std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
 
   tf::Taskflow taskflow;
   tf::Executor executor(num_threads);
@@ -124,16 +127,16 @@ std::chrono::microseconds parallel_pipeline_taskflow_3_pipes(
   return std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
 }
 
+
+
 // parallel_pipeline_taskflow_4_pipes
-std::chrono::microseconds parallel_pipeline_taskflow_4_pipes(
-  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
+std::chrono::microseconds parallel_pipeline_taskflow_4_pipes( std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
 
   tf::Taskflow taskflow;
   tf::Executor executor(num_threads);
 
   auto beg = std::chrono::high_resolution_clock::now();
-  tf::DataPipeline pl(num_lines,
-    tf::make_data_pipe<tf::Pipeflow&, int>(tf::PipeType::SERIAL, [size](tf::Pipeflow& pf) -> int{
+  tf::DataPipeline pl(num_lines, tf::make_data_pipe<tf::Pipeflow&, int>(tf::PipeType::SERIAL, [size](tf::Pipeflow& pf) -> int{
       if(pf.token() == size) {
         pf.stop();
         return 0;
@@ -153,9 +156,11 @@ std::chrono::microseconds parallel_pipeline_taskflow_4_pipes(
   return std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
 }
 
+
+
+
 // parallel_pipeline_taskflow_5_pipes
-std::chrono::microseconds parallel_pipeline_taskflow_5_pipes(
-  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
+std::chrono::microseconds parallel_pipeline_taskflow_5_pipes(  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
 
   tf::Taskflow taskflow;
   tf::Executor executor(num_threads);
@@ -183,9 +188,10 @@ std::chrono::microseconds parallel_pipeline_taskflow_5_pipes(
   return std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
 }
 
+
+
 // parallel_pipeline_taskflow_6_pipes
-std::chrono::microseconds parallel_pipeline_taskflow_6_pipes(
-  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
+std::chrono::microseconds parallel_pipeline_taskflow_6_pipes(  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
 
   tf::Taskflow taskflow;
   tf::Executor executor(num_threads);
@@ -214,9 +220,11 @@ std::chrono::microseconds parallel_pipeline_taskflow_6_pipes(
   return std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
 }
 
+
+
+
 // parallel_pipeline_taskflow_7_pipes
-std::chrono::microseconds parallel_pipeline_taskflow_7_pipes(
-  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
+std::chrono::microseconds parallel_pipeline_taskflow_7_pipes( std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
 
   tf::Taskflow taskflow;
   tf::Executor executor(num_threads);
@@ -247,8 +255,7 @@ std::chrono::microseconds parallel_pipeline_taskflow_7_pipes(
 }
 
 // parallel_pipeline_taskflow_8_pipes
-std::chrono::microseconds parallel_pipeline_taskflow_8_pipes(
-  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
+std::chrono::microseconds parallel_pipeline_taskflow_8_pipes(std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
 
   tf::Taskflow taskflow;
   tf::Executor executor(num_threads);
@@ -280,8 +287,7 @@ std::chrono::microseconds parallel_pipeline_taskflow_8_pipes(
 }
 
 // parallel_pipeline_taskflow_9_pipes
-std::chrono::microseconds parallel_pipeline_taskflow_9_pipes(
-  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
+std::chrono::microseconds parallel_pipeline_taskflow_9_pipes( std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
 
   tf::Taskflow taskflow;
   tf::Executor executor(num_threads);
@@ -314,8 +320,7 @@ std::chrono::microseconds parallel_pipeline_taskflow_9_pipes(
 }
 
 // parallel_pipeline_taskflow_10_pipes
-std::chrono::microseconds parallel_pipeline_taskflow_10_pipes(
-  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
+std::chrono::microseconds parallel_pipeline_taskflow_10_pipes(  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
 
   tf::Taskflow taskflow;
   tf::Executor executor(num_threads);
@@ -350,15 +355,14 @@ std::chrono::microseconds parallel_pipeline_taskflow_10_pipes(
 
 
 // parallel_pipeline_taskflow_11_pipes
-std::chrono::microseconds parallel_pipeline_taskflow_11_pipes(
-  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
+std::chrono::microseconds parallel_pipeline_taskflow_11_pipes( std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
 
   tf::Taskflow taskflow;
   tf::Executor executor(num_threads);
 
   auto beg = std::chrono::high_resolution_clock::now();
   tf::DataPipeline pl(num_lines,
-    tf::make_data_pipe<tf::Pipeflow&, int>(tf::PipeType::SERIAL, [size](tf::Pipeflow& pf) -> int{
+  tf::make_data_pipe<tf::Pipeflow&, int>(tf::PipeType::SERIAL, [size](tf::Pipeflow& pf) -> int{
       if(pf.token() == size) {
         pf.stop();
         return 0;
@@ -386,8 +390,7 @@ std::chrono::microseconds parallel_pipeline_taskflow_11_pipes(
 }
 
 // parallel_pipeline_taskflow_12_pipes
-std::chrono::microseconds parallel_pipeline_taskflow_12_pipes(
-  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
+std::chrono::microseconds parallel_pipeline_taskflow_12_pipes( std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
 
   tf::Taskflow taskflow;
   tf::Executor executor(num_threads);
@@ -421,6 +424,9 @@ std::chrono::microseconds parallel_pipeline_taskflow_12_pipes(
   auto end = std::chrono::high_resolution_clock::now();
   return std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
 }
+
+
+
 
 // parallel_pipeline_taskflow_13_pipes
 std::chrono::microseconds parallel_pipeline_taskflow_13_pipes(
@@ -461,8 +467,7 @@ std::chrono::microseconds parallel_pipeline_taskflow_13_pipes(
 }
 
 // parallel_pipeline_taskflow_14_pipes
-std::chrono::microseconds parallel_pipeline_taskflow_14_pipes(
-  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
+std::chrono::microseconds parallel_pipeline_taskflow_14_pipes( std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
 
   tf::Taskflow taskflow;
   tf::Executor executor(num_threads);
@@ -499,9 +504,11 @@ std::chrono::microseconds parallel_pipeline_taskflow_14_pipes(
   return std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
 }
 
+
+
+
 // parallel_pipeline_taskflow_15_pipes
-std::chrono::microseconds parallel_pipeline_taskflow_15_pipes(
-  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
+std::chrono::microseconds parallel_pipeline_taskflow_15_pipes( std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
 
   tf::Taskflow taskflow;
   tf::Executor executor(num_threads);
@@ -539,9 +546,12 @@ std::chrono::microseconds parallel_pipeline_taskflow_15_pipes(
   return std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
 }
 
+
+
+
+
 // parallel_pipeline_taskflow_16_pipes
-std::chrono::microseconds parallel_pipeline_taskflow_16_pipes(
-  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
+std::chrono::microseconds parallel_pipeline_taskflow_16_pipes( std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
 
   tf::Taskflow taskflow;
   tf::Executor executor(num_threads);
@@ -582,8 +592,7 @@ std::chrono::microseconds parallel_pipeline_taskflow_16_pipes(
 
 } // namespace
 
-std::chrono::microseconds measure_time_taskflow(
-  std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
+std::chrono::microseconds measure_time_taskflow( std::string pipes, unsigned num_lines, unsigned num_threads, size_t size) {
 
   std::chrono::microseconds elapsed;
 

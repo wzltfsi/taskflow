@@ -52,9 +52,7 @@ void bs_omp_parallel_for(unsigned num_threads) {
       /* Calling main function to calculate option value based on
        * Black & Scholes's equation.
        */
-      price = BlkSchlsEqEuroNoDiv( sptprice[i], strike[i],
-          rate[i], volatility[i], otime[i],
-          otype[i], 0);
+      price = BlkSchlsEqEuroNoDiv( sptprice[i], strike[i],   rate[i], volatility[i], otime[i],   otype[i], 0);
       prices[i] = price;
 
 #ifdef ERR_CHK

@@ -7,19 +7,19 @@ constexpr size_t N = 10000;
 
 int main() {
 
-  // create a standalone scylFlow
+  // 创建一个独立的 scylFlow
   sycl::queue queue;
 
   tf::syclFlow syclflow(queue);
 
-  // allocate a shared memory and initialize the data
+  // 分配共享内存并初始化数据
   auto data = sycl::malloc_shared<int>(N, queue);
 
   for(size_t i=0; i<N; i++) {
     data[i] = i;
   }
 
-  // reduce the summation to the first element using ONEAPI atomic_ref
+  // 使用 ONEAPI atomic_ref 将总和减少到第一个元素
   syclflow.parallel_for(
     sycl::range<1>(N), [=](sycl::id<1> id) {
 

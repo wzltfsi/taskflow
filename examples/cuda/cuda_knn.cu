@@ -148,8 +148,9 @@ std::pair<std::vector<float>, std::vector<float>> cpu_par(
     return (m++ < M) ? 0 : 1;
   }).name("converged?");
   
-  init.precede(clean_up);
 
+
+  init.precede(clean_up);
   clean_up.precede(pf);
   pf.precede(update_cluster);
 
@@ -165,9 +166,7 @@ std::pair<std::vector<float>, std::vector<float>> cpu_par(
 // GPU implementation
 // ----------------------------------------------------------------------------
 
-// Each point (thread) computes its distance to each centroid 
-// and adds its x and y values to the sum of its closest
-// centroid, as well as incrementing that centroid's count of assigned points.
+// 每个点（线程）计算它到每个质心的距离，并将其 x 和 y 值添加到其最近的质心的总和，以及增加该质心的指定点数。
 __global__ void assign_clusters(
   const float* px,
   const float* py,
@@ -204,8 +203,7 @@ __global__ void assign_clusters(
   atomicAdd(&c [best_cluster], 1);
 }
 
-// Each thread is one cluster, which just recomputes its coordinates as the mean
-// of all points assigned to it.
+// 每个线程都是一个集群，它只是重新计算它的坐标作为分配给它的所有点的平均值。
 __global__ void compute_new_means(
   float* mx, float* my, const float* sx, const float* sy, const int* c
 ) {

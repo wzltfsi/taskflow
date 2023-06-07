@@ -27,8 +27,9 @@ int main() {
   auto h2d_y  = cf.copy(dy, hy.data(), N).name("h2d_y");
   auto d2h_x  = cf.copy(hx.data(), dx, N).name("d2h_x");
   auto d2h_y  = cf.copy(hy.data(), dy, N).name("d2h_y");
-  auto kernel = cf.kernel((N+255)/256, 256, 0, saxpy, N, 2.0f, dx, dy)
-                  .name("saxpy");
+
+  auto kernel = cf.kernel((N+255)/256, 256, 0, saxpy, N, 2.0f, dx, dy).name("saxpy");
+  
   kernel.succeed(h2d_x, h2d_y)
         .precede(d2h_x, d2h_y);
 

@@ -1,7 +1,4 @@
-// This program demonstrates how to use tf::DataPipeline to create
-// a pipeline with in-pipe data automatically managed by the Taskflow
-// library.
-
+// 该程序演示了如何使用 tf::DataPipeline 创建一个管道，其中管道内数据由 Taskflow 库自动管理。
 #include <taskflow/taskflow.hpp>
 #include <taskflow/algorithm/data_pipeline.hpp>
 

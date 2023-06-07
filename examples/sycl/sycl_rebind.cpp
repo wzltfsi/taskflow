@@ -26,13 +26,10 @@ int main() {
   }
   std::cout << "correct result after fill\n";
 
-  // rebind the task to for-each task setting each element to 100
-  // You can rebind a syclTask to any other task type.
+  // 将任务重新绑定到 for-each 任务 将每个元素设置为 100 您可以将 syclTask 重新绑定到任何其他任务类型。
   std::cout << "rebind task to for_each task setting each element to 100\n";
 
-  syclflow.for_each(
-    task, data, data+N, [](int& i){ i = 100; }
-  );
+  syclflow.for_each(task, data, data+N, [](int& i){ i = 100; });
   syclflow.offload();
 
   for(size_t i=0; i<N; i++) {

@@ -1,8 +1,4 @@
-// This program demonstrates how to create a pipeline scheduling framework
-// that propagates a series of integers and adds one to the result at each
-// stage, using a range of pipes provided by the application.
-//
-// The pipeline has the following structure:
+// 该程序演示了如何创建一个管道调度框架，该框架使用应用程序提供的一系列管道传播一系列整数并在每个阶段将结果加一。 管道具有以下结构：
 //
 // o -> o -> o
 // |    |    |
@@ -15,7 +11,7 @@
 // v    v    v
 // o -> o -> o
 //
-// Then, the program resets the pipeline to a new range of five pipes.
+// 然后，程序将管道重置为新范围的五个管道。
 //
 // o -> o -> o -> o -> o
 // |    |    |    |    |
@@ -67,12 +63,9 @@ int main() {
   tf::ScalablePipeline<decltype(pipes)::iterator> pl(num_lines, pipes.begin(), pipes.end());
 
   // build the pipeline graph using composition
-  tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; })
-                          .name("starting pipeline");
-  tf::Task task = taskflow.composed_of(pl)
-                          .name("pipeline");
-  tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; })
-                          .name("pipeline stopped");
+  tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; }).name("starting pipeline");
+  tf::Task task = taskflow.composed_of(pl).name("pipeline");
+  tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; }).name("pipeline stopped");
 
   // create task dependency
   init.precede(task);

@@ -106,15 +106,11 @@ inline float CNDF( float InputX ) {
 
 
 
-inline float BlkSchlsEqEuroNoDiv(
-  float sptprice, float strike, float rate,
-  float volatility, float time, int otype, float) {
+inline float BlkSchlsEqEuroNoDiv( float sptprice, float strike, float rate, float volatility, float time, int otype, float) {
 
   float OptionPrice;
 
-  // local private working variables for the calculation
-  //float xStockPrice;  // These two variables are not used
-  //float xStrikePrice;
+  // 用于计算的本地私有工作变量 float xStockPrice； 这两个变量都没有用到float xStrikePrice；
   float xRiskFreeRate;
   float xVolatility;
   float xTime;
@@ -180,8 +176,7 @@ inline float BlkSchlsEqEuroNoDiv(
 inline void check_error(unsigned i, float price) {
   float priceDelta = optdata[i].DGrefval - price;
   if(std::fabs(priceDelta) >= 1e-4 ){
-    printf("Error on %d. Computed=%.5f, Ref=%.5f, Delta=%.5f\n",
-        i, price, optdata[i].DGrefval, priceDelta);
+    printf("Error on %d. Computed=%.5f, Ref=%.5f, Delta=%.5f\n",  i, price, optdata[i].DGrefval, priceDelta);
     numError ++;
   }
 }
@@ -195,12 +190,8 @@ inline void bs_seq(float *seq_prices) {
 
   for (j=0; j<NUM_RUNS; j++) {
     for (i=0; i<numOptions; i++) {
-      /* Calling main function to calculate option value based on
-       * Black & Scholes's equation.
-       */
-      price = BlkSchlsEqEuroNoDiv( sptprice[i], strike[i],
-          rate[i], volatility[i], otime[i],
-          otype[i], 0);
+      /* 调用 main 函数根据 Black & Scholes 方程计算期权价值。*/
+      price = BlkSchlsEqEuroNoDiv( sptprice[i], strike[i],   rate[i], volatility[i], otime[i],   otype[i], 0);
       seq_prices[i] = price;
 
 #ifdef ERR_CHK
@@ -217,13 +208,15 @@ inline void destroy_options() {
   free(BUFFER2);
 }
 
+
+
 // Read input option data from file
 inline void generate_options(size_t num_options) {
 
   numOptions = num_options == 0 ? 1 : num_options;
   NUM_RUNS = numOptions;
 
-  // Allocate spaces for the option data
+  // 为选项数据分配空间
   optdata = static_cast<OptionData*>(malloc(numOptions*sizeof(OptionData)));
   prices = static_cast<float*>(malloc(numOptions*sizeof(float)));
 

@@ -37,9 +37,7 @@ int main() {
   // You can rebind a capture task to any other task type.
   std::cout << "rebind to for_each task setting each element to 100 ...\n";
 
-  cudaflow.for_each(
-    task, data, data+N, [] __device__ (int& i){ i = 100; }
-  );
+  cudaflow.for_each(task, data, data+N, [] __device__ (int& i){ i = 100; });
   cudaflow.run(stream);
   stream.synchronize();
   

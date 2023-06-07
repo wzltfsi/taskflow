@@ -8,9 +8,7 @@ int main() {
   tf::Executor executor;
   tf::Taskflow taskflow("cancel");
 
-  // We create a taskflow graph of 1000 tasks each of 1 second.
-  // Ideally, the taskflow completes in 1000/P seconds, where P
-  // is the number of workers.
+  // 我们创建了一个每 1 秒包含 1000 个任务的任务流图。 理想情况下，任务流在 1000/P 秒内完成，其中 P 是工作人员的数量。
   for(int i=0; i<1000; i++) {
     taskflow.emplace([](){
       std::this_thread::sleep_for(std::chrono::seconds(1));

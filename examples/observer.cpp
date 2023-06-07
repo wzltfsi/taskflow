@@ -8,20 +8,19 @@ struct MyObserver : public tf::ObserverInterface {
     std::cout << "constructing observer " << name << '\n';
   }
 
-  // set_up is a constructor-like method that will be called exactly once
-  // passing the number of workers
+  // set_up 是一个类似构造函数的方法，一旦传递了workers数量就会被调用  
   void set_up(size_t num_workers) override final {
     std::cout << "setting up observer with " << num_workers << " workers\n";
   }
 
-  // on_entry will be called before a worker runs a task
+  // on_entry 将在 worker 运行任务之前调用  
   void on_entry(tf::WorkerView wv, tf::TaskView tv) override final {
     std::ostringstream oss;
     oss << "worker " << wv.id() << " ready to run " << tv.name() << '\n';
     std::cout << oss.str();
   }
 
-  // on_exit will be called after a worker completes a task
+  // on_exit 将在工作人员完成任务后调用
   void on_exit(tf::WorkerView wv, tf::TaskView tv) override final {
     std::ostringstream oss;
     oss << "worker " << wv.id() << " finished running " << tv.name() << '\n';

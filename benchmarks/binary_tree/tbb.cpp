@@ -8,9 +8,7 @@ void binary_tree_tbb(size_t num_layers, unsigned num_threads) {
   using namespace tbb;
   using namespace tbb::flow;
 
-  tbb::global_control c(
-    tbb::global_control::max_allowed_parallelism, num_threads
-  );
+  tbb::global_control c(tbb::global_control::max_allowed_parallelism, num_threads);
 
   std::atomic<size_t> counter {0};
 
@@ -45,10 +43,7 @@ void binary_tree_tbb(size_t num_layers, unsigned num_threads) {
   assert(counter + 1 == tasks.size());
 }
 
-std::chrono::microseconds measure_time_tbb(
-  size_t num_layers,
-  unsigned num_threads
-) {
+std::chrono::microseconds measure_time_tbb(  size_t num_layers,  unsigned num_threads) {
   auto beg = std::chrono::high_resolution_clock::now();
   binary_tree_tbb(num_layers, num_threads);
   auto end = std::chrono::high_resolution_clock::now();

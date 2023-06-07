@@ -31,9 +31,7 @@ int main(int argc, char* argv[]) {
   tf::syclFlow syclflow(queue);
 
   // data[i] = src1[i] + src2[i] + src3[i]
-  syclflow.transform(
-    data, data+N, [](int a, int b, int c) { return a+b+c; }, src1, src2, src3
-  );
+  syclflow.transform(  data, data+N, [](int a, int b, int c) { return a+b+c; }, src1, src2, src3);
 
   syclflow.offload();
 

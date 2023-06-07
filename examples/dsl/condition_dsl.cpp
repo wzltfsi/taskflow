@@ -27,8 +27,7 @@ int main() {
 
   int counter; // owner
 
-  // use context to pass args
-  // context must copyable
+  // 使用context传递参数, context必须可复制  
   struct Context {
     int &rcounter; // use counter(borrow)
   } context{counter};
@@ -55,11 +54,8 @@ int main() {
   });
 
   auto tasks = build_taskflow(
-    task(A)
-      -> task(B)
-      -> task(C),
-    task(C)
-      -> fork_tasks(B, D)
+    task(A)-> task(B) -> task(C),
+    task(C)-> fork_tasks(B, D)
   )(taskflow, context);
 
   tasks.get_task<A>().name("A");

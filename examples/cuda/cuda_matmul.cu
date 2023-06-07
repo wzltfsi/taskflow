@@ -1,4 +1,4 @@
-// The example shows how to use cudaFlow to multiply two 2D matrices.
+// 该示例展示了如何使用 cudaFlow 将两个 2D 矩阵相乘。
 
 #include <taskflow/taskflow.hpp>
 #include <taskflow/cuda/cudaflow.hpp>
