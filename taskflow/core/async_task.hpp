@@ -16,27 +16,19 @@ namespace tf {
 /**
 @brief class to create a dependent asynchronous task
 
-A tf::AsyncTask is a lightweight handle that retains @em shared ownership
-of a dependent async task created by an executor.
-This shared ownership ensures that the async task remains alive when
-adding it to the dependency list of another async task, 
-thus avoiding the classical [ABA problem](https://en.wikipedia.org/wiki/ABA_problem).
+tf::AsyncTask 是一个轻量级句柄，它保留由 executor 创建的依赖异步任务的 共享所有权。 
+这种 共享所有权 可确保异步任务在将其添加到另一个异步任务的依赖列表时保持活动状态，从而避免经典的 [ABA 问题] 
 
 @code{.cpp}
-// main thread retains shared ownership of async task A
+// 主线程保留异步任务 A 的共享所有权
 tf::AsyncTask A = executor.silent_dependent_async([](){});
 
-// task A remains alive (i.e., at least one ref count by the main thread) 
-// when being added to the dependency list of async task B
+// 任务 A 在被添加到异步任务 B 的依赖列表时保持活动状态（即，主线程至少有一个引用计数）
 tf::AsyncTask B = executor.silent_dependent_async([](){}, A);
 @endcode
 
-Currently, tf::AsyncTask is implemented based on C++ smart pointer std::shared_ptr and 
-is considered cheap to copy or move as long as only a handful of objects
-own it.
-When a worker completes an async task, it will remove the task from the executor,
-decrementing the number of shared owners by one.
-If that counter reaches zero, the task is destroyed.
+目前，tf::AsyncTask 是基于 C++ 智能指针 std::shared_ptr 实现的，只要只有少数对象拥有它，复制或移动就被认为是廉价的。 
+当 worker 完成异步任务时，它将从 executor 中删除任务，将共享所有者的数量减一。 如果该计数器达到零，任务将被销毁。
 */
 class AsyncTask {
   
@@ -47,50 +39,26 @@ class AsyncTask {
   friend class Executor;
   
   public:
-    
-    /**
-    @brief constructs an empty task handle
-    */
+     
     AsyncTask() = default;
-    
-    /**
-    @brief destroys the managed asynchronous task if this is the last owner
-    */
+     
     ~AsyncTask() = default;
-    
-    /**
-    @brief constructs an task that shares ownership of @c rhs
-    */
+     
     AsyncTask(const AsyncTask& rhs) = default;
-
-    /**
-    @brief move-constructs an task from @c rhs
-    */
+ 
     AsyncTask(AsyncTask&& rhs) = default;
-    
-    /**
-    @brief shares ownership of the task managed by @c rhs
-    */
+     
     AsyncTask& operator = (const AsyncTask& rhs) = default;
-
-    /**
-    @brief move-assigns the task from @c rhs
-    */
+ 
     AsyncTask& operator = (AsyncTask&& rhs) = default;
     
-    /**
-    @brief checks if the task stores a non-null shared pointer
-    */
+    // 检查任务是否存储了一个非空的共享指针
     bool empty() const;
     
-    /**
-    @brief release the ownership 
-    */
+    // 释放所有权
     void reset();
     
-    /**
-    @brief obtains a hash value of the underlying node
-    */
+    // 获取底层节点的哈希值
     size_t hash_value() const;
 
   private:
@@ -101,8 +69,7 @@ class AsyncTask {
 };
 
 // Constructor
-inline AsyncTask::AsyncTask(std::shared_ptr<Node> ptr) : _node {std::move(ptr)} {
-}
+inline AsyncTask::AsyncTask(std::shared_ptr<Node> ptr) : _node {std::move(ptr)} { }
 
 // Function: empty
 inline bool AsyncTask::empty() const {

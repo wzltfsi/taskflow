@@ -19,13 +19,11 @@ namespace tf {
 */
 using observer_stamp_t = std::chrono::time_point<std::chrono::steady_clock>;
 
-/**
-@private
-*/
+// private
 struct Segment {
 
   std::string name;
-  TaskType type;
+  TaskType    type;
 
   observer_stamp_t beg;
   observer_stamp_t end;
@@ -42,19 +40,15 @@ struct Segment {
 
   Segment() = default;
 
-  Segment(
-    const std::string& n, TaskType t, observer_stamp_t b, observer_stamp_t e
-  ) : name {n}, type {t}, beg {b}, end {e} {
-  }
+  Segment( const std::string& n, TaskType t, observer_stamp_t b, observer_stamp_t e) : name {n}, type {t}, beg {b}, end {e} {}
 
   auto span() const {
-    return end-beg;
+    return end - beg;
   } 
 };
 
-/**
-@private
-*/
+
+// private
 struct Timeline {
 
   size_t uid;
@@ -81,9 +75,8 @@ struct Timeline {
   }
 };  
 
-/**
-@private
- */
+
+// private
 struct ProfileData {
 
   std::vector<Timeline> timelines;
@@ -116,15 +109,12 @@ struct ProfileData {
 
 @brief class to derive an executor observer 
 
-The tf::ObserverInterface class allows users to define custom methods to monitor 
-the behaviors of an executor. This is particularly useful when you want to 
-inspect the performance of an executor and visualize when each thread 
-participates in the execution of a task.
-To prevent users from direct access to the internal threads and tasks, 
-tf::ObserverInterface provides immutable wrappers,
-tf::WorkerView and tf::TaskView, over workers and tasks.
-
-Please refer to tf::WorkerView and tf::TaskView for details.
+ 
+tf::ObserverInterface 类允许用户定义自定义方法来监视执行程序的行为。 
+当您想要检查执行程序的性能并可视化每个线程何时参与任务执行时，这特别有用。 
+为了防止用户直接访问内部线程和任务，
+tf::ObserverInterface 在工作人员和任务上提供了不可变的包装器 tf::WorkerView 和 tf::TaskView。 
+详情请参考 tf::WorkerView 和 tf::TaskView。
 
 Example usage:
 
@@ -196,6 +186,8 @@ class ObserverInterface {
   virtual void on_exit(WorkerView wv, TaskView task_view) = 0;
 };
 
+
+
 // ----------------------------------------------------------------------------
 // ChromeObserver definition
 // ----------------------------------------------------------------------------
@@ -205,9 +197,7 @@ class ObserverInterface {
 
 @brief class to create an observer based on Chrome tracing format
 
-A tf::ChromeObserver inherits tf::ObserverInterface and defines methods to dump
-the observed thread activities into a format that can be visualized through
-@ChromeTracing.
+tf::ChromeObserver 继承了 tf::ObserverInterface 并定义了将观察到的线程活动转储为可以通过@ChromeTracing 可视化的格式的方法。
 
 @code{.cpp}
 tf::Taskflow taskflow;
@@ -230,7 +220,7 @@ class ChromeObserver : public ObserverInterface {
 
   friend class Executor;
   
-  // data structure to record each task execution
+  // 记录每个 task 执行的数据结构  
   struct Segment {
 
     std::string name;
@@ -245,7 +235,7 @@ class ChromeObserver : public ObserverInterface {
     );
   };
   
-  // data structure to store the entire execution timeline
+  // 存储整个执行时间线的数据结构
   struct Timeline {
     observer_stamp_t origin;
     std::vector<std::vector<Segment>> segments;
@@ -254,25 +244,16 @@ class ChromeObserver : public ObserverInterface {
 
   public:
 
-    /**
-    @brief dumps the timelines into a @ChromeTracing format through 
-           an output stream 
-    */
+    // 通过输出流将时间线转储为@ChromeTracing 格式
     void dump(std::ostream& ostream) const;
 
-    /**
-    @brief dumps the timelines into a @ChromeTracing format
-    */
+    // 将时间轴转储为@ChromeTracing 格式
     inline std::string dump() const;
 
-    /**
-    @brief clears the timeline data
-    */
+    // 清除时间线数据
     inline void clear();
 
-    /**
-    @brief queries the number of tasks observed
-    */
+    // 查询观察到的任务数
     inline size_t num_tasks() const;
 
   private:
@@ -285,9 +266,7 @@ class ChromeObserver : public ObserverInterface {
 };  
     
 // constructor
-inline ChromeObserver::Segment::Segment(
-  const std::string& n, observer_stamp_t b, observer_stamp_t e
-) :
+inline ChromeObserver::Segment::Segment(const std::string& n, observer_stamp_t b, observer_stamp_t e) :
   name {n}, beg {b}, end {e} {
 }
 
@@ -318,9 +297,7 @@ inline void ChromeObserver::on_exit(WorkerView wv, TaskView tv) {
   auto beg = _timeline.stacks[w].top();
   _timeline.stacks[w].pop();
 
-  _timeline.segments[w].emplace_back(
-    tv.name(), beg, observer_stamp_t::clock::now()
-  );
+  _timeline.segments[w].emplace_back( tv.name(), beg, observer_stamp_t::clock::now() );
 }
 
 // Function: clear
@@ -362,8 +339,7 @@ inline void ChromeObserver::dump(std::ostream& os) const {
       os << "\"name\":\"";
       if(_timeline.segments[w][i].name.empty()) {
         os << w << '_' << i;
-      }
-      else {
+      } else {
         os << _timeline.segments[w][i].name;
       }
       os << "\",";
@@ -372,12 +348,8 @@ inline void ChromeObserver::dump(std::ostream& os) const {
       os << "\"ph\":\"X\","
          << "\"pid\":1,"
          << "\"tid\":" << w << ','
-         << "\"ts\":" << duration_cast<microseconds>(
-                           _timeline.segments[w][i].beg - _timeline.origin
-                         ).count() << ','
-         << "\"dur\":" << duration_cast<microseconds>(
-                           _timeline.segments[w][i].end - _timeline.segments[w][i].beg
-                         ).count();
+         << "\"ts\":" << duration_cast<microseconds>( _timeline.segments[w][i].beg - _timeline.origin ).count() << ','
+         << "\"dur\":" << duration_cast<microseconds>( _timeline.segments[w][i].end - _timeline.segments[w][i].beg).count();
 
       if(i != _timeline.segments[w].size() - 1) {
         os << "},";
@@ -399,8 +371,7 @@ inline std::string ChromeObserver::dump() const {
 
 // Function: num_tasks
 inline size_t ChromeObserver::num_tasks() const {
-  return std::accumulate(
-    _timeline.segments.begin(), _timeline.segments.end(), size_t{0}, 
+  return std::accumulate( _timeline.segments.begin(), _timeline.segments.end(), size_t{0}, 
     [](size_t sum, const auto& exe){ 
       return sum + exe.size(); 
     }
@@ -416,9 +387,7 @@ inline size_t ChromeObserver::num_tasks() const {
 
 @brief class to create an observer based on the built-in taskflow profiler format
 
-A tf::TFProfObserver inherits tf::ObserverInterface and defines methods to dump
-the observed thread activities into a format that can be visualized through
-@TFProf.
+tf::TFProfObserver 继承了 tf::ObserverInterface 并定义了将观察到的线程活动转储为可以通过@TFProf 可视化的格式的方法。
 
 @code{.cpp}
 tf::Taskflow taskflow;
@@ -466,7 +435,6 @@ class TFProfObserver : public ObserverInterface {
     std::array<TaskSummary, TASK_TYPES.size()> tsum;
 
     float avg_span() const { return total_span * 1.0f / count; }
-    //return count < 2 ? 0.0f : total_delay * 1.0f / (count-1); 
   };
   
   /** @private */
@@ -481,40 +449,25 @@ class TFProfObserver : public ObserverInterface {
 
   public:
 
-    /**
-    @brief dumps the timelines into a @TFProf format through 
-           an output stream
-    */
+    // 通过输出流将时间线转储为@TFProf 格式
     void dump(std::ostream& ostream) const;
 
-    /**
-    @brief dumps the timelines into a JSON string
-    */
+    // 将时间线转储到 JSON 字符串中
     std::string dump() const;
 
-    /**
-    @brief shows the summary report through an output stream
-    */
+    // shows the summary report through an output stream
     void summary(std::ostream& ostream) const;
 
-    /**
-    @brief returns the summary report in a string
-    */
+    // 以字符串形式返回摘要报告
     std::string summary() const;
 
-    /**
-    @brief clears the timeline data
-    */
+    // 清除时间线数据
     void clear();
 
-    /**
-    @brief queries the number of tasks observed
-    */
+    // 查询观察到的任务数
     size_t num_tasks() const;
     
-    /**
-    @brief queries the number of observed workers
-    */
+    // 查询观察到的 workers 数量
     size_t num_workers() const;
 
   private:
@@ -663,10 +616,6 @@ inline void TFProfObserver::Summary::dump_wsum(std::ostream& os) const {
        << std::setw(min_w+2) << ws.min_span
        << std::setw(max_w+2) << ws.max_span
        << '\n';
-    
-    //for(size_t j=0; j<w_w+l_w+t_w+4; j++) os << ' ';
-    //for(size_t j=0; j<c_w+d_w+avg_w+min_w+max_w+8; j++) os << '-';
-    //os <<'\n';
   }
 }
 
@@ -679,7 +628,7 @@ inline void TFProfObserver::Summary::dump(std::ostream& os) const {
 
 // Procedure: set_up
 inline void TFProfObserver::set_up(size_t num_workers) {
-  _timeline.uid = unique_id<size_t>();
+  _timeline.uid    = unique_id<size_t>();
   _timeline.origin = observer_stamp_t::clock::now();
   _timeline.segments.resize(num_workers);
   _stacks.resize(num_workers);
@@ -862,16 +811,6 @@ inline void TFProfObserver::summary(std::ostream& os) const {
         y.total_span += t;
         y.min_span = (y.count == 1) ? t : std::min(t, y.min_span);
         y.max_span = (y.count == 1) ? t : std::max(t, y.max_span);
-        
-        // update the delay
-        //if(i) {
-        //  size_t d = duration_cast<nanoseconds>(
-        //    s.beg - _timeline.segments[w][l][i-1].end
-        //  ).count();
-        //  ws.total_delay += d;
-        //  ws.min_delay = (i == 1) ? d : std::min(ws.min_delay, d);
-        //  ws.max_delay = (i == 1) ? d : std::max(ws.max_delay, d);
-        //}
       }
       summary.wsum.push_back(ws);
     }
@@ -955,10 +894,7 @@ class TFProfManager {
 };
 
 // constructor
-inline TFProfManager::TFProfManager() :
-  _fpath {get_env(TF_ENABLE_PROFILER)} {
-
-}
+inline TFProfManager::TFProfManager()   _fpath {get_env(TF_ENABLE_PROFILER)} {}
 
 // Procedure: manage
 inline void TFProfManager::_manage(std::shared_ptr<TFProfObserver> observer) {
@@ -968,7 +904,7 @@ inline void TFProfManager::_manage(std::shared_ptr<TFProfObserver> observer) {
 
 // Procedure: dump
 inline void TFProfManager::dump(std::ostream& os) const {
-  for(size_t i=0; i<_observers.size(); ++i) {
+  for(size_t i = 0; i < _observers.size(); ++i) {
     if(i) os << ',';
     _observers[i]->dump(os); 
   }
@@ -989,7 +925,7 @@ inline TFProfManager::~TFProfManager() {
       serializer(data);
     }
     // .json
-    else { // if(_fpath.rfind(".json") != std::string::npos) {
+    else { 
       ofs << "[\n";
       for(size_t i=0; i<_observers.size(); ++i) {
         if(i) ofs << ',';
@@ -998,7 +934,7 @@ inline TFProfManager::~TFProfManager() {
       ofs << "]\n";
     }
   }
-  // do a summary report in stderr for each observer
+  // 在 stderr 中为每个观察者做一个总结报告
   else {
     std::ostringstream oss;
     for(size_t i=0; i<_observers.size(); ++i) {
@@ -1013,6 +949,7 @@ inline TFProfManager& TFProfManager::get() {
   static TFProfManager mgr;
   return mgr;
 }
+
 
 // ----------------------------------------------------------------------------
 // Identifier for Each Built-in Observer
@@ -1029,9 +966,7 @@ enum class ObserverType : int {
   UNDEFINED
 };
 
-/**
-@brief convert an observer type to a human-readable string
-*/
+// 将 observer 类型转换为人类可读的字符串
 inline const char* to_string(ObserverType type) {
   switch(type) {
     case ObserverType::TFPROF: return "tfprof";

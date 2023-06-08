@@ -14,11 +14,10 @@ TF_FORCE_INLINE auto make_reduce_task(B beg, E end, T& init, O bop, P&& part) {
   using E_t = std::decay_t<unwrap_ref_decay_t<E>>;
   using namespace std::string_literals;
 
-  return 
-  [b=beg, e=end, &r=init, bop, part=std::forward<P>(part)] 
+  return  [b=beg, e=end, &r=init, bop, part=std::forward<P>(part)] 
   (Runtime& rt) mutable {
 
-    // fetch the iterator values
+    // 获取迭代器值
     B_t beg = b;
     E_t end = e;
 
@@ -44,8 +43,7 @@ TF_FORCE_INLINE auto make_reduce_task(B beg, E end, T& init, O bop, P&& part) {
 
       for(size_t w=0, curr_b=0; w<W && curr_b < N; ++w, curr_b += chunk_size) {
         
-        // we force chunk size to be at least two because the temporary
-        // variable sum need to avoid copy at the first step
+        // 我们强制块大小至少为两个，因为临时变量 sum 需要避免在第一步复制  
         chunk_size = std::max(size_t{2}, part.adjusted_chunk_size(N, W, w));
         
         launch_loop(W, w, rt, [=, &bop, &mtx, &r, &part] () mutable {
@@ -83,7 +81,6 @@ TF_FORCE_INLINE auto make_reduce_task(B beg, E end, T& init, O bop, P&& part) {
           // final reduce
           std::lock_guard<std::mutex> lock(mtx);
           r = bop(r, sum);
-
         });
       }
       rt.join();
@@ -133,9 +130,7 @@ TF_FORCE_INLINE auto make_reduce_task(B beg, E end, T& init, O bop, P&& part) {
 
 // Function: make_transform_reduce_task
 template <typename B, typename E, typename T, typename BOP, typename UOP, typename P>
-TF_FORCE_INLINE auto make_transform_reduce_task(
-  B beg, E end, T& init, BOP bop, UOP uop, P&& part
-) {
+TF_FORCE_INLINE auto make_transform_reduce_task( B beg, E end, T& init, BOP bop, UOP uop, P&& part) {
 
   using B_t = std::decay_t<unwrap_ref_decay_t<B>>;
   using E_t = std::decay_t<unwrap_ref_decay_t<E>>;
@@ -181,11 +176,7 @@ TF_FORCE_INLINE auto make_transform_reduce_task(
             std::lock_guard<std::mutex> lock(mtx);
             r = bop(std::move(r), uop(*beg));
             return;
-          }
-
-          //auto beg1 = beg++;
-          //auto beg2 = beg++;
-          //T sum = bop(uop(*beg1), uop(*beg2));
+          } 
 
           T sum = (chunk_size == 1) ? uop(*beg++) : bop(uop(*beg++), uop(*beg++));
         
@@ -209,7 +200,6 @@ TF_FORCE_INLINE auto make_transform_reduce_task(
           // final reduce
           std::lock_guard<std::mutex> lock(mtx);
           r = bop(std::move(r), std::move(sum));
-
         });
       }
       
@@ -245,7 +235,7 @@ TF_FORCE_INLINE auto make_transform_reduce_task(
         part.loop(N, W, next, 
           [&, prev_e=s0+2](size_t curr_b, size_t curr_e) mutable {
             std::advance(beg, curr_b - prev_e);
-            for(size_t x=curr_b; x<curr_e; x++, beg++) {
+            for(size_t x=curr_b; x < curr_e; x++, beg++) {
               sum = bop(std::move(sum), uop(*beg));
             }
             prev_e = curr_e;
@@ -262,9 +252,7 @@ TF_FORCE_INLINE auto make_transform_reduce_task(
 
 // Function: make_transform_reduce_task with two binary operation
 template <typename B1, typename E1, typename B2, typename T, typename BOP_R, typename BOP_T, typename P>
-TF_FORCE_INLINE auto make_transform_reduce_task(
-  B1 beg1, E1 end1, B2 beg2, T& init, BOP_R bop_r, BOP_T bop_t, P&& part
-) {
+TF_FORCE_INLINE auto make_transform_reduce_task( B1 beg1, E1 end1, B2 beg2, T& init, BOP_R bop_r, BOP_T bop_t, P&& part) {
 
   using B1_t = std::decay_t<unwrap_ref_decay_t<B1>>;
   using E1_t = std::decay_t<unwrap_ref_decay_t<E1>>;
@@ -339,7 +327,6 @@ TF_FORCE_INLINE auto make_transform_reduce_task(
           // final reduce
           std::lock_guard<std::mutex> lock(mtx);
           r = bop_r(std::move(r), std::move(sum));
-
         }); 
       }   
     
@@ -403,9 +390,7 @@ TF_FORCE_INLINE auto make_transform_reduce_task(
 // Function: reduce
 template <typename B, typename E, typename T, typename O, typename P>
 Task FlowBuilder::reduce(B beg, E end, T& init, O bop, P&& part) {
-  return emplace(detail::make_reduce_task(
-    beg, end, init, bop, std::forward<P>(part)
-  ));
+  return emplace(detail::make_reduce_task( beg, end, init, bop, std::forward<P>(part) ));
 }
 
 // ----------------------------------------------------------------------------
@@ -414,22 +399,14 @@ Task FlowBuilder::reduce(B beg, E end, T& init, O bop, P&& part) {
 
 // Function: transform_reduce
 template <typename B, typename E, typename T, typename BOP, typename UOP, typename P>
-Task FlowBuilder::transform_reduce(
-  B beg, E end, T& init, BOP bop, UOP uop, P&& part
-) {
-  return emplace(detail::make_transform_reduce_task(
-    beg, end, init, bop, uop, std::forward<P>(part)
-  ));
+Task FlowBuilder::transform_reduce( B beg, E end, T& init, BOP bop, UOP uop, P&& part) {
+  return emplace(detail::make_transform_reduce_task( beg, end, init, bop, uop, std::forward<P>(part)));
 }
 
 // Function: transform_reduce
 template <typename B1, typename E1, typename B2, typename T, typename BOP_R, typename BOP_T, typename P>
-Task FlowBuilder::transform_reduce(
-  B1 beg1, E1 end1, B2 beg2, T& init, BOP_R bop_r, BOP_T bop_t, P&& part
-) {
-  return emplace(detail::make_transform_reduce_task(
-    beg1, end1, beg2, init, bop_r, bop_t, std::forward<P>(part)
-  ));
+Task FlowBuilder::transform_reduce( B1 beg1, E1 end1, B2 beg2, T& init, BOP_R bop_r, BOP_T bop_t, P&& part) {
+  return emplace(detail::make_transform_reduce_task( beg1, end1, beg2, init, bop_r, bop_t, std::forward<P>(part) ));
 }
 
 }  // end of namespace tf -----------------------------------------------------

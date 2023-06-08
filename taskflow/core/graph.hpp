@@ -30,15 +30,11 @@ namespace tf {
 
 @brief class to create a graph object
 
-A graph is the ultimate storage for a task dependency graph and is the main
-gateway to interact with an executor.
-A graph manages a set of nodes in a global object pool that animates and
-recycles node objects efficiently without going through repetitive and
-expensive memory allocations and deallocations.
-This class is mainly used for creating an opaque graph object in a custom
-class to interact with the executor through taskflow composition.
-
-A graph object is move-only.
+graph 是  task dependency graph 的最终存储，是与 executor 交互的主要网关。 
+graph 管理 global object pool 中的一组节点，该对象池有效地激活和回收节点对象，而无需经过重复且昂贵的内存分配和释放。
+该类主要用于在自定义类中创建一个不透明的图形对象，通过  taskflow composition 与 executor 进行交互。
+ 
+graph object 是 move-only 的。
 */
 class Graph {
 
@@ -49,50 +45,26 @@ class Graph {
   friend class Executor;
 
   public:
-
-    /**
-    @brief constructs a graph object
-    */
+ 
     Graph() = default;
-
-    /**
-    @brief disabled copy constructor
-    */
+ 
     Graph(const Graph&) = delete;
-
-    /**
-    @brief constructs a graph using move semantics
-    */
+ 
     Graph(Graph&&);
 
-    /**
-    @brief destructs the graph object
-    */
     ~Graph();
-
-    /**
-    @brief disabled copy assignment operator
-    */
+    
     Graph& operator = (const Graph&) = delete;
-
-    /**
-    @brief assigns a graph using move semantics
-    */
+ 
     Graph& operator = (Graph&&);
 
-    /**
-    @brief queries if the graph is empty
-    */
+    // 查询 graph 是否为空
     bool empty() const;
 
-    /**
-    @brief queries the number of nodes in the graph
-    */
+    // 查询 graph 中的节点数
     size_t size() const;
 
-    /**
-    @brief clears the graph
-    */
+    // 清除 graph
     void clear();
 
   private:
@@ -113,14 +85,14 @@ class Graph {
 
 // ----------------------------------------------------------------------------
 
+
+
 /**
 @class Runtime
 
 @brief class to include a runtime object in a task
 
-A runtime object allows users to interact with the
-scheduling runtime inside a task, such as scheduling an active task,
-spawning a subflow, and so on.
+runtime object 允许用户与任务内的 scheduling runtime 进行交互，例如调度活动任务、生成 subflow 等。
 
 @code{.cpp}
 tf::Task A, B, C, D;
@@ -137,9 +109,7 @@ A.precede(B, C, D);
 executor.run(taskflow).wait();
 @endcode
 
-A runtime object is associated with the worker and the executor
-that runs the task.
-
+ runtime object 与  runs the task  的 worker  和 executor 相关联。 
 */
 class Runtime {
 
@@ -150,10 +120,8 @@ class Runtime {
 
   /**
   @brief obtains the running executor
-
-  The running executor of a runtime task is the executor that runs
-  the parent taskflow of that runtime task.
-
+ runtime task  的 running executor  是运行该 runtime task 的  parent taskflow  的 executor 
+ 
   @code{.cpp}
   tf::Executor executor;
   tf::Taskflow taskflow;
@@ -165,19 +133,18 @@ class Runtime {
   */
   Executor& executor();
 
+
+
   /**
   @brief schedules an active task immediately to the worker's queue
 
   @param task the given active task to schedule immediately
 
-  This member function immediately schedules an active task to the
-  task queue of the associated worker in the runtime task.
-  An active task is a task in a running taskflow.
-  The task may or may not be running, and scheduling that task
-  will immediately put the task into the task queue of the worker
-  that is running the runtime task.
-  Consider the following example:
 
+  该成员函数立即将一个  active task 调度到  runtime task 中关联的 worker 的   task queue 中。 
+ active task  是正在运行的 taskflow 中的 task 
+ 该 task 可能正在运行也可能未运行，调度该 task 会立即将该 task 放入运行  runtime task 的工作线程的 task queue 中。 考虑以下示例：
+ 
   @code{.cpp}
   tf::Task A, B, C, D;
   std::tie(A, B, C, D) = taskflow.emplace(
@@ -193,29 +160,22 @@ class Runtime {
   executor.run(taskflow).wait();
   @endcode
 
-  The executor will first run the condition task @c A which returns @c 0
-  to inform the scheduler to go to the runtime task @c B.
-  During the execution of @c B, it directly schedules task @c C without
-  going through the normal taskflow graph scheduling process.
-  At this moment, task @c C is active because its parent taskflow is running.
-  When the taskflow finishes, we will see both @c B and @c C in the output.
+执行器会先运行条件任务  A，返回  0，通知调度器去执行运行时任务  B。
+ B在执行过程中，直接调度任务 C，不经过正常 任务流图调度过程。 此时，任务 C 处于活动状态，因为它的父任务流正在运行。 当任务流完成时，我们将在输出中看到 B 和 C。
   */
   void schedule(Task task);
   
+
+
   /**
   @brief runs the given callable asynchronously
 
   @tparam F callable type
   @param f callable object
     
-  The method creates an asynchronous task to launch the given
-  function on the given arguments.
-  The difference to tf::Executor::async is that the created asynchronous task
-  pertains to the runtime.
-  When the runtime joins, all asynchronous tasks created from the runtime
-  are guaranteed to finish after the join returns.
-  For example:
 
+ 该方法创建一个异步任务以在给定参数上启动给定函数。 与 tf::Executor::async 的区别在于创建的异步任务属于 runtime 
+当 runtime joins 时，从 runtime 创建的所有异步任务都保证在 join 返回后完成。 例如：
   @code{.cpp}
   std::atomic<int> counter(0);
   taskflow.emplace([&](tf::Runtime& rt){
@@ -225,28 +185,23 @@ class Runtime {
     fu2.get();
     assert(counter == 2);
     
-    // spawn 100 asynchronous tasks from the worker of the runtime
+    // 从运行时的 worker 产生 100 个异步任务
     for(int i=0; i<100; i++) {
       rt.async([&](){ counter++; });
     }
     
-    // explicit join 100 asynchronous tasks
+    // 显式加入 100 个异步任务  
     rt.join();
     assert(counter == 102);
   });
   @endcode
 
-  This method is thread-safe and can be called by multiple workers
-  that hold the reference to the runtime.
-  For example, the code below spawns 100 tasks from the worker of
-  a runtime, and each of the 100 tasks spawns another task
-  that will be run by another worker.
-  
+此方法是线程安全的，可以由持有 reference to the runtime 的多个 workers 调用。 
+例如，下面的代码从一个 runtime 的 worker 中生成 100 个 tasks ，这 100 个 tasks 中的每一个都会生成另一个 将由 另一个 worker 运行的 task
+   
   @code{.cpp}
   std::atomic<int> counter(0);
   taskflow.emplace([&](tf::Runtime& rt){
-    // worker of the runtime spawns 100 tasks each spawning another task
-    // that will be run by another worker
     for(int i=0; i<100; i++) {
       rt.async([&](){ 
         counter++; 
@@ -254,7 +209,7 @@ class Runtime {
       });
     }
     
-    // explicit join 100 asynchronous tasks
+    // 显式 join  100个异步任务
     rt.join();
     assert(counter == 200);
   });
@@ -263,8 +218,11 @@ class Runtime {
   template <typename F>
   auto async(F&& f);
   
+
+
+
   /**
-  @brief similar to tf::Runtime::async but assigns the task a name
+  @brief 类似于 tf::Runtime::async 但为 task 分配了一个名称 
 
   @tparam F callable type
 
@@ -277,10 +235,11 @@ class Runtime {
     future.get();
   });
   @endcode
-
   */
   template <typename F>
   auto async(const std::string& name, F&& f);
+
+
 
   /**
   @brief runs the given function asynchronously without returning any future object
@@ -288,8 +247,7 @@ class Runtime {
   @tparam F callable type
   @param f callable
 
-  This member function is more efficient than tf::Runtime::async
-  and is encouraged to use when there is no data returned.
+该成员函数比 tf::Runtime::async 更高效，鼓励在没有数据返回时使用。这个成员函数是线程安全的。
 
   @code{.cpp}
   std::atomic<int> counter(0);
@@ -301,8 +259,6 @@ class Runtime {
     assert(counter == 100);
   });
   @endcode
-
-  This member function is thread-safe.
   */
   template <typename F>
   void silent_async(F&& f);
@@ -324,6 +280,8 @@ class Runtime {
   template <typename F>
   void silent_async(const std::string& name, F&& f);
   
+
+
   /**
   @brief similar to tf::Runtime::silent_async but the caller must be the worker of the runtime
 
@@ -332,9 +290,7 @@ class Runtime {
   @param name assigned name to the task
   @param f callable
 
-  The method bypass the check of the caller worker from the executor 
-  and thus can only called by the worker of this runtime.
-
+该方法绕过执行者对调用方工作线程的检查，因此只能由本 runtime 的 worker 调用。 
   @code{.cpp}
   taskflow.emplace([&](tf::Runtime& rt){
     // running by the worker of this runtime
@@ -346,13 +302,15 @@ class Runtime {
   template <typename F>
   void silent_async_unchecked(const std::string& name, F&& f);
 
+
+
   /**
   @brief co-runs the given target and waits until it completes
   
-  A target can be one of the following forms:
-    + a dynamic task to spawn a subflow or
-    + a composable graph object with `tf::Graph& T::graph()` defined
-
+ target 可以是以下形式之一：
+     + 生成 subflow 的 dynamic task 或
+     + 定义了 `tf::Graph& T::graph()` 的 composable graph object  
+ 
   @code{.cpp}
   // co-run a subflow and wait until all tasks complete
   taskflow.emplace([](tf::Runtime& rt){
@@ -372,45 +330,41 @@ class Runtime {
   executor.run(taskflow2).wait();
   @endcode
 
-  Although tf::Runtime::corun blocks until the operation completes, 
-  the caller thread (worker) is not blocked (e.g., sleeping or holding any lock). 
-  Instead, the caller thread joins the work-stealing loop of the executor 
-  and returns when all tasks in the target completes.
+虽然 tf::Runtime::corun 会阻塞直到操作完成，但 caller thread （工作者）不会被阻塞（例如，休眠或持有任何锁）。
+相反，caller thread joins  executor 的工作窃取循环，并在目标中的所有任务完成时返回。
   */
   template <typename T>
   void corun(T&& target);
+
+
 
   /**
   @brief keeps running the work-stealing loop until the predicate becomes true
   
   @tparam P predicate type
   @param predicate a boolean predicate to indicate when to stop the loop
-
-  The method keeps the caller worker running in the work-stealing loop
-  until the stop predicate becomes true.
+该方法使 caller worker  在工作窃取循环中运行，直到停止谓词变为真。
   */
   template <typename P>
   void corun_until(P&& predicate);
   
+
+  
   /**
   @brief joins all asynchronous tasks spawned by this runtime
-
-  Immediately joins all asynchronous tasks (tf::Runtime::async,
-  tf::Runtime::silent_async).
-  Unlike tf::Subflow::join, you can join multiples times from
-  a tf::Runtime object.
+立即 joins 所有异步任务（tf::Runtime::async、tf::Runtime::silent_async）。 与 tf::Subflow::join 不同，您可以从 tf::Runtime 对象 joins 多次。 
     
   @code{.cpp}
   std::atomic<size_t> counter{0};
   taskflow.emplace([&](tf::Runtime& rt){
-    // spawn 100 async tasks and join
+    //  生成 100 个异步任务并 join 
     for(int i=0; i<100; i++) {
       rt.silent_async([&](){ counter++; });
     }
     rt.join();
     assert(counter == 100);
     
-    // spawn another 100 async tasks and join
+    // 生成另外 100 个异步任务并 join 
     for(int i=0; i<100; i++) {
       rt.silent_async([&](){ counter++; });
     }
@@ -420,74 +374,53 @@ class Runtime {
   @endcode
 
   @attention
-  Only the worker of this tf::Runtime can issue join.
+  只有此 tf::Runtime 的工作程序才能  join.
   */
   inline void join();
 
-  /**
-  @brief acquire a reference to the underlying worker
-  */
+
+  // 获取对底层 worker 的引用
   inline Worker& worker();
 
   protected:
-  
-  /**
-  @private
-  */
+   
   explicit Runtime(Executor&, Worker&, Node*);
-  
-  /**
-  @private
-  */
+   
   Executor& _executor;
-  
-  /**
-  @private
-  */
+   
   Worker& _worker;
-  
-  /**
-  @private
-  */
+   
   Node* _parent;
-
-  /**
-  @private
-  */
+ 
   template <typename F>
   auto _async(Worker& w, const std::string& name, F&& f);
-  
-  /**
-  @private
-  */
+   
   template <typename F>
   void _silent_async(Worker& w, const std::string& name, F&& f);
 };
-
-// constructor
+ 
 inline Runtime::Runtime(Executor& e, Worker& w, Node* p) :
   _executor{e},
   _worker  {w},
   _parent  {p}{
 }
-
-// Function: executor
+ 
 inline Executor& Runtime::executor() {
   return _executor;
 }
-
-// Function: worker
+ 
 inline Worker& Runtime::worker() {
   return _worker;
 }
+
+
+
 
 // ----------------------------------------------------------------------------
 // Node
 // ----------------------------------------------------------------------------
 
-/**
-@private
-*/
+// private
 class Node {
 
   friend class Graph;
@@ -515,16 +448,16 @@ class Node {
 
   using Placeholder = std::monostate;
 
+
   // static work handle
   struct Static {
 
     template <typename C>
     Static(C&&);
 
-    std::variant<
-      std::function<void()>, std::function<void(Runtime&)>
-    > work;
+    std::variant<  std::function<void()>, std::function<void(Runtime&)>  > work;
   };
+
 
   // dynamic work handle
   struct Dynamic {
@@ -536,16 +469,16 @@ class Node {
     Graph subgraph;
   };
 
+
   // condition work handle
   struct Condition {
 
     template <typename C>
     Condition(C&&);
     
-    std::variant<
-      std::function<int()>, std::function<int(Runtime&)>
-    > work;
+    std::variant< std::function<int()>, std::function<int(Runtime&)> > work;
   };
+
 
   // multi-condition work handle
   struct MultiCondition {
@@ -553,10 +486,9 @@ class Node {
     template <typename C>
     MultiCondition(C&&);
 
-    std::variant<
-      std::function<SmallVector<int>()>, std::function<SmallVector<int>(Runtime&)>
-    > work;
+    std::variant< std::function<SmallVector<int>()>, std::function<SmallVector<int>(Runtime&)> > work;
   };
+
 
   // module work handle
   struct Module {
@@ -567,6 +499,7 @@ class Node {
     Graph& graph;
   };
 
+
   // Async work
   struct Async {
 
@@ -576,6 +509,7 @@ class Node {
     std::function<void()> work;
   };
   
+
   // silent dependent async
   struct DependentAsync {
     
@@ -631,19 +565,16 @@ class Node {
 
   private:
 
-  std::string _name;
-  
-  unsigned _priority {0};
-  
-  Topology* _topology {nullptr};
-  Node* _parent {nullptr};
+  std::string         _name;
+  unsigned            _priority {0};
+  Topology*           _topology {nullptr};
+  Node*               _parent {nullptr};
+  void*               _data {nullptr};
 
-  void* _data {nullptr};
+  SmallVector<Node*>  _successors;
+  SmallVector<Node*>  _dependents;
 
-  SmallVector<Node*> _successors;
-  SmallVector<Node*> _dependents;
-
-  std::atomic<int> _state {0};
+  std::atomic<int>    _state {0};
   std::atomic<size_t> _join_counter {0};
 
   std::unique_ptr<Semaphores> _semaphores;
@@ -660,83 +591,51 @@ class Node {
   SmallVector<Node*> _release_all();
 };
 
-// ----------------------------------------------------------------------------
-// Node Object Pool
-// ----------------------------------------------------------------------------
-
-/**
-@private
-*/
+ 
+// private    Node Object Pool
 inline ObjectPool<Node> node_pool;
 
-// ----------------------------------------------------------------------------
-// Definition for Node::Static
-// ----------------------------------------------------------------------------
-
-// Constructor
+  
+// Constructor  Node::Static
 template <typename C>
-Node::Static::Static(C&& c) : work {std::forward<C>(c)} {
-}
+Node::Static::Static(C&& c) : work {std::forward<C>(c)} {}
 
-// ----------------------------------------------------------------------------
-// Definition for Node::Dynamic
-// ----------------------------------------------------------------------------
-
-// Constructor
+ 
+// Constructor   Node::Dynamic
 template <typename C>
-Node::Dynamic::Dynamic(C&& c) : work {std::forward<C>(c)} {
-}
+Node::Dynamic::Dynamic(C&& c) : work {std::forward<C>(c)} {}
+ 
 
-// ----------------------------------------------------------------------------
-// Definition for Node::Condition
-// ----------------------------------------------------------------------------
-
-// Constructor
+// Constructor  Node::Condition
 template <typename C>
-Node::Condition::Condition(C&& c) : work {std::forward<C>(c)} {
-}                                        
+Node::Condition::Condition(C&& c) : work {std::forward<C>(c)} {}                                        
 
-// ----------------------------------------------------------------------------
-// Definition for Node::MultiCondition
-// ----------------------------------------------------------------------------
 
-// Constructor
+
+// Constructor  Node::MultiCondition
 template <typename C>
-Node::MultiCondition::MultiCondition(C&& c) : work {std::forward<C>(c)} {
-}
+Node::MultiCondition::MultiCondition(C&& c) : work {std::forward<C>(c)} {}
 
-// ----------------------------------------------------------------------------
-// Definition for Node::Module
-// ----------------------------------------------------------------------------
+ 
 
-// Constructor
+// Constructor   Node::Module
 template <typename T>
-inline Node::Module::Module(T& obj) : graph{ obj.graph() } {
-}
+inline Node::Module::Module(T& obj) : graph{ obj.graph() } {}
 
-// ----------------------------------------------------------------------------
-// Definition for Node::Async
-// ----------------------------------------------------------------------------
 
-// Constructor
+
+// Constructor   Node::Async
 template <typename C>
-Node::Async::Async(C&& c) : work {std::forward<C>(c)} {
-}
+Node::Async::Async(C&& c) : work {std::forward<C>(c)} {}
+ 
 
-// ----------------------------------------------------------------------------
-// Definition for Node::DependentAsync
-// ----------------------------------------------------------------------------
-
-// Constructor
+// Constructor  Node::DependentAsync
 template <typename C>
-Node::DependentAsync::DependentAsync(C&& c) : work {std::forward<C>(c)} {
-}
+Node::DependentAsync::DependentAsync(C&& c) : work {std::forward<C>(c)} {}
+ 
 
-// ----------------------------------------------------------------------------
-// Definition for Node
-// ----------------------------------------------------------------------------
 
-// Constructor
+// Constructor   Node
 template <typename... Args>
 Node::Node(
   const std::string& name, 
@@ -754,25 +653,18 @@ Node::Node(
   _handle       {std::forward<Args>(args)...} {
 }
 
-//Node::Node(Args&&... args): _handle{std::forward<Args>(args)...} {
-//}
-
+ 
 // Destructor
 inline Node::~Node() {
-  // this is to avoid stack overflow
+  //这是为了避免 stack overflow
 
   if(_handle.index() == DYNAMIC) {
-    // using std::get_if instead of std::get makes this compatible
-    // with older macOS versions
-    // the result of std::get_if is guaranteed to be non-null
-    // due to the index check above
+    // 使用 std::get_if 而不是 std::get 使其与旧的 macOS 版本兼容由于上面的索引检查，std::get_if 的结果保证为非空
     auto& subgraph = std::get_if<Dynamic>(&_handle)->subgraph;
     std::vector<Node*> nodes;
     nodes.reserve(subgraph.size());
 
-    std::move(
-      subgraph._nodes.begin(), subgraph._nodes.end(), std::back_inserter(nodes)
-    );
+    std::move(  subgraph._nodes.begin(), subgraph._nodes.end(), std::back_inserter(nodes) );
     subgraph._nodes.clear();
 
     size_t i = 0;
@@ -781,16 +673,13 @@ inline Node::~Node() {
 
       if(nodes[i]->_handle.index() == DYNAMIC) {
         auto& sbg = std::get_if<Dynamic>(&(nodes[i]->_handle))->subgraph;
-        std::move(
-          sbg._nodes.begin(), sbg._nodes.end(), std::back_inserter(nodes)
-        );
+        std::move( sbg._nodes.begin(), sbg._nodes.end(), std::back_inserter(nodes) );
         sbg._nodes.clear();
       }
 
       ++i;
     }
-
-    //auto& np = Graph::_node_pool();
+ 
     for(i=0; i<nodes.size(); ++i) {
       node_pool.recycle(nodes[i]);
     }
@@ -817,7 +706,6 @@ inline size_t Node::num_dependents() const {
 inline size_t Node::num_weak_dependents() const {
   size_t n = 0;
   for(size_t i=0; i<_dependents.size(); i++) {
-    //if(_dependents[i]->_handle.index() == Node::CONDITION) {
     if(_dependents[i]->_is_conditioner()) {
       n++;
     }
@@ -829,7 +717,6 @@ inline size_t Node::num_weak_dependents() const {
 inline size_t Node::num_strong_dependents() const {
   size_t n = 0;
   for(size_t i=0; i<_dependents.size(); i++) {
-    //if(_dependents[i]->_handle.index() != Node::CONDITION) {
     if(!_dependents[i]->_is_conditioner()) {
       n++;
     }
@@ -857,7 +744,6 @@ inline bool Node::_is_cancelled() const {
 inline void Node::_set_up_join_counter() {
   size_t c = 0;
   for(auto p : _dependents) {
-    //if(p->_handle.index() == Node::CONDITION) {
     if(p->_is_conditioner()) {
       _state.fetch_or(Node::CONDITIONED, std::memory_order_relaxed);
     }
@@ -904,9 +790,7 @@ inline SmallVector<Node*> Node::_release_all() {
 // Node Deleter
 // ----------------------------------------------------------------------------
 
-/**
-@private
-*/
+// private
 struct NodeDeleter {
   void operator ()(Node* ptr) {
     node_pool.recycle(ptr);
@@ -986,9 +870,7 @@ inline bool Graph::empty() const {
   return _nodes.empty();
 }
 
-/**
-@private
-*/
+// private
 template <typename ...ArgsT>
 Node* Graph::_emplace_back(ArgsT&&... args) {
   _nodes.push_back(node_pool.animate(std::forward<ArgsT>(args)...));

@@ -21,20 +21,14 @@ namespace tf {
 
 @brief class to create a semophore object for building a concurrency constraint
 
-A semaphore creates a constraint that limits the maximum concurrency,
-i.e., the number of workers, in a set of tasks.
-You can let a task acquire/release one or multiple semaphores before/after
-executing its work.
-A task can acquire and release a semaphore,
-or just acquire or just release it.
-A tf::Semaphore object starts with an initial count.
-As long as that count is above 0, tasks can acquire the semaphore and do
-their work.
-If the count is 0 or less, a task trying to acquire the semaphore will not run
-but goes to a waiting list of that semaphore.
-When the semaphore is released by another task,
-it reschedules all tasks on that waiting list.
+信号量创建一个限制最大并发性的约束，即一组 tasks 中的 workers 数量。
+您可以让 task 在执行其工作之前/之后获取/释放一个或多个信号量。
+task 可以获取和释放信号量，或者只是获取或只是释放它。 tf::Semaphore 对象以初始计数开始。 
+只要该计数大于 0，task 就可以获取信号量并完成它们的工作。 
+如果计数为 0 或更少，则尝试获取信号量的 task 将不会运行，而是进入该信号量的等待列表。 
+当另一个 task 释放信号量时，它会重新安排该等待列表中的所有 task  
 
+ 
 @code{.cpp}
 tf::Executor executor(8);   // create an executor of 8 workers
 tf::Taskflow taskflow;
@@ -57,12 +51,9 @@ for(auto & task : tasks) {  // each task acquires and release the semaphore
 executor.run(taskflow).wait();
 @endcode
 
-The above example creates five tasks with no dependencies between them.
-Under normal circumstances, the five tasks would be executed concurrently.
-However, this example has a semaphore with initial count 1,
-and all tasks need to acquire that semaphore before running and release that
-semaphore after they are done.
-This arrangement limits the number of concurrently running tasks to only one.
+上面的示例创建了五个任务，它们之间没有依赖关系。 正常情况下，这五个任务会同时执行。 
+但是，这个例子有一个初始计数为 1 的信号量，所有任务都需要在运行前获取该信号量，并在完成后释放该信号量。 
+这种安排将并发运行的任务数限制为只有一个。
 
 */
 class Semaphore {
@@ -73,19 +64,15 @@ class Semaphore {
 
     /**
     @brief constructs a semaphore with the given counter
-
-    A semaphore creates a constraint that limits the maximum concurrency,
-    i.e., the number of workers, in a set of tasks.
+   信号量创建一个限制最大并发性的约束，即一组任务中的工作人员数量。
 
     @code{.cpp}
-    tf::Semaphore semaphore(4);  // concurrency constraint of 4 workers
+    tf::Semaphore semaphore(4); // 4个worker的并发约束
     @endcode
     */
     explicit Semaphore(size_t max_workers);
 
-    /**
-    @brief queries the counter value (not thread-safe during the run)
-    */
+    //  查询 counter 值（运行期间不是线程安全的）  
     size_t count() const;
 
   private:
@@ -101,17 +88,14 @@ class Semaphore {
     std::vector<Node*> _release();
 };
 
-inline Semaphore::Semaphore(size_t max_workers) :
-  _counter(max_workers) {
-}
+inline Semaphore::Semaphore(size_t max_workers) : _counter(max_workers) {}
 
 inline bool Semaphore::_try_acquire_or_wait(Node* me) {
   std::lock_guard<std::mutex> lock(_mtx);
   if(_counter > 0) {
     --_counter;
     return true;
-  }
-  else {
+  } else {
     _waiters.push_back(me);
     return false;
   }

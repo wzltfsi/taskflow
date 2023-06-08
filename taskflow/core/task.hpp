@@ -35,10 +35,7 @@ enum class TaskType : int {
   UNDEFINED
 };
 
-/**
-@private
-@brief array of all task types (used for iterating task types)
-*/
+// 所有任务类型的数组（用于迭代任务类型）
 inline constexpr std::array<TaskType, 6> TASK_TYPES = {
   TaskType::PLACEHOLDER,
   TaskType::STATIC,
@@ -49,7 +46,7 @@ inline constexpr std::array<TaskType, 6> TASK_TYPES = {
 };
 
 /**
-@brief convert a task type to a human-readable string
+@brief v
 
 The name of each task type is the litte-case string of its characters.
 
@@ -84,51 +81,40 @@ inline const char* to_string(TaskType type) {
 // ----------------------------------------------------------------------------
 
 /**
-@brief determines if a callable is a dynamic task
-
-A dynamic task is a callable object constructible from std::function<void(Subflow&)>.
+@brief 确定可调用对象是否是  dynamic task
+动态任务是可从 std::function<void(Subflow&)> 构造的可调用对象。
 */
 template <typename C>
-constexpr bool is_dynamic_task_v = 
-  std::is_invocable_r_v<void, C, Subflow&> &&
-  !std::is_invocable_r_v<void, C, Runtime&>;
+constexpr bool is_dynamic_task_v =   std::is_invocable_r_v<void, C, Subflow&> && !std::is_invocable_r_v<void, C, Runtime&>;
 
 /**
-@brief determines if a callable is a condition task
-
-A condition task is a callable object constructible from std::function<int()>
-or std::function<int(tf::Runtime&)>.
+@brief 确定可调用对象是否是  condition task
+条件任务是可从 std::function<int()> 或 std::function<int(tf::Runtime&)> 构造的可调用对象。
 */
 template <typename C>
 constexpr bool is_condition_task_v = 
-  (std::is_invocable_r_v<int, C> || std::is_invocable_r_v<int, C, Runtime&>) &&
-  !is_dynamic_task_v<C>;
+  (std::is_invocable_r_v<int, C> || std::is_invocable_r_v<int, C, Runtime&>) &&  !is_dynamic_task_v<C>;
 
 /**
 @brief determines if a callable is a multi-condition task
-
-A multi-condition task is a callable object constructible from
-std::function<tf::SmallVector<int>()> or
-std::function<tf::SmallVector<int>(tf::Runtime&)>.
+multi-condition task  是可从 std::function<tf::SmallVector<int>()> 或 std::function<tf::SmallVector<int>(tf::Runtime&)> 构造的可调用对象。
 */
 template <typename C>
 constexpr bool is_multi_condition_task_v =
-  (std::is_invocable_r_v<SmallVector<int>, C> ||
-  std::is_invocable_r_v<SmallVector<int>, C, Runtime&>) &&
-  !is_dynamic_task_v<C>;
+  (std::is_invocable_r_v<SmallVector<int>, C> ||  std::is_invocable_r_v<SmallVector<int>, C, Runtime&>) && !is_dynamic_task_v<C>;
 
 /**
 @brief determines if a callable is a static task
-
-A static task is a callable object constructible from std::function<void()>
-or std::function<void(tf::Runtime&)>.
+静态任务是可从 std::function<void()> 或 std::function<void(tf::Runtime&)> 构造的可调用对象。
 */
 template <typename C>
 constexpr bool is_static_task_v =
   (std::is_invocable_r_v<void, C> || std::is_invocable_r_v<void, C, Runtime&>) &&
-  !is_condition_task_v<C> &&
-  !is_multi_condition_task_v<C> &&
-  !is_dynamic_task_v<C>;
+  !is_condition_task_v<C> && !is_multi_condition_task_v<C> && !is_dynamic_task_v<C>;
+
+
+
+
 
 // ----------------------------------------------------------------------------
 // Task
@@ -139,12 +125,8 @@ constexpr bool is_static_task_v =
 
 @brief class to create a task handle over a node in a taskflow graph
 
-A task is a wrapper over a node in a taskflow graph.
-It provides a set of methods for users to access and modify the attributes of
-the associated node in the taskflow graph.
-A task is very lightweight object (i.e., only storing a node pointer) that
-can be trivially copied around,
-and it does not own the lifetime of the associated node.
+task 是 taskflow graph 中节点的包装器。 它提供了一组方法供用户访问和修改任务流图中关联节点的属性。 
+task  是非常轻量级的对象（即，只存储一个节点指针），可以被简单地复制，并且它不拥有关联节点的生命周期。
 */
 class Task {
 
@@ -156,125 +138,86 @@ class Task {
 
   public:
 
-    /**
-    @brief constructs an empty task
-    */
     Task() = default;
 
-    /**
-    @brief constructs the task with the copy of the other task
-    */
     Task(const Task& other);
 
-    /**
-    @brief replaces the contents with a copy of the other task
-    */
     Task& operator = (const Task&);
 
-    /**
-    @brief replaces the contents with a null pointer
-    */
     Task& operator = (std::nullptr_t);
 
-    /**
-    @brief compares if two tasks are associated with the same graph node
-    */
     bool operator == (const Task& rhs) const;
 
-    /**
-    @brief compares if two tasks are not associated with the same graph node
-    */
     bool operator != (const Task& rhs) const;
 
-    /**
-    @brief queries the name of the task
-    */
+    // 查询 task 名称
     const std::string& name() const;
 
-    /**
-    @brief queries the number of successors of the task
-    */
+    // 查询任务的 successors 数 
     size_t num_successors() const;
 
-    /**
-    @brief queries the number of predecessors of the task
-    */
+    // 查询任务的 predecessors 数
     size_t num_dependents() const;
 
-    /**
-    @brief queries the number of strong dependents of the task
-    */
+    // 查询任务的强依赖(strong dependents )数量
     size_t num_strong_dependents() const;
 
-    /**
-    @brief queries the number of weak dependents of the task
-    */
+    // 查询任务的弱依赖(weak dependents）数量
     size_t num_weak_dependents() const;
+
 
     /**
     @brief assigns a name to the task
-
     @param name a @std_string acceptable string
-
     @return @c *this
     */
     Task& name(const std::string& name);
 
+
     /**
     @brief assigns a callable
-
     @tparam C callable type
-
     @param callable callable to construct a task
-
     @return @c *this
     */
     template <typename C>
     Task& work(C&& callable);
 
+
     /**
     @brief creates a module task from a taskflow
-
     @tparam T object type
     @param object a custom object that defines @c T::graph() method
-
     @return @c *this
     */
     template <typename T>
     Task& composed_of(T& object);
 
+
     /**
     @brief adds precedence links from this to other tasks
-
     @tparam Ts parameter pack
-
     @param tasks one or multiple tasks
-
     @return @c *this
     */
     template <typename... Ts>
     Task& precede(Ts&&... tasks);
 
+
     /**
     @brief adds precedence links from other tasks to this
-
     @tparam Ts parameter pack
-
     @param tasks one or multiple tasks
-
     @return @c *this
     */
     template <typename... Ts>
     Task& succeed(Ts&&... tasks);
 
-    /**
-    @brief makes the task release this semaphore
-    */
+
+    // 使 task release 此信号量
     Task& release(Semaphore& semaphore);
 
-    /**
-    @brief makes the task acquire this semaphore
-    */
+    // 让task 获得这个信号量
     Task& acquire(Semaphore& semaphore);
 
     /**
@@ -282,8 +225,7 @@ class Task {
 
     @param data pointer to user data
 
-    The following example shows how to attach user data to a task and
-    run the task iteratively while changing the data value:
+    以下示例显示如何将用户数据附加到任务并在更改数据值时迭代运行任务：
 
     @code{.cpp}
     tf::Executor executor;
@@ -298,7 +240,7 @@ class Task {
       std::cout << "data is " << d << std::endl;
     });
 
-    // run the taskflow iteratively with changing data
+    // 使用不断变化的数据迭代运行任务流
     for(data = 0; data<10; data++){
       executor.run(taskflow).wait();
     }
@@ -311,69 +253,45 @@ class Task {
     /**
     @brief assigns a priority value to the task
 
-    A priority value can be one of the following three levels, 
-    tf::TaskPriority::HIGH (numerically equivalent to 0),
-    tf::TaskPriority::NORMAL (numerically equivalent to 1), and
-    tf::TaskPriority::LOW (numerically equivalent to 2).
-    The smaller the priority value, the higher the priority.
+   优先级值可以是以下三个级别之一，tf::TaskPriority::HIGH（数值上等于 0）、tf::TaskPriority::NORMAL（数值上等于 1）
+   和 tf::TaskPriority::LOW（数值上等于 相当于2）。 优先级值越小，优先级越高。
     */
     Task& priority(TaskPriority p);
     
-    /**
-    @brief queries the priority value of the task
-    */
+
+    // 查询 task 的优先级值
     TaskPriority priority() const;
 
-    /**
-    @brief resets the task handle to null
-    */
+    // 将task 句柄重置为空
     void reset();
 
-    /**
-    @brief resets the associated work to a placeholder
-    */
+    // 将关联的 work 重置为 placeholder 
     void reset_work();
 
-    /**
-    @brief queries if the task handle points to a task node
-    */
+    // 查询 task 句柄是否指向任务节点
     bool empty() const;
 
-    /**
-    @brief queries if the task has a work assigned
-    */
+    // 查询 task 是否分配了work
     bool has_work() const;
 
-    /**
-    @brief applies an visitor callable to each successor of the task
-    */
+    // 将可调用的访问者应用于 task 的每个 successor 
     template <typename V>
     void for_each_successor(V&& visitor) const;
 
-    /**
-    @brief applies an visitor callable to each dependents of the task
-    */
+    // 将可调用的访问者应用于 task 的每个 dependents 
     template <typename V>
     void for_each_dependent(V&& visitor) const;
 
-    /**
-    @brief obtains a hash value of the underlying node
-    */
+    // 获取底层节点的哈希值
     size_t hash_value() const;
 
-    /**
-    @brief returns the task type
-    */
+    // 返回task 类型  =
     TaskType type() const;
 
-    /**
-    @brief dumps the task through an output stream
-    */
+    // 通过输出流转储任务
     void dump(std::ostream& ostream) const;
 
-    /**
-    @brief queries pointer to user data
-    */
+    // 查询指向用户数据的指针
     void* data() const;
 
 
@@ -396,7 +314,6 @@ inline Task::Task(const Task& rhs) : _node {rhs._node} {
 template <typename... Ts>
 Task& Task::precede(Ts&&... tasks) {
   (_node->_precede(tasks._node), ...);
-  //_precede(std::forward<Ts>(tasks)...);
   return *this;
 }
 
@@ -404,7 +321,6 @@ Task& Task::precede(Ts&&... tasks) {
 template <typename... Ts>
 Task& Task::succeed(Ts&&... tasks) {
   (tasks._node->_precede(_node), ...);
-  //_succeed(std::forward<Ts>(tasks)...);
   return *this;
 }
 
@@ -455,7 +371,6 @@ inline Task& Task::acquire(Semaphore& s) {
 // Function: release
 inline Task& Task::release(Semaphore& s) {
   if(!_node->_semaphores) {
-    //_node->_semaphores.emplace();
     _node->_semaphores = std::make_unique<Node::Semaphores>();
   }
   _node->_semaphores->to_release.push_back(&s);
@@ -599,9 +514,7 @@ inline TaskPriority Task::priority() const {
 // global ostream
 // ----------------------------------------------------------------------------
 
-/**
-@brief overload of ostream inserter operator for Task
-*/
+// 任务的 ostream 插入器运算符的重载
 inline std::ostream& operator << (std::ostream& os, const Task& task) {
   task.dump(os);
   return os;
@@ -613,8 +526,7 @@ inline std::ostream& operator << (std::ostream& os, const Task& task) {
 
 /**
 @class TaskView
-
-@brief class to access task information from the observer interface
+从observer interface 访问  task information  的类
 */
 class TaskView {
 
@@ -622,51 +534,33 @@ class TaskView {
 
   public:
 
-    /**
-    @brief queries the name of the task
-    */
+    // 查询任务名称
     const std::string& name() const;
 
-    /**
-    @brief queries the number of successors of the task
-    */
+    // 查询任务的successors 数
     size_t num_successors() const;
 
-    /**
-    @brief queries the number of predecessors of the task
-    */
+    // 查询任务的predecessors数
     size_t num_dependents() const;
 
-    /**
-    @brief queries the number of strong dependents of the task
-    */
+    // 查询任务的强依赖(strong dependents )数量
     size_t num_strong_dependents() const;
 
-    /**
-    @brief queries the number of weak dependents of the task
-    */
+    // 查询任务的弱依赖 (  weak dependents )数量 
     size_t num_weak_dependents() const;
 
-    /**
-    @brief applies an visitor callable to each successor of the task
-    */
+    // 将可调用的访问者应用于任务的每个 successor 
     template <typename V>
     void for_each_successor(V&& visitor) const;
 
-    /**
-    @brief applies an visitor callable to each dependents of the task
-    */
+    // 将可调用的访问者应用于任务的每个 dependents
     template <typename V>
     void for_each_dependent(V&& visitor) const;
 
-    /**
-    @brief queries the task type
-    */
+    // 查询任务类型
     TaskType type() const;
-
-    /**
-    @brief obtains a hash value of the underlying node
-    */
+    
+    // 获取底层节点的哈希值
     size_t hash_value() const;
 
   private:
@@ -748,8 +642,7 @@ namespace std {
 
 /**
 @struct hash
-
-@brief hash specialization for std::hash<tf::Task>
+std::hash<tf::Task> 的散列特化
 */
 template <>
 struct hash<tf::Task> {
@@ -760,8 +653,7 @@ struct hash<tf::Task> {
 
 /**
 @struct hash
-
-@brief hash specialization for std::hash<tf::TaskView>
+std::hash<tf::TaskView> 的散列特化
 */
 template <>
 struct hash<tf::TaskView> {

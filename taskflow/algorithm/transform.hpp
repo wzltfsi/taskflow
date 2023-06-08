@@ -8,9 +8,7 @@ namespace detail {
 
 // Function: make_transform_task
 template <typename B, typename E, typename O, typename C, typename P>
-TF_FORCE_INLINE auto make_transform_task(
-  B first1, E last1, O d_first, C c, P&& part
-) {
+TF_FORCE_INLINE auto make_transform_task(  B first1, E last1, O d_first, C c, P&& part) {
 
   using namespace std::string_literals;
 
@@ -22,7 +20,7 @@ TF_FORCE_INLINE auto make_transform_task(
   [first1, last1, d_first, c, part=std::forward<P>(part)] 
   (Runtime& rt) mutable {
 
-    // fetch the stateful values
+    // 获取状态值
     B_t beg   = first1;
     E_t end   = last1;
     O_t d_beg = d_first;
@@ -43,7 +41,7 @@ TF_FORCE_INLINE auto make_transform_task(
     // static partitioner
     if constexpr(std::is_same_v<std::decay_t<P>, StaticPartitioner>) {
       size_t chunk_size;
-      for(size_t w=0, curr_b=0; w<W && curr_b < N; ++w, curr_b += chunk_size) {
+      for(size_t w = 0, curr_b = 0; w < W && curr_b < N; ++w, curr_b += chunk_size) {
         chunk_size = part.adjusted_chunk_size(N, W, w);
         launch_loop(W, w, rt, [=, &part] () mutable {
           part.loop(N, W, curr_b, chunk_size,
@@ -81,13 +79,8 @@ TF_FORCE_INLINE auto make_transform_task(
 }
 
 // Function: make_transform_task
-template <
-  typename B1, typename E1, typename B2, typename O, typename C, typename P,
-  std::enable_if_t<!is_partitioner_v<std::decay_t<C>>, void>* = nullptr
->
-TF_FORCE_INLINE auto make_transform_task(
-  B1 first1, E1 last1, B2 first2, O d_first, C c, P&& part
-) {
+template < typename B1, typename E1, typename B2, typename O, typename C, typename P, std::enable_if_t<!is_partitioner_v<std::decay_t<C>>, void>* = nullptr >
+TF_FORCE_INLINE auto make_transform_task(  B1 first1, E1 last1, B2 first2, O d_first, C c, P&& part ) {
 
   using namespace std::string_literals;
 
@@ -169,9 +162,7 @@ TF_FORCE_INLINE auto make_transform_task(
 // Function: transform
 template <typename B, typename E, typename O, typename C, typename P>
 Task FlowBuilder::transform(B first1, E last1, O d_first, C c, P&& part) {
-  return emplace(
-    detail::make_transform_task(first1, last1, d_first, c, std::forward<P>(part))
-  );
+  return emplace( detail::make_transform_task(first1, last1, d_first, c, std::forward<P>(part)) );
 }
 
 // ----------------------------------------------------------------------------
@@ -179,17 +170,9 @@ Task FlowBuilder::transform(B first1, E last1, O d_first, C c, P&& part) {
 // ----------------------------------------------------------------------------
   
 // Function: transform
-template <
-  typename B1, typename E1, typename B2, typename O, typename C, typename P,
-  std::enable_if_t<!is_partitioner_v<std::decay_t<C>>, void>*
->
-Task FlowBuilder::transform(
-  B1 first1, E1 last1, B2 first2, O d_first, C c, P&& part
-) {
-
-  return emplace(detail::make_transform_task(
-    first1, last1, first2, d_first, c, std::forward<P>(part)
-  ));
+template <typename B1, typename E1, typename B2, typename O, typename C, typename P,std::enable_if_t<!is_partitioner_v<std::decay_t<C>>, void>*>
+Task FlowBuilder::transform( B1 first1, E1 last1, B2 first2, O d_first, C c, P&& part) {
+  return emplace(detail::make_transform_task(first1, last1, first2, d_first, c, std::forward<P>(part) ));
 }
 
 
