@@ -63,34 +63,24 @@ class PartitionerBase {
 @class GuidedPartitioner
 
 @brief class to construct a guided partitioner for scheduling parallel algorithms
-
-The size of a partition is proportional to the number of unassigned iterations 
-divided by the number of workers, 
-and the size will gradually decrease to the given chunk size.
-The last partition may be smaller than the chunk size.
+ 
+The size of a partition is proportional to the number of unassigned iterations  divided by the number of workers, 
+and the size will gradually decrease to the given chunk size. The last partition may be smaller than the chunk size.
 */
 class GuidedPartitioner : public PartitionerBase {
 
   public:
-  
-  // 
+ 
   GuidedPartitioner() : PartitionerBase{1} {}
-
-  /**
-  @brief construct a guided partitioner with the given chunk size
-  */
+ 
   explicit GuidedPartitioner(size_t sz) : PartitionerBase (sz) {}
   
   // --------------------------------------------------------------------------
-  // scheduling methods
+  // 调度方法
   // --------------------------------------------------------------------------
   
-  /**
-  @private
-  */
-  template <typename F, 
-    std::enable_if_t<std::is_invocable_r_v<void, F, size_t, size_t>, void>* = nullptr
-  >
+  // @private
+  template <typename F, std::enable_if_t<std::is_invocable_r_v<void, F, size_t, size_t>, void>* = nullptr>
   void loop(
     size_t N, 
     size_t W, 
@@ -108,7 +98,7 @@ class GuidedPartitioner : public PartitionerBase {
 
       size_t r = N - curr_b;
 
-      // fine-grained
+      // 细粒度
       if(r < p1) {
         while(1) {
           curr_b = next.fetch_add(chunk_size, std::memory_order_relaxed);
@@ -119,7 +109,7 @@ class GuidedPartitioner : public PartitionerBase {
         }
         break;
       }
-      // coarse-grained
+      // 粗粒度
       else {
         size_t q = static_cast<size_t>(p2 * r);
         if(q < chunk_size) {
@@ -127,8 +117,7 @@ class GuidedPartitioner : public PartitionerBase {
         }
         //size_t curr_e = (q <= r) ? curr_b + q : N;
         size_t curr_e = std::min(curr_b + q, N);
-        if(next.compare_exchange_strong(curr_b, curr_e, std::memory_order_relaxed,
-                                                        std::memory_order_relaxed)) {
+        if(next.compare_exchange_strong(curr_b, curr_e, std::memory_order_relaxed,  std::memory_order_relaxed)) {
           func(curr_b, curr_e);
           curr_b = next.load(std::memory_order_relaxed);
         }
@@ -136,12 +125,9 @@ class GuidedPartitioner : public PartitionerBase {
     }
   }
   
-  /**
-  @private
-  */
-  template <typename F, 
-    std::enable_if_t<std::is_invocable_r_v<bool, F, size_t, size_t>, void>* = nullptr
-  >
+
+  // private
+  template <typename F,   std::enable_if_t<std::is_invocable_r_v<bool, F, size_t, size_t>, void>* = nullptr>
   void loop_until(
     size_t N, 
     size_t W, 
@@ -180,8 +166,7 @@ class GuidedPartitioner : public PartitionerBase {
         }
         //size_t curr_e = (q <= r) ? curr_b + q : N;
         size_t curr_e = std::min(curr_b + q, N);
-        if(next.compare_exchange_strong(curr_b, curr_e, std::memory_order_relaxed,
-                                                        std::memory_order_relaxed)) {
+        if(next.compare_exchange_strong(curr_b, curr_e, std::memory_order_relaxed,  std::memory_order_relaxed)) {
           if(func(curr_b, curr_e)) {
             return;
           }
@@ -201,35 +186,23 @@ class GuidedPartitioner : public PartitionerBase {
 
 @brief class to construct a dynamic partitioner for scheduling parallel algorithms
 
-The partitioner splits iterations into many partitions each of size equal to 
-the given chunk size.
-Different partitions are distributed dynamically to workers 
-without any specific order.
+The partitioner splits iterations into many partitions each of size equal to the given chunk size.
+Different partitions are distributed dynamically to workers without any specific order.
 */
 class DynamicPartitioner : public PartitionerBase {
 
   public:
-
-  /**
-  @brief default constructor
-  */
+ 
   DynamicPartitioner() : PartitionerBase{1} {};
-  
-  /**
-  @brief construct a dynamic partitioner with the given chunk size
-  */
+   
   explicit DynamicPartitioner(size_t sz) : PartitionerBase (sz) {}
   
   // --------------------------------------------------------------------------
   // scheduling methods
   // --------------------------------------------------------------------------
   
-  /**
-  @private
-  */
-  template <typename F, 
-    std::enable_if_t<std::is_invocable_r_v<void, F, size_t, size_t>, void>* = nullptr
-  >
+  // @private
+  template <typename F,   std::enable_if_t<std::is_invocable_r_v<void, F, size_t, size_t>, void>* = nullptr>
   void loop(
     size_t N, 
     size_t, 
@@ -246,12 +219,8 @@ class DynamicPartitioner : public PartitionerBase {
     }
   }
   
-  /**
-  @private
-  */
-  template <typename F, 
-    std::enable_if_t<std::is_invocable_r_v<bool, F, size_t, size_t>, void>* = nullptr
-  >
+  //  @private
+  template <typename F,  std::enable_if_t<std::is_invocable_r_v<bool, F, size_t, size_t>, void>* = nullptr>
   void loop_until(
     size_t N, 
     size_t, 
@@ -280,54 +249,36 @@ class DynamicPartitioner : public PartitionerBase {
 
 @brief class to construct a dynamic partitioner for scheduling parallel algorithms
 
-The partitioner divides iterations into chunks and distributes chunks 
-to workers in order.
-If the chunk size is not specified (default @c 0), the partitioner resorts to a chunk size
-that equally distributes iterations into workers.
+The partitioner divides iterations into chunks and distributes chunks to workers in order.
+If the chunk size is not specified (default @c 0), the partitioner resorts to a chunk size that equally distributes iterations into workers.
 
 @code{.cpp}
 std::vector<int> data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-taskflow.for_each(
-  data.begin(), data.end(), [](int i){}, StaticPartitioner(0)
-);
+taskflow.for_each( data.begin(), data.end(), [](int i){}, StaticPartitioner(0) );
 executor.run(taskflow).run();
 @endcode
 */
 class StaticPartitioner : public PartitionerBase {
 
   public:
-
-  /**
-  @brief default constructor
-  */
+ 
   StaticPartitioner() : PartitionerBase{0} {};
-  
-  /**
-  @brief construct a dynamic partitioner with the given chunk size
-  */
+   
   explicit StaticPartitioner(size_t sz) : PartitionerBase(sz) {}
   
-  /**
-  @brief queries the adjusted chunk size
-  
-  Returns the given chunk size if it is not zero, or returns
-  <tt>N/W + (w < N%W)</tt>, where @c N is the number of iterations,
-  @c W is the number of workers, and @c w is the worker ID.
+  /**  查询调整后的 chunk size
+   如果不为零，则返回给定的块大小，否则返回 N/W + (w < N%W)，其中 N 是迭代次数，W 是工人数，w 是工人 ID。
   */
   size_t adjusted_chunk_size(size_t N, size_t W, size_t w) const {
-    return _chunk_size ? _chunk_size : N/W + (w < N%W);
+    return _chunk_size ? _chunk_size : N/W + (w < N % W);
   }
   
   // --------------------------------------------------------------------------
-  // scheduling methods
+  // 调度方法
   // --------------------------------------------------------------------------
 
-  /**
-  @private
-  */
-  template <typename F, 
-    std::enable_if_t<std::is_invocable_r_v<void, F, size_t, size_t>, void>* = nullptr
-  >
+  // @private
+  template <typename F,   std::enable_if_t<std::is_invocable_r_v<void, F, size_t, size_t>, void>* = nullptr >
   void loop(
     size_t N, 
     size_t W, 
@@ -343,12 +294,9 @@ class StaticPartitioner : public PartitionerBase {
     }
   }
   
-  /**
-  @private
-  */
-  template <typename F, 
-    std::enable_if_t<std::is_invocable_r_v<bool, F, size_t, size_t>, void>* = nullptr
-  >
+ 
+  // @private
+  template <typename F,  std::enable_if_t<std::is_invocable_r_v<bool, F, size_t, size_t>, void>* = nullptr>
   void loop_until(
     size_t N, 
     size_t W, 
@@ -376,46 +324,28 @@ class StaticPartitioner : public PartitionerBase {
 
 @brief class to construct a random partitioner for scheduling parallel algorithms
 
-Similar to tf::DynamicPartitioner, 
-the partitioner splits iterations into many partitions but each with a random
-chunk size in the range, <tt>c = [alpha * N * W, beta * N * W]</tt>.
-By default, @c alpha is <tt>0.01</tt> and @c beta is <tt>0.5</tt>, respectively.
-
+与 tf::DynamicPartitioner 类似，分区器将迭代分成许多分区，但每个分区的随机块大小在 c = [alpha * N * W, beta * N * W] 范围内。 默认情况下，alpha 分别为 0.01 和 beta 为 0.5 。
 */
 class RandomPartitioner : public PartitionerBase {
 
   public:
 
-  /**
-  @brief default constructor
-  */
   RandomPartitioner() = default;
-  
-  /**
-  @brief constructs a random partitioner 
-  */
+   
   RandomPartitioner(size_t cz) : PartitionerBase(cz) {}
-  
-  /**
-  @brief constructs a random partitioner with the given parameters
-  */
+   
   RandomPartitioner(float alpha, float beta) : _alpha {alpha}, _beta {beta} {}
 
-  /**
-  @brief queries the @c alpha value
-  */
+  // 查询 alpha 值
   float alpha() const { return _alpha; }
   
-  /**
-  @brief queries the @c beta value
-  */
+  // 查询 beta 值
   float beta() const { return _beta; }
   
   /**
-  @brief queries the range of chunk size
-  
-  @param N number of iterations
-  @param W number of workers
+  查询chunk大小的范围
+   @param N 迭代次数
+   @param W 工人数量
   */
   std::pair<size_t, size_t> chunk_size_range(size_t N, size_t W) const {
     
@@ -433,15 +363,11 @@ class RandomPartitioner : public PartitionerBase {
   }
 
   // --------------------------------------------------------------------------
-  // scheduling methods
+  // 调度方法
   // --------------------------------------------------------------------------
   
-  /**
-  @private
-  */
-  template <typename F, 
-    std::enable_if_t<std::is_invocable_r_v<void, F, size_t, size_t>, void>* = nullptr
-  >
+  //   @private
+  template <typename F,  std::enable_if_t<std::is_invocable_r_v<void, F, size_t, size_t>, void>* = nullptr>
   void loop(
     size_t N, 
     size_t W, 
@@ -464,12 +390,9 @@ class RandomPartitioner : public PartitionerBase {
     }
   }
 
-  /**
-  @private
-  */
-  template <typename F, 
-    std::enable_if_t<std::is_invocable_r_v<bool, F, size_t, size_t>, void>* = nullptr
-  >
+
+   //   @private
+  template <typename F,  std::enable_if_t<std::is_invocable_r_v<bool, F, size_t, size_t>, void>* = nullptr>
   void loop_until(
     size_t N, 
     size_t W, 
@@ -503,15 +426,13 @@ class RandomPartitioner : public PartitionerBase {
 
 /**
 @brief default partitioner set to tf::GuidedPartitioner
-
-Guided partitioner can achieve decent performance for most parallel algorithms,
-especially for those with irregular and unbalanced workload per iteration.
+Guided partitioner 可以为大多数并行算法实现不错的性能，尤其是对于那些每次迭代的工作负载不规则和不平衡的算法。
 */
 using DefaultPartitioner = GuidedPartitioner;
 
+
 /**
 @brief determines if a type is a partitioner 
-
 A partitioner is a derived type from tf::PartitionerBase.
 */
 template <typename C>

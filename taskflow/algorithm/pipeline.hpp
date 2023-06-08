@@ -78,14 +78,9 @@ class DeferredPipeflow {
 
 @brief class to create a pipeflow object used by the pipe callable
 
-Pipeflow represents a <i>scheduling token</i> in the pipeline scheduling
-framework. A pipeflow is created by the pipeline scheduler at runtime to
-pass to the pipe callable. Users can query the present statistics
-of that scheduling token, including the line identifier, pipe identifier,
-and token identifier, and build their application algorithms based on
-these statistics.
-At the first stage, users can explicitly call the stop method
-to stop the pipeline scheduler.
+Pipeflow 表示管道调度框架中的 调度令牌 。 管道流由管道调度程序在运行时创建以传递给管道可调用对象。 
+用户可以查询该调度令牌的当前统计信息，包括线路标识、管道标识和令牌标识，并基于这些统计信息构建自己的应用算法。 
+在第一阶段，用户可以显式调用 stop 方法来停止管道调度程序。
 
 @code{.cpp}
 tf::Pipe{tf::PipeType::SERIAL, [](tf::Pipeflow& pf){
@@ -96,8 +91,7 @@ tf::Pipe{tf::PipeType::SERIAL, [](tf::Pipeflow& pf){
 }};
 @endcode
 
-Pipeflow can only be created privately by the tf::Pipeline and
-be used through the pipe callable.
+Pipeflow 只能由 tf::Pipeline 私下创建，并通过可调用管道使用。
 */
 class Pipeflow {
 
@@ -111,38 +105,27 @@ class Pipeflow {
   friend class DataPipeline;
 
   public:
-
-  /**
-  @brief default constructor
-  */
+ 
   Pipeflow() = default;
 
-  /**
-  @brief queries the line identifier of the present token
-  */
+  //  queries the line identifier of the present token
   size_t line() const {
     return _line;
   }
 
-  /**
-  @brief queries the pipe identifier of the present token
-  */
+  // @brief queries the pipe identifier of the present token
   size_t pipe() const {
     return _pipe;
   }
 
-  /**
-  @brief queries the token identifier
-  */
+  // @brief queries the token identifier
   size_t token() const {
     return _token;
   }
 
   /**
   @brief stops the pipeline scheduling
-
-  Only the first pipe can call this method to stop the pipeline.
-  Calling stop from other pipes will throw exception.
+ 只有第一个管道可以调用此方法来停止管道。 从其他管道调用停止将抛出异常。
   */
   void stop() {
     if(_pipe != 0) {
@@ -151,18 +134,14 @@ class Pipeflow {
     _stop = true;
   }
 
-  /**
-  @brief queries the number of deferrals
-  */
+  //   @brief queries the number of deferrals
   size_t num_deferrals() const {
     return _num_deferrals;
   }
 
   /**
   @brief pushes token in _dependents
-
-  Only the first pipe can call this method to defer the current
-  scheduling token to the given token.
+ 只有第一个管道可以调用此方法将当前调度令牌推迟到给定令牌。
   */
   void defer(size_t token) {
     if(_pipe != 0) {
@@ -172,34 +151,29 @@ class Pipeflow {
   }
   
   private:
-
-  // Regular data
+ 
   size_t _line;
   size_t _pipe;
   size_t _token;
   bool   _stop;
   
-  // Data field for token dependencies
+  // 令牌依赖的数据字段
   size_t _num_deferrals; 
   std::unordered_set<size_t> _dependents; 
 
 };
 
+
+
 // ----------------------------------------------------------------------------
 // Class Definition: PipeType
 // ----------------------------------------------------------------------------
-
-/**
-@enum PipeType
-
-@brief enumeration of all pipe types
-*/
 enum class PipeType : int {
-  /** @brief parallel type */
   PARALLEL = 1,
-  /** @brief serial type */
   SERIAL   = 2
 };
+
+
 
 // ----------------------------------------------------------------------------
 // Class Definition: Pipe
@@ -212,17 +186,14 @@ enum class PipeType : int {
 
 @tparam C callable type
 
-A pipe represents a stage of a pipeline. A pipe can be either
-@em parallel direction or @em serial direction (specified by tf::PipeType)
-and is coupled with a callable to invoke by the pipeline scheduler.
-The callable must take a referenced tf::Pipeflow object in the first argument:
+pipe  代表 pipeline 的一个阶段。pipe  可以是 并行方向 或 串行方向（由 tf::PipeType 指定），并与可调用管道耦合以供 pipeline 调度程序调用。 
+可调用对象必须在第一个参数中采用引用的 tf::Pipeflow 对象：
 
 @code{.cpp}
 Pipe{PipeType::SERIAL, [](tf::Pipeflow&){}}
 @endcode
 
-The pipeflow object is used to query the statistics of a scheduling token
-in the pipeline, such as pipe, line, and token numbers.
+pipeflow 对象用于查询 pipeline 中某个调度令牌的统计信息，如管道、线路、令牌号等。
 */
 template <typename C = std::function<void(tf::Pipeflow&)>>
 class Pipe {
@@ -234,15 +205,9 @@ class Pipe {
   friend class ScalablePipeline;
 
   public:
-
-  /**
-  @brief alias of the callable type
-  */
+ 
   using callable_t = C;
-
-  /**
-  @brief default constructor
-  */
+ 
   Pipe() = default;
 
   /**
@@ -251,25 +216,22 @@ class Pipe {
   @param d pipe type (tf::PipeType)
   @param callable callable type
 
-  The constructor constructs a pipe with the given direction
-  (tf::PipeType::SERIAL or tf::PipeType::PARALLEL) and the given callable. 
-  The callable must take a referenced tf::Pipeflow object in the first argument.
+   构造函数构造具有给定方向（tf::PipeType::SERIAL 或 tf::PipeType::PARALLEL）和给定可调用项的 pipe 。 
+   可调用对象必须在第一个参数中采用引用的 tf::Pipeflow 对象。
 
   @code{.cpp}
   Pipe{PipeType::SERIAL, [](tf::Pipeflow&){}}
   @endcode
 
-  When creating a pipeline, the direction of the first pipe must be serial
-  (tf::PipeType::SERIAL).
+  创建管道时，第一个管道的方向必须是串行的（tf::PipeType::SERIAL）
   */
   Pipe(PipeType d, C&& callable) :
     _type{d}, _callable{std::forward<C>(callable)} {
   }
 
   /**
-  @brief queries the type of the pipe
-
-  Returns the type of the callable.
+   @brief queries the type of the pipe
+   返回可调用对象的类型。
   */
   PipeType type() const {
     return _type;
@@ -277,8 +239,6 @@ class Pipe {
 
   /**
   @brief assigns a new type to the pipe
-
-  @param type a tf::PipeType variable
   */
   void type(PipeType type) {
     _type = type;
@@ -290,7 +250,7 @@ class Pipe {
   @tparam U callable type
   @param callable a callable object constructible from std::function<void(tf::Pipeflow&)>
 
-  Assigns a new callable to the pipe with universal forwarding.
+   使用万能转发将新的可调用对象分配给 pipe 
   */
   template <typename U>
   void callable(U&& callable) {
@@ -300,9 +260,10 @@ class Pipe {
   private:
 
   PipeType _type;
-
   C _callable;
 };
+
+
 
 // ----------------------------------------------------------------------------
 // Class Definition: Pipeline
@@ -315,67 +276,56 @@ class Pipe {
 
 @tparam Ps pipe types
 
-A pipeline is a composable graph object for users to create a
-<i>pipeline scheduling framework</i> using a module task in a taskflow.
-Unlike the conventional pipeline programming frameworks (e.g., Intel TBB),
-%Taskflow's pipeline algorithm does not provide any data abstraction,
-which often restricts users from optimizing data layouts in their applications,
-but a flexible framework for users to customize their application data
-atop our pipeline scheduling.
-The following code creates a pipeline of four parallel lines to schedule
-tokens through three serial pipes:
+pipeline 是一个可组合的图形对象，供用户使用 taskflow 中的模块任务创建 pipeline scheduling framework  
+与传统的流水线编程框架（例如 Intel TBB）不同， Taskflow 的流水线算法不提供任何数据抽象，
+这通常会限制用户优化其应用程序中的数据布局，而是一个灵活的框架，供用户在我们的流水线之上自定义其应用程序数据 调度。 
+以下代码创建了一个由四个并行线组成的管道，以通过三个串行管道调度令牌： 
 
 @code{.cpp}
 tf::Taskflow taskflow;
 tf::Executor executor;
 
-const size_t num_lines = 4;
-const size_t num_pipes = 3;
+const size_t num_lines = 4;  // 4 个 选择
+const size_t num_pipes = 3;  // 3 个 流水线阶段
 
 // create a custom data buffer
 std::array<std::array<int, num_pipes>, num_lines> buffer;
 
-// create a pipeline graph of four concurrent lines and three serial pipes
+// 创建四个并发线和三个串行管道的管道图
 tf::Pipeline pipeline(num_lines,
-  // first pipe must define a serial direction
+  // 第一个管道必须定义一个串行方向
   tf::Pipe{tf::PipeType::SERIAL, [&buffer](tf::Pipeflow& pf) {
-    // generate only 5 scheduling tokens
+    // 仅生成 5 个调度令牌
     if(pf.token() == 5) {
       pf.stop();
     }
-    // save the token id into the buffer
+    // 将令牌 ID 保存到缓冲区中
     else {
       buffer[pf.line()][pf.pipe()] = pf.token();
     }
   }},
   tf::Pipe{tf::PipeType::SERIAL, [&buffer] (tf::Pipeflow& pf) {
-    // propagate the previous result to this pipe by adding one
+  // 通过添加一个将先前的结果传播到此管道
     buffer[pf.line()][pf.pipe()] = buffer[pf.line()][pf.pipe()-1] + 1;
   }},
   tf::Pipe{tf::PipeType::SERIAL, [&buffer](tf::Pipeflow& pf){
-    // propagate the previous result to this pipe by adding one
+   // 通过添加一个将先前的结果传播到此管道
     buffer[pf.line()][pf.pipe()] = buffer[pf.line()][pf.pipe()-1] + 1;
   }}
 );
 
 // build the pipeline graph using composition
-tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; })
-                        .name("starting pipeline");
-tf::Task task = taskflow.composed_of(pipeline)
-                        .name("pipeline");
-tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; })
-                        .name("pipeline stopped");
-
-// create task dependency
+tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; }).name("starting pipeline");
+tf::Task task = taskflow.composed_of(pipeline).name("pipeline");
+tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; }).name("pipeline stopped");
+ 
 init.precede(task);
 task.precede(stop);
-
-// run the pipeline
+ 
 executor.run(taskflow).wait();
 @endcode
 
-The above example creates a pipeline graph that schedules five tokens over
-four parallel lines in a circular fashion, as depicted below:
+上面的示例创建了一个管道图，它以循环方式在四条平行线上调度五个令牌，如下所示：
 
 @code{.shell-session}
 o -> o -> o
@@ -390,31 +340,19 @@ v    v    v
 o -> o -> o
 @endcode
 
-At each pipe stage, the program propagates the result to the next pipe
-by adding one to the result stored in a custom data storage, @c buffer.
-The pipeline scheduler will generate five scheduling tokens and then stop.
-
-Internally, tf::Pipeline uses std::tuple to store the given sequence of pipes.
-The definition of each pipe can be different, completely decided by the compiler
-to optimize the object layout.
-After a pipeline is constructed, it is not possible to change its pipes.
-If applications need to change these pipes, please use tf::ScalablePipeline.
+在每个管道阶段，程序通过将结果添加到存储在自定义数据存储 @c 缓冲区 中的结果来将结果传播到下一个管道。 
+管道调度程序将生成五个调度令牌，然后停止。 在内部，tf::Pipeline 使用 std::tuple 来存储给定的管道序列。 
+每个管道的定义可以不同，完全由编译器优化对象布局决定。 管道建成后，无法更改其管道。 如果应用程序需要更改这些管道，请使用 tf::ScalablePipeline。
 */
 template <typename... Ps>
 class Pipeline {
 
   static_assert(sizeof...(Ps)>0, "must have at least one pipe");
-
-  /**
-  @private
-  */
+ 
   struct Line {
     std::atomic<size_t> join_counter;
   };
 
-  /**
-  @private
-  */
   struct PipeMeta {
     PipeType type;
   };
@@ -427,12 +365,11 @@ class Pipeline {
   @param num_lines the number of parallel lines
   @param ps a list of pipes
 
-  Constructs a pipeline of up to @c num_lines parallel lines to schedule
-  tokens through the given linear chain of pipes.
-  The first pipe must define a serial direction (tf::PipeType::SERIAL)
-  or an exception will be thrown.
+   构建最多 num_lines parallel lines  的 pipeline ，以通过给定的  linear chain of pipes 安排令牌。
+   第一个管道必须定义串行方向 (tf::PipeType::SERIAL) 否则将抛出异常。
   */
   Pipeline(size_t num_lines, Ps&&... ps);
+
 
   /**
   @brief constructs a pipeline object
@@ -440,53 +377,43 @@ class Pipeline {
   @param num_lines the number of parallel lines
   @param ps a tuple of pipes
 
-  Constructs a pipeline of up to @c num_lines parallel lines to schedule
-  tokens through the given linear chain of pipes.
-  The first pipe must define a serial direction (tf::PipeType::SERIAL)
-  or an exception will be thrown.
+ 构建最多  num_lines  parallel lines  的 pipeline ，以通过给定的  linear chain of pipes 安排令牌。
+ 第一个管道必须定义串行方向 (tf::PipeType::SERIAL) 否则将抛出异常。
   */
   Pipeline(size_t num_lines, std::tuple<Ps...>&& ps);
 
+
   /**
   @brief queries the number of parallel lines
-
-  The function returns the number of parallel lines given by the user
-  upon the construction of the pipeline.
-  The number of lines represents the maximum parallelism this pipeline
-  can achieve.
+  该函数返回用户在构建管道时给出的parallel lines  的 pipeline。 行数表示该流水线可以达到的最大并行度。
   */
   size_t num_lines() const noexcept;
 
+
   /**
   @brief queries the number of pipes
-
-  The Function returns the number of pipes given by the user
-  upon the construction of the pipeline.
+   该函数返回用户在构建 pipeline 时给出的 pipes 数。 
   */
   constexpr size_t num_pipes() const noexcept;
 
+
   /**
   @brief resets the pipeline
-
-  Resetting the pipeline to the initial state. After resetting a pipeline,
-  its token identifier will start from zero as if the pipeline was just
-  constructed.
+ 将 pipeline 重置为初始状态。 重置 pipeline 后，其令牌标识符将从零开始，就像 pipeline 刚刚构建一样。
   */
   void reset();
 
+
   /**
   @brief queries the number of generated tokens in the pipeline
-
-  The number represents the total scheduling tokens that has been
-  generated by the pipeline so far.
+  该数字表示到目前为止 pipeline 已生成的总调度令牌
   */
   size_t num_tokens() const noexcept;
 
+
   /**
   @brief obtains the graph object associated with the pipeline construct
-
-  This method is primarily used as an opaque data structure for creating
-  a module task of the this pipeline.
+  此方法主要用作创建此 pipeline 的模块任务的不透明数据结构。
   */
   Graph& graph();
 
@@ -503,38 +430,30 @@ class Pipeline {
   std::vector<Task> _tasks;
   std::vector<Pipeflow> _pipeflows;
   
-  // queue of ready tokens (paired with their deferral times)
-  // For example,
-  // when 12 does not have any dependents,
-  // we put 12 in _ready_tokens queue
-  // Assume num_deferrals of 12 is 1,
-  // we push pair{12, 1} in the queue 
+  // queue of ready tokens (paired with their deferral times) 
+  // 例如，当 12 没有任何依赖时，我们将 12 放入 _ready_tokens 队列 假设 12 的 num_deferrals 为 1，我们将 pair{12, 1} 放入队列
   std::queue<std::pair<size_t, size_t>> _ready_tokens;
 
   // unordered_map of token dependencies
-  // For example,
-  // 12.defer(16); 13.defer(16);
-  // _token_dependencies has the following entry
-  // {key: 16, value: std::vector{12, 13}}.
+  // 例如:  12.defer(16); 13.defer(16);  _token_dependencies 具有以下条目 {key: 16, value: std::vector{12, 13}}.
   std::unordered_map<size_t, std::vector<size_t>> _token_dependencies;
   
   // unordered_map of deferred tokens
-  // For example,
-  // 12.defer(16); 13.defer(16);
-  // _deferred_tokens has the following two entries
+  // 例如:  12.defer(16); 13.defer(16);
+  // _deferred_tokens 有以下两个条目
   // {key: 12, DeferredPipeflow of 12} and
   // {key: 13, DeferredPipeflow of 13}
   std::unordered_map<size_t, DeferredPipeflow> _deferred_tokens;
   
   // variable to keep track of the longest deferred tokens
-  // For example,
+  // 例如: 
   // 2.defer(16)
   // 5.defer(19)
   // 5.defer(17),
-  // _longest_deferral will be 19 - after token 19 the pipeline
-  // has almost zero cost on handling deferred pipeflow
+  // _longest_deferral 将为 19 - 在令牌 19 之后，管道处理延迟管道流的成本几乎为零
   size_t _longest_deferral = 0;  
   
+
   template <size_t... I>
   auto _gen_meta(std::tuple<Ps...>&&, std::index_sequence<I...>);
 
@@ -544,6 +463,7 @@ class Pipeline {
   void _construct_deferred_tokens(Pipeflow&);
   void _resolve_token_dependencies(Pipeflow&); 
 };
+
 
 // constructor
 template <typename... Ps>
@@ -570,9 +490,7 @@ Pipeline<Ps...>::Pipeline(size_t num_lines, Ps&&... ps) :
 template <typename... Ps>
 Pipeline<Ps...>::Pipeline(size_t num_lines, std::tuple<Ps...>&& ps) :
   _pipes     {std::forward<std::tuple<Ps...>>(ps)},
-  _meta      {_gen_meta(
-    std::forward<std::tuple<Ps...>>(ps), std::make_index_sequence<sizeof...(Ps)>{}
-  )},
+  _meta      {_gen_meta( std::forward<std::tuple<Ps...>>(ps), std::make_index_sequence<sizeof...(Ps)>{})},
   _lines     (num_lines),
   _tasks     (num_lines + 1),
   _pipeflows (num_lines) {
@@ -640,24 +558,21 @@ void Pipeline<Ps...>::reset() {
 
   _lines[0][0].join_counter.store(0, std::memory_order_relaxed);
 
-  for(size_t l=1; l<num_lines(); l++) {
-    for(size_t f=1; f<num_pipes(); f++) {
-      _lines[l][f].join_counter.store(
-        static_cast<size_t>(_meta[f].type), std::memory_order_relaxed
-      );
+  for(size_t l = 1; l < num_lines(); l++) {
+    for(size_t f = 1; f < num_pipes(); f++) {
+      _lines[l][f].join_counter.store(static_cast<size_t>(_meta[f].type), std::memory_order_relaxed);
     }
   }
 
-  for(size_t f=1; f<num_pipes(); f++) {
+  for(size_t f = 1; f < num_pipes(); f++) {
     _lines[0][f].join_counter.store(1, std::memory_order_relaxed);
   }
 
-  for(size_t l=1; l<num_lines(); l++) {
-    _lines[l][0].join_counter.store(
-      static_cast<size_t>(_meta[0].type) - 1, std::memory_order_relaxed
-    );
+  for(size_t l = 1; l<num_lines(); l++) {
+    _lines[l][0].join_counter.store(static_cast<size_t>(_meta[0].type) - 1, std::memory_order_relaxed);
   }
 }
+
 
 // Procedure: _on_pipe
 template <typename... Ps>
@@ -677,11 +592,9 @@ void Pipeline<Ps...>::_on_pipe(Pipeflow& pf, Runtime& rt) {
 }
 
 // Procedure: _check_dependents
-// Check and remove invalid dependents after on_pipe
-// For example, users may defer a pipeflow to multiple tokens,
-// and we need to remove invalid tokens.
-//   12.defer(7);   // valid only if 7 is deferred, or invalid otherwise
-//   12.defer(16);  // 16 is valid 
+// 在 on_pipe 之后检查并移除无效的依赖。 例如，用户可能将一个 pipeflow 延迟到多个令牌，我们需要删除无效令牌。
+//   12.defer(7);   // 仅当 7 被推迟时才有效，否则无效
+//   12.defer(16);  // 16 有效
 template <typename... Ps>
 void Pipeline<Ps...>::_check_dependents(Pipeflow& pf) {
   //if (pf._dependents.size()) {
@@ -714,84 +627,63 @@ void Pipeline<Ps...>::_check_dependents(Pipeflow& pf) {
 }
 
 // Procedure: _construct_deferred_tokens
-// Construct a data structure for a deferred token
+// 为延迟令牌构建数据结构    
 // 
-// For example, 
-// 12.defer(7); 12.defer(16);
-// After _check_dependents, 12 needs to be deferred,
-// so we will construct a data structure for 12 using hashmap:
+// 例如，  12.defer(7); 12.defer(16);
+// _check_dependents之后，需要延迟 12 , 所以我们用 hashmap 为 12 构造一个数据结构：
 // {key: 12, value: DeferredPipeflow of 12}
 template <typename... Ps>
 void Pipeline<Ps...>::_construct_deferred_tokens(Pipeflow& pf) {
-  
-  //auto res = _deferred_tokens.emplace(
-  //  pf._token, DeferredPipeflow{pf._token, pf._num_deferrals, std::move(pf._dependents)}
-  //);
-  
-  // construct the deferred pipeflow with zero copy
-  //auto res = _deferred_tokens.emplace(
   _deferred_tokens.emplace(
     std::piecewise_construct,
     std::forward_as_tuple(pf._token),
-    std::forward_as_tuple(
-      pf._token, pf._num_deferrals, std::move(pf._dependents)
-    )
+    std::forward_as_tuple( pf._token, pf._num_deferrals, std::move(pf._dependents))
   );
 
   //assert(res.second == true);
 }
 
 // Procedure: _resolve_token_dependencies
-// Resolve dependencies for tokens that defer to current token
-// 
-// For example,
-// 12.defer(16);
-// 13.defer(16);
-// _token_dependencies will have the entry
+// 解决延迟到当前令牌的令牌的依赖关系
+// 例如，  12.defer(16);  13.defer(16);    ,  _token_dependencies 将有条目
 // {key: 16, value: std::vector{12, 13}} 
 //
-// When 16 finishes, we need to remove 16 from 12's and 13's 
-// individual_dependents
+// 当 16 完成后，我们需要从 12 和 13 的 individual_dependents 中删除 16
 template <typename... Ps>
 void Pipeline<Ps...>::_resolve_token_dependencies(Pipeflow& pf) {
 
-  if (auto it = _token_dependencies.find(pf._token);
-      it != _token_dependencies.end()) {
+  if (auto it = _token_dependencies.find(pf._token); it != _token_dependencies.end()) {
     
-    // iterate tokens that defer to pf._token
-    // (e.g., 12 and 13)
+    // iterate tokens that defer to pf._token  (e.g., 12 and 13)
     for(size_t target : it->second) {
 
       auto dpf = _deferred_tokens.find(target);
 
       assert(dpf != _deferred_tokens.end());
 
-      // erase pf._token from target's _dependents
-      // (e.g., remove 16 from 12's dependents)
+      // 从目标的 _dependents 中删除 pf._token（例如，从 12 的依赖项中删除 16）
       dpf->second._dependents.erase(pf._token);
-      //  dpf->second._dependent_satellites[pf._token]
-      //);
+  
 
       // target has no dependents
       if (dpf->second._dependents.empty()) {
 
         // push target into _ready_tokens queue
         _ready_tokens.emplace(dpf->second._token, dpf->second._num_deferrals);
-        //_ready_tokens.push(
-        //  std::make_pair(dpf->second._token, dpf->second._num_deferrals)
-        //);
-        
+      
         // erase target from _deferred_tokens
         _deferred_tokens.erase(dpf);
       }
     }
 
-    // remove pf._token from _token_dependencies
-    // (e.g., remove the entry
-    // {key: 16, value: std::vector{12, 13}} from _token_dependencies)
+    // 从令牌依赖项中删除 pf.token 
+    //（例如，从 _token_dependencies 中删除条目 {key: 16, value: std::vector{12, 13}}） 
     _token_dependencies.erase(it);
   }
 }
+
+
+
 
 // Procedure: _build
 template <typename... Ps>
@@ -802,9 +694,7 @@ void Pipeline<Ps...>::_build() {
   FlowBuilder fb(_graph);
 
   // init task
-  _tasks[0] = fb.emplace([this]() {
-    return static_cast<int>(_num_tokens % num_lines());
-  }).name("cond");
+  _tasks[0] = fb.emplace([this]() {return static_cast<int>(_num_tokens % num_lines()); }).name("cond");
 
   // line task
   for(size_t l = 0; l < num_lines(); l++) {
@@ -813,16 +703,15 @@ void Pipeline<Ps...>::_build() {
 
       auto pf = &_pipeflows[l];
 
+
+
       pipeline:
 
-      _lines[pf->_line][pf->_pipe].join_counter.store(
-        static_cast<size_t>(_meta[pf->_pipe].type), std::memory_order_relaxed
-      );
+      _lines[pf->_line][pf->_pipe].join_counter.store(  static_cast<size_t>(_meta[pf->_pipe].type), std::memory_order_relaxed);
       
-      // First pipe does all jobs of initialization and token dependencies
+      // 第一个管道完成初始化和令牌依赖的所有工作   
       if (pf->_pipe == 0) {
-        // _ready_tokens queue is not empty
-        // substitute pf with the token at the front of the queue
+        // _ready_tokens 队列不为空 用队列前面的令牌替换 pf
         if (!_ready_tokens.empty()) {
           pf->_token = _ready_tokens.front().first;
           pf->_num_deferrals = _ready_tokens.front().second;
@@ -833,11 +722,12 @@ void Pipeline<Ps...>::_build() {
           pf->_num_deferrals = 0;
         }
       
+
+
       handle_token_dependency: 
 
         if (pf->_stop = false, _on_pipe(*pf, rt); pf->_stop == true) {
-          // here, the pipeline is not stopped yet because other
-          // lines of tasks may still be running their last stages
+          // 在这里， pipeline  还没有停止，因为其他 lines of tasks 可能仍在运行它们的最后阶段   
           return;
         }
         
@@ -846,26 +736,24 @@ void Pipeline<Ps...>::_build() {
         }
       
         if (pf->_dependents.empty() == false){ 
-          // check if the pf->_dependents have valid dependents
+          //检查 pf->_dependents 是否有有效的依赖项
           _check_dependents(*pf); 
           
-          // tokens in pf->_dependents are all valid dependents 
+          // pf->_dependents 中的标记都是有效的依赖项  
           if (pf->_dependents.size()) {
             
-            // construct a data structure for pf in _deferred_tokens 
+            // 在_deferred_tokens中为pf构造一个数据结构   
             _construct_deferred_tokens(*pf);
             goto pipeline;
           }
 
-          // tokens in pf->_dependents are invalid dependents
-          // directly goto on_pipe on the same line
+          // pf->_dependents 中的 tokens 是无效的 dependents ,直接在同一行转到 on_pipe
           else {
             goto handle_token_dependency;
           }
         }
         
-        // Every token within the deferral range needs to check
-        // if it can resolve dependencies on other tokens.
+        // deferral range 内的每个令牌都需要检查它是否可以解决对其他令牌的依赖性
         if (pf->_token <= _longest_deferral) {
           _resolve_token_dependencies(*pf); 
         }
@@ -881,37 +769,29 @@ void Pipeline<Ps...>::_build() {
       pf->_pipe = n_f;
 
       // ---- scheduling starts here ----
-      // Notice that the shared variable f must not be changed after this
-      // point because it can result in data race due to the following
-      // condition:
+      // 请注意，在此之后不得更改共享变量 f，因为它可能会由于以下情况导致数据竞争：
       //
       // a -> b
       // |    |
       // v    v
       // c -> d
       //
-      // d will be spawned by either c or b, so if c changes f but b spawns d
-      // then data race on f will happen
+      // d 将由 c 或 b 生成，因此如果 c 更改 f 但 b 生成 d，则将发生 f 上的数据竞争
 
       std::array<int, 2> retval;
       size_t n = 0;
 
       // downward dependency
-      if(_meta[c_f].type == PipeType::SERIAL &&
-         _lines[n_l][c_f].join_counter.fetch_sub(
-           1, std::memory_order_acq_rel) == 1
-        ) {
+      if(_meta[c_f].type == PipeType::SERIAL && _lines[n_l][c_f].join_counter.fetch_sub( 1, std::memory_order_acq_rel) == 1) {
         retval[n++] = 1;
       }
 
       // forward dependency
-      if(_lines[pf->_line][n_f].join_counter.fetch_sub(
-          1, std::memory_order_acq_rel) == 1
-        ) {
+      if(_lines[pf->_line][n_f].join_counter.fetch_sub( 1, std::memory_order_acq_rel) == 1 ) {
         retval[n++] = 0;
       }
       
-      // notice that the task index starts from 1
+      // 注意 task 索引从 1 开始  
       switch(n) {
         case 2: {
           rt.schedule(_tasks[n_l+1]);
@@ -943,15 +823,11 @@ void Pipeline<Ps...>::_build() {
 
 @tparam P type of the iterator to a range of pipes
 
-A scalable pipeline is a composable graph object for users to create a
-<i>pipeline scheduling framework</i> using a module task in a taskflow.
-Unlike tf::Pipeline that instantiates all pipes upon the construction time,
-tf::ScalablePipeline allows variable assignments of pipes using range iterators.
-Users can also reset a scalable pipeline to a different range of pipes
-between runs. The following code creates a scalable pipeline of four
-parallel lines to schedule tokens through three serial pipes in a custom storage,
-then resetting the pipeline to a new range of five serial pipes:
-
+A scalable pipeline 是一个可组合的图形对象，供用户使用 taskflow 中的模块任务创建 pipeline scheduling framework 
+与在构造时实例化所有 pipes 的 tf::Pipeline 不同，tf::ScalablePipeline 允许使用范围迭代器对 pipes 进行变量分配
+用户还可以在运行之间将 scalable pipeline  重置为不同范围的管道。 
+以下代码创建了一个由 four parallel lines 组成的  scalable pipeline ，以通过自定义存储中的 three serial pipes 来安排令牌，然后将管道重置为 five serial pipes 的新范围：
+   
 @code{.cpp}
 tf::Taskflow taskflow("pipeline");
 tf::Executor executor;
@@ -964,8 +840,7 @@ std::array<int, num_lines> buffer;
 // define the pipe callable
 auto pipe_callable = [&buffer] (tf::Pipeflow& pf) mutable {
   switch(pf.pipe()) {
-    // first stage generates only 5 scheduling tokens and saves the
-    // token number into the buffer.
+    // 第一阶段仅生成 5 个调度令牌并将令牌编号保存到缓冲区中。
     case 0: {
       if(pf.token() == 5) {
         pf.stop();
@@ -978,12 +853,9 @@ auto pipe_callable = [&buffer] (tf::Pipeflow& pf) mutable {
     }
     break;
 
-    // other stages propagate the previous result to this pipe and
-    // increment it by one
+    // 其他阶段将先前的结果传播到此管道并将其递增 1
     default: {
-      printf(
-        "stage %zu: input buffer[%zu] = %d\n", pf.pipe(), pf.line(), buffer[pf.line()]
-      );
+      printf(  "stage %zu: input buffer[%zu] = %d\n", pf.pipe(), pf.line(), buffer[pf.line()]  );
       buffer[pf.line()] = buffer[pf.line()] + 1;
     }
     break;
@@ -997,29 +869,22 @@ for(size_t i=0; i<3; i++) {
   pipes.emplace_back(tf::PipeType::SERIAL, pipe_callable);
 }
 
-// create a pipeline of four parallel lines based on the given vector of pipes
+// 根据给定的 vector of pipes 创建一条由 four parallel lines 组成的 pipeline 
 tf::ScalablePipeline pl(num_lines, pipes.begin(), pipes.end());
 
-// build the pipeline graph using composition
-tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; })
-                        .name("starting pipeline");
-tf::Task task = taskflow.composed_of(pl)
-                        .name("pipeline");
-tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; })
-                        .name("pipeline stopped");
-
-// create task dependency
+ 
+tf::Task init = taskflow.emplace([](){ std::cout << "ready\n"; }).name("starting pipeline");
+tf::Task task = taskflow.composed_of(pl).name("pipeline");
+tf::Task stop = taskflow.emplace([](){ std::cout << "stopped\n"; }).name("pipeline stopped");
+ 
 init.precede(task);
 task.precede(stop);
-
-// dump the pipeline graph structure (with composition)
+ 
 taskflow.dump(std::cout);
-
-// run the pipeline
+ 
 executor.run(taskflow).wait();
 
-// reset the pipeline to a new range of five pipes and starts from
-// the initial state (i.e., token counts from zero)
+// 将 pipeline  重置为 five pipes 的新范围并从初始状态开始（即令牌从零开始计数）
 for(size_t i=0; i<2; i++) {
   pipes.emplace_back(tf::PipeType::SERIAL, pipe_callable);
 }
@@ -1028,10 +893,8 @@ pl.reset(pipes.begin(), pipes.end());
 executor.run(taskflow).wait();
 @endcode
 
-The above example creates a pipeline graph that schedules five tokens over
-four parallel lines in a circular fashion, first going through three serial pipes
-and then five serial pipes:
-
+上面的示例创建了一个管道图，它以循环方式在四条平行线上调度五个令牌，首先经过三个串行管道，然后经过五个串行管道：
+ 
 @code{.shell-session}
 # initial construction of three serial pipes
 o -> o -> o
@@ -1045,7 +908,7 @@ o -> o -> o
 v    v    v
 o -> o -> o
 
-# resetting to a new range of five serial pipes
+# 重置为五个串行管道的新范围
 o -> o -> o -> o -> o
 |    |    |    |    |
 v    v    v    v    v
@@ -1058,46 +921,29 @@ v    v    v    v    v
 o -> o -> o -> o -> o
 @endcode
 
-Each pipe has the same type of `%tf::Pipe<%std::function<void(%tf::Pipeflow&)>>`
-and is kept in a vector that is amenable to change.
-We construct the scalable pipeline using two range iterators pointing to the
-beginning and the end of the vector.
-At each pipe stage, the program propagates the result to the next pipe
-by adding one to the result stored in a custom data storage, @c buffer.
-The pipeline scheduler will generate five scheduling tokens and then stop.
-
-A scalable pipeline is move-only.
+每个管道都有相同类型的 “%tf::Pipe<%std::function<void(%tf::Pipeflow&)>>”，并保存在一个可以更改的向量中。 
+我们使用指向向量开头和结尾的两个范围迭代器构建可扩展管道。 
+在每个管道阶段，程序通过将结果添加到存储在自定义数据存储 @c 缓冲区 中的结果来将结果传播到下一个管道。 
+管道调度程序将生成五个调度令牌，然后停止。 可扩展管道是 move-only.
 */
 template <typename P>
 class ScalablePipeline {
-
-  /**
-  @private
-  */
+ 
   struct Line {
     std::atomic<size_t> join_counter;
   };
 
   public:
-
-  /**
-  @brief pipe type
-  */
+ 
   using pipe_t = typename std::iterator_traits<P>::value_type;
-
-  /**
-  @brief default constructor
-  */
+ 
   ScalablePipeline() = default;
 
   /**
   @brief constructs an empty scalable pipeline object
 
   @param num_lines the number of parallel lines
-
-  An empty scalable pipeline does not have any pipes.
-  The pipeline needs to be reset to a valid range of pipes
-  before running.
+   空的可扩展管道没有任何管道。 在运行之前，需要将管道重置为有效的管道范围。
   */
   ScalablePipeline(size_t num_lines);
 
@@ -1108,70 +954,48 @@ class ScalablePipeline {
   @param first iterator to the beginning of the range
   @param last iterator to the end of the range
 
-  Constructs a pipeline from the given range of pipes specified in
-  <tt>[first, last)</tt> using @c num_lines parallel lines.
-  The first pipe must define a serial direction (tf::PipeType::SERIAL)
-  or an exception will be thrown.
-
-  Internally, the scalable pipeline copies the iterators
-  from the specified range. Those pipe callables pointed to by
-  these iterators must remain valid during the execution of the pipeline.
+使用  num_lines 平行线从 [first, last)  中指定的给定 pipeline 范围构造 pipeline
+第一个 pipe 必须定义串行方向 (tf::PipeType::SERIAL) 否则将抛出异常。
+在内部，可伸缩管道从指定范围复制迭代器。 
+这些迭代器指向的那些 pipe 可调用对象必须在 pipeline 执行期间保持有效。 
   */
   ScalablePipeline(size_t num_lines, P first, P last);
 
-  /**
-  @brief disabled copy constructor
-  */
+  //  @brief disabled copy constructor
   ScalablePipeline(const ScalablePipeline&) = delete;
 
   /**
   @brief move constructor
-
-  Constructs a pipeline from the given @c rhs using move semantics
-  (i.e. the data in @c rhs is moved into this pipeline).
-  After the move, @c rhs is in a state as if it is just constructed.
-  The behavior is undefined if @c rhs is running during the move.
+  使用移动语义从给定的 rhs 构造一个管道（即将  rhs 中的数据移动到此管道中）。move之后， rhs 的状态就好像刚建好的一样。 
+  如果 rhs 在移动过程中运行，则行为未定义。
   */
   ScalablePipeline(ScalablePipeline&& rhs);
 
-  /**
-  @brief disabled copy assignment operator
-  */
+  //   @brief disabled copy assignment operator
   ScalablePipeline& operator = (const ScalablePipeline&) = delete;
 
   /**
   @brief move constructor
-
-  Replaces the contents with those of @c rhs using move semantics
-  (i.e. the data in @c rhs is moved into this pipeline).
-  After the move, @c rhs is in a state as if it is just constructed.
-  The behavior is undefined if @c rhs is running during the move.
+  使用移动语义将内容替换为 rhs 的内容（即将  rhs 中的数据移动到此管道中）。  
+  move 之后， rhs 的状态就好像刚建好的一样。 如果  rhs 在移动过程中运行，则行为未定义
   */
   ScalablePipeline& operator = (ScalablePipeline&& rhs);
 
   /**
   @brief queries the number of parallel lines
-
-  The function returns the number of parallel lines given by the user
-  upon the construction of the pipeline.
-  The number of lines represents the maximum parallelism this pipeline
-  can achieve.
+   该函数返回用户在构建管道时给出的平行线数。 行数表示该流水线可以达到的最大并行度。
   */
   size_t num_lines() const noexcept;
 
   /**
   @brief queries the number of pipes
-
-  The Function returns the number of pipes given by the user
-  upon the construction of the pipeline.
+  该函数返回用户在构建 pipeline 时给出的 pipes  数。
   */
   size_t num_pipes() const noexcept;
 
   /**
   @brief resets the pipeline
-
-  Resets the pipeline to the initial state. After resetting a pipeline,
-  its token identifier will start from zero.
+ 将 pipeline 重置为初始状态。 重置 pipeline 后，其令牌标识符将从零开始。
   */
   void reset();
 
@@ -1181,16 +1005,12 @@ class ScalablePipeline {
   @param first iterator to the beginning of the range
   @param last iterator to the end of the range
 
-  The member function assigns the pipeline to a new range of pipes
-  specified in <tt>[first, last)</tt> and resets the pipeline to the
-  initial state. After resetting a pipeline, its token identifier will
-  start from zero.
-
-  Internally, the scalable pipeline copies the iterators
-  from the specified range. Those pipe callables pointed to by
-  these iterators must remain valid during the execution of the pipeline.
+   成员函数将管道分配给  [first, last)  中指定的新管道范围，并将管道重置为初始状态。 
+   重置 pipeline 后，其令牌标识符将从零开始。 在内部，scalable pipeline  从指定范围复制迭代器。 
+   这些迭代器指向的那些 pipe  可调用对象必须在 pipeline 执行期间保持有效。
   */
   void reset(P first, P last);
+
 
   /**
   @brief resets the pipeline to a new line number and a
@@ -1200,30 +1020,23 @@ class ScalablePipeline {
   @param first iterator to the beginning of the range
   @param last iterator to the end of the range
 
-  The member function resets the pipeline to a new number of
-  parallel lines and a new range of pipes specified in
-  <tt>[first, last)</tt>, as if the pipeline is just constructed.
-  After resetting a pipeline, its token identifier will start from zero.
-
-  Internally, the scalable pipeline copies the iterators
-  from the specified range. Those pipe callables pointed to by
-  these iterators must remain valid during the execution of the pipeline.
+成员函数将管道重置为新数量的  parallel lines 和在  [first, last)  中指定的新 pipes 范围，就好像 pipeline 刚刚构建一样。 
+重置 pipeline 后，其令牌标识符将从零开始。 在内部，scalable pipeline 从指定范围复制迭代器。 
+这些迭代器指向的那些 pipe 可调用对象必须在 pipeline 执行期间保持有效。  
   */
   void reset(size_t num_lines, P first, P last);
 
+
+
   /**
   @brief queries the number of generated tokens in the pipeline
-
-  The number represents the total scheduling tokens that has been
-  generated by the pipeline so far.
+ 该数字表示到目前为止 pipeline 已生成的总调度令牌。  
   */
   size_t num_tokens() const noexcept;
 
   /**
   @brief obtains the graph object associated with the pipeline construct
-
-  This method is primarily used as an opaque data structure for creating
-  a module task of the this pipeline.
+  此方法主要用作创建此管道的模块任务的不透明数据结构。 
   */
   Graph& graph();
 
@@ -1233,15 +1046,15 @@ class ScalablePipeline {
 
   size_t _num_tokens{0};
 
-  std::vector<P> _pipes;
-  std::vector<Task> _tasks;
-  std::vector<Pipeflow> _pipeflows;
+  std::vector<P>          _pipes;
+  std::vector<Task>       _tasks;
+  std::vector<Pipeflow>   _pipeflows;
   std::unique_ptr<Line[]> _lines;
 
   // chchiu
-  std::queue<std::pair<size_t, size_t>> _ready_tokens;
+  std::queue<std::pair<size_t, size_t>>           _ready_tokens;
   std::unordered_map<size_t, std::vector<size_t>> _token_dependencies;
-  std::unordered_map<size_t, DeferredPipeflow> _deferred_tokens;
+  std::unordered_map<size_t, DeferredPipeflow>    _deferred_tokens;
   size_t _longest_deferral = 0;
   
   void _check_dependents(Pipeflow&);
@@ -1254,6 +1067,7 @@ class ScalablePipeline {
 
   Line& _line(size_t, size_t);
 };
+
 
 // constructor
 template <typename P>
@@ -1342,6 +1156,7 @@ Graph& ScalablePipeline<P>::graph() {
   return _graph;
 }
 
+
 // Function: _line
 template <typename P>
 typename ScalablePipeline<P>::Line& ScalablePipeline<P>::_line(size_t l, size_t p) {
@@ -1363,6 +1178,7 @@ void ScalablePipeline<P>::reset(size_t num_lines, P first, P last) {
 
   _build();
 }
+
 
 // Function: reset
 template <typename P>
@@ -1390,6 +1206,7 @@ void ScalablePipeline<P>::reset(P first, P last) {
   reset();
 }
 
+
 // Function: reset
 template <typename P>
 void ScalablePipeline<P>::reset() {
@@ -1407,9 +1224,7 @@ void ScalablePipeline<P>::reset() {
 
   for(size_t l=1; l<num_lines(); l++) {
     for(size_t f=1; f<num_pipes(); f++) {
-      _line(l, f).join_counter.store(
-        static_cast<size_t>(_pipes[f]->type()), std::memory_order_relaxed
-      );
+      _line(l, f).join_counter.store( static_cast<size_t>(_pipes[f]->type()), std::memory_order_relaxed );
     }
   }
 
@@ -1418,15 +1233,14 @@ void ScalablePipeline<P>::reset() {
   }
 
   for(size_t l=1; l<num_lines(); l++) {
-    _line(l, 0).join_counter.store(
-      static_cast<size_t>(_pipes[0]->type()) - 1, std::memory_order_relaxed
-    );
+    _line(l, 0).join_counter.store( static_cast<size_t>(_pipes[0]->type()) - 1, std::memory_order_relaxed);
   }
   
   assert(_ready_tokens.empty() == true);
   _token_dependencies.clear();
   _deferred_tokens.clear();
 }
+
 
 // Procedure: _on_pipe
 template <typename P>
@@ -1444,6 +1258,7 @@ void ScalablePipeline<P>::_on_pipe(Pipeflow& pf, Runtime& rt) {
     static_assert(dependent_false_v<callable_t>, "un-supported pipe callable type");
   }
 }
+
 
 template <typename P>
 void ScalablePipeline<P>::_check_dependents(Pipeflow& pf) {
@@ -1466,7 +1281,6 @@ void ScalablePipeline<P>::_check_dependents(Pipeflow& pf) {
         _token_dependencies[*it].push_back(pf._token);
         ++it;
       }
-
       else {
         it = pf._dependents.erase(it);
       }
@@ -1475,22 +1289,19 @@ void ScalablePipeline<P>::_check_dependents(Pipeflow& pf) {
 }
 
 // Procedure: _construct_deferred_tokens
-// Construct a data structure for a deferred token
+// 为延迟令牌构建数据结构 
 template <typename P>
 void ScalablePipeline<P>::_construct_deferred_tokens(Pipeflow& pf) {
-  
-  // construct the deferred pipeflow with zero copy
+  // 构造零拷贝的延迟管道流 
   _deferred_tokens.emplace(
     std::piecewise_construct,
     std::forward_as_tuple(pf._token),
-    std::forward_as_tuple(
-      pf._token, pf._num_deferrals, std::move(pf._dependents)
-    )
+    std::forward_as_tuple( pf._token, pf._num_deferrals, std::move(pf._dependents) )
   );
 }
 
 // Procedure: _resolve_token_dependencies
-// Resolve dependencies for tokens that defer to current token
+// 解决延迟到当前令牌的令牌的依赖关系
 template <typename P>
 void ScalablePipeline<P>::_resolve_token_dependencies(Pipeflow& pf) {
 
@@ -1527,9 +1338,7 @@ void ScalablePipeline<P>::_build() {
   FlowBuilder fb(_graph);
 
   // init task
-  _tasks[0] = fb.emplace([this]() {
-    return static_cast<int>(_num_tokens % num_lines());
-  }).name("cond");
+  _tasks[0] = fb.emplace([this]() {return static_cast<int>(_num_tokens % num_lines()); }).name("cond");
 
   // line task
   for(size_t l = 0; l < num_lines(); l++) {
@@ -1540,14 +1349,11 @@ void ScalablePipeline<P>::_build() {
 
       pipeline:
 
-      _line(pf->_line, pf->_pipe).join_counter.store(
-        static_cast<size_t>(_pipes[pf->_pipe]->type()), std::memory_order_relaxed
-      );
+      _line(pf->_line, pf->_pipe).join_counter.store( static_cast<size_t>(_pipes[pf->_pipe]->type()), std::memory_order_relaxed);
 
-      // First pipe does all jobs of initialization and token dependencies
+      // 第一个 pipe 完成初始化和令牌依赖的所有工作
       if (pf->_pipe == 0) {
-        // _ready_tokens queue is not empty
-        // substitute pf with the token at the front of the queue
+        // _ready_tokens 队列不为空 用队列前面的令牌替换 pf  
         if (!_ready_tokens.empty()) {
           pf->_token = _ready_tokens.front().first;
           pf->_num_deferrals = _ready_tokens.front().second;
@@ -1561,8 +1367,7 @@ void ScalablePipeline<P>::_build() {
       handle_token_dependency: 
 
         if (pf->_stop = false, _on_pipe(*pf, rt); pf->_stop == true) {
-          // here, the pipeline is not stopped yet because other
-          // lines of tasks may still be running their last stages
+          // 在这里，pipeline  还没有停止，因为其他 lines of tasks  可能仍在运行它们的最后阶段
           return;
         }
         
@@ -1571,26 +1376,23 @@ void ScalablePipeline<P>::_build() {
         }
       
         if (pf->_dependents.empty() == false){ 
-          // check if the pf->_dependents have valid dependents
+          // 检查 pf->_dependents 是否有有效的依赖
           _check_dependents(*pf); 
           
-          // tokens in pf->_dependents are all valid dependents 
+          // pf->_dependents 中的标记都是有效的依赖项
           if (pf->_dependents.size()) {
-            
-            // construct a data structure for pf in _deferred_tokens 
+            // 在 _deferred_tokens 中为 pf 构造一个数据结构 
             _construct_deferred_tokens(*pf);
             goto pipeline;
           }
 
-          // tokens in pf->_dependents are invalid dependents
-          // directly goto on_pipe on the same line
+          // pf->_dependents中的 tokens 是无效的依赖直接在同一行转到 on_pipe
           else {
             goto handle_token_dependency;
           }
         }
         
-        // Every token within the deferral range needs to check
-        // if it can resolve dependencies on other tokens.
+        // 延迟范围内的每个令牌都需要检查它是否可以解决对其他令牌的依赖性。
         if (pf->_token <= _longest_deferral) {
           _resolve_token_dependencies(*pf); 
         }
@@ -1606,37 +1408,29 @@ void ScalablePipeline<P>::_build() {
       pf->_pipe = n_f;
 
       // ---- scheduling starts here ----
-      // Notice that the shared variable f must not be changed after this
-      // point because it can result in data race due to the following
-      // condition:
+      // 请注意，在此之后不得更改共享变量 f，因为它可能会由于以下情况导致数据竞争：
       //
       // a -> b
       // |    |
       // v    v
       // c -> d
-      //
-      // d will be spawned by either c or b, so if c changes f but b spawns d
-      // then data race on f will happen
+      // 
+      // d 将由 c 或 b 生成，因此如果 c 更改 f 但 b 生成 d，则将发生 f 上的数据竞争 
 
       std::array<int, 2> retval;
       size_t n = 0;
 
       // downward dependency
-      if(_pipes[c_f]->type() == PipeType::SERIAL &&
-         _line(n_l, c_f).join_counter.fetch_sub(
-           1, std::memory_order_acq_rel) == 1
-        ) {
+      if(_pipes[c_f]->type() == PipeType::SERIAL &&  _line(n_l, c_f).join_counter.fetch_sub(1, std::memory_order_acq_rel) == 1 ) {
         retval[n++] = 1;
       }
 
       // forward dependency
-      if(_line(pf->_line, n_f).join_counter.fetch_sub(
-          1, std::memory_order_acq_rel) == 1
-        ) {
+      if(_line(pf->_line, n_f).join_counter.fetch_sub(1, std::memory_order_acq_rel) == 1) {
         retval[n++] = 0;
       }
 
-      // notice that the task index starts from 1
+      // 注意 task 索引从1开始 
       switch(n) {
         case 2: {
           rt.schedule(_tasks[n_l+1]);
