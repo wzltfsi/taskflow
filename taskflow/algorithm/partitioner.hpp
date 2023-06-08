@@ -20,56 +20,38 @@ namespace tf {
 
 @brief class to derive a partitioner for scheduling parallel algorithms
 
-The class provides base methods to derive a partitioner that can be used
-to schedule parallel iterations (e.g., tf::Taskflow::for_each).
+该类提供基本方法来派生可用于安排并行迭代的分区器（例如，tf::Taskflow::for_each）。 
+分区器定义了运行并行算法的调度方法，例如 tf::Taskflow::for_each、tf::Taskflow::reduce 等。
+ 默认情况下，我们提供以下分区程序：
 
-An partitioner defines the scheduling method for running parallel algorithms,
-such tf::Taskflow::for_each, tf::Taskflow::reduce, and so on.
-By default, we provide the following partitioners:
++ tf::GuidedPartitioner 启用自适应块大小的引导调度算法
++ tf::DynamicPartitioner 启用等块大小的动态调度算法
++ tf::StaticPartitioner 启用静态块大小的静态调度算法
++ tf::RandomPartitioner 启用随机块大小的随机调度算法
 
-+ tf::GuidedPartitioner to enable guided scheduling algorithm of adaptive chunk size
-+ tf::DynamicPartitioner to enable dynamic scheduling algorithm of equal chunk size
-+ tf::StaticPartitioner to enable static scheduling algorithm of static chunk size
-+ tf::RandomPartitioner to enable random scheduling algorithm of random chunk size
-
-Depending on applications, partitioning algorithms can impact the performance
-a lot. 
-For example, if a parallel-iteration workload contains a regular work unit per
-iteration, tf::StaticPartitioner can deliver the best performance.
-On the other hand, if the work unit per iteration is irregular and unbalanced,
-tf::GuidedPartitioner or tf::DynamicPartitioner can outperform tf::StaticPartitioner.
-In most situations, tf::GuidedPartitioner can deliver decent performance and
-is thus used as our default partitioner.
+根据应用程序的不同，分区算法会对性能产生很大影响。 
+例如，如果并行迭代工作负载每次迭代包含一个常规工作单元，则 tf::StaticPartitioner 可以提供最佳性能。 
+另一方面，如果每次迭代的工作单元不规则且不平衡，则 tf::GuidedPartitioner 或 tf::DynamicPartitioner 的性能可能优于 tf::StaticPartitioner。 
+在大多数情况下，tf::GuidedPartitioner 可以提供不错的性能，因此被用作我们的默认分区程序。
 */
 class PartitionerBase {
 
   public:
 
-  /**
-  @brief default constructor
-  */
+  // default constructor
   PartitionerBase() = default;
 
-  /**
-  @brief construct a partitioner with the given chunk size
-  */
+  // 构造一个具有给定块大小的分区器
   explicit PartitionerBase(size_t chunk_size) : _chunk_size {chunk_size} {}
 
-  /**
-  @brief query the chunk size of this partitioner
-  */
+  // 查询此分区程序的块大小
   size_t chunk_size() const { return _chunk_size; }
   
-  /**
-  @brief update the chunk size of this partitioner
-  */
+  // 更新此分区程序的块大小
   void chunk_size(size_t cz) { _chunk_size = cz; }
 
   protected:
-  
-  /**
-  @brief chunk size 
-  */
+   
   size_t _chunk_size{0};
 };
 
@@ -91,9 +73,7 @@ class GuidedPartitioner : public PartitionerBase {
 
   public:
   
-  /**
-  @brief default constructor
-  */
+  // 
   GuidedPartitioner() : PartitionerBase{1} {}
 
   /**

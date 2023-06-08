@@ -14,18 +14,13 @@ namespace tf {
 
 @brief class to create a stage in a data-parallel pipeline 
 
-A data pipe represents a stage of a data-parallel pipeline. 
-A data pipe can be either @em parallel direction or @em serial direction 
-(specified by tf::PipeType) and is associated with a callable to invoke 
-by the pipeline scheduler.
+数据管道代表数据并行管道的一个阶段。 数据管道可以是 并行方向 或  串行方向（由 tf::PipeType 指定），并且与管道调度程序调用的可调用对象相关联。
 
-You need to use the template function, tf::make_data_pipe, to create 
-a data pipe. The input and output types of a tf::DataPipe should be decayed types 
-(though the library will always decay them for you using `std::decay`)
-to allow internal storage to work.
-The data will be passed by reference to your callable, at which you can take 
-it by copy or reference.
+您需要使用模板函数 tf::make_data_pipe 来创建数据管道。 tf::DataPipe 的输入和输出类型应该是衰减类型
+（尽管库总是会使用 `std::decay` 为您衰减它们）以允许内部存储工作。 
+数据将通过引用传递给您的可调用对象，您可以通过复制或引用来获取它。
 
+ 
 @code{.cpp}
 tf::make_data_pipe<int, std::string>(
   tf::PipeType::SERIAL, 
@@ -33,9 +28,7 @@ tf::make_data_pipe<int, std::string>(
 );
 @endcode
 
-In addition to the data, you callable can take an additional reference 
-of tf::Pipeflow in the second argument to probe the runtime information
-for a stage task, such as its line number and token number:
+除了数据之外，您的 callable 还可以在第二个参数中额外引用 tf::Pipeflow 来探测阶段任务的运行时信息，例如它的行号和标记号：
 
 @code{.cpp}
 tf::make_data_pipe<int, std::string>(
@@ -56,62 +49,40 @@ class DataPipe {
 
   public:
 
-  /**
-  @brief callable type of the data pipe
-  */
+  // callable type of the data pipe
   using callable_t = C;
 
-  /**
-  @brief input type of the data pipe
-  */
+  // input type of the data pipe
   using input_t = Input;
 
-  /**
-  @brief output type of the data pipe
-  */
+  // output type of the data pipe
   using output_t = Output;
 
-  /**
-  @brief default constructor
-  */
+  // default constructor
   DataPipe() = default;
 
-  /**
-  @brief constructs a data pipe
 
-  You should use the helper function, tf::make_data_pipe, 
-  to create a DataPipe object, especially when you need tf::DataPipe
-  to automatically deduct the lambda type.
-  */
+  // constructs a data pipe :您应该使用辅助函数 tf::make_data_pipe 创建 DataPipe 对象，尤其是当您需要 tf::DataPipe 自动扣除 lambda 类型时。
   DataPipe(PipeType d, callable_t&& callable) :
     _type{d}, _callable{std::forward<callable_t>(callable)} {
   }
 
-  /**
-  @brief queries the type of the data pipe
 
-  A data pipe can be either parallel (tf::PipeType::PARALLEL) or serial
-  (tf::PipeType::SERIAL).
-  */
+  // 查询 data pipe 类型  ， 数据管道可以是并行的 (tf::PipeType::PARALLEL) 或串行的  (tf::PipeType::SERIAL).
   PipeType type() const {
     return _type;
   }
 
-  /**
-  @brief assigns a new type to the data pipe
-  */
+  // 为数据管道分配一个新类型
   void type(PipeType type) {
     _type = type;
   }
 
   /**
-  @brief assigns a new callable to the data pipe
-
+  @brief   为 data pipe 分配一个新的可调用对象   
   @tparam U callable type
-  @param callable a callable object constructible from the callable type
-                  of this data pipe
-
-  Assigns a new callable to the pipe using universal forwarding.
+  @param callable a callable object constructible from the callable type  of this data pipe
+   使用通用转发将新的可调用对象分配给管道。
   */
   template <typename U>
   void callable(U&& callable) {
@@ -126,22 +97,15 @@ class DataPipe {
 };
 
 /**
-@brief function to construct a data pipe (tf::DataPipe)
+@brief 构造数据管道的函数 (tf::DataPipe)
 
 @tparam Input input data type
 @tparam Output output data type
 @tparam C callable type
 
-tf::make_data_pipe is a helper function to create a data pipe (tf::DataPipe)
-in a data-parallel pipeline (tf::DataPipeline).
-The first argument specifies the direction of the data pipe,
-either tf::PipeType::SERIAL or tf::PipeType::PARALLEL,
-and the second argument is a callable to invoke by the pipeline scheduler.
-Input and output data types are specified via template parameters,
-which will always be decayed by the library to its original form
-for storage purpose.
-The callable must take the input data type in its first argument
-and returns a value of the output data type.
+tf::make_data_pipe 是一个辅助函数，用于在数据并行管道 (tf::DataPipeline) 中创建数据管道 (tf::DataPipe)。 
+第一个参数指定数据管道的方向，tf::PipeType::SERIAL 或 tf::PipeType::PARALLEL，第二个参数是管道调度程序调用的可调用对象。 
+输入和输出数据类型通过模板参数指定，库将始终将其衰减为其原始形式以进行存储。 可调用对象必须在其第一个参数中采用输入数据类型并返回输出数据类型的值。
 
 @code{.cpp}
 tf::make_data_pipe<int, std::string>(
@@ -152,9 +116,7 @@ tf::make_data_pipe<int, std::string>(
 );
 @endcode
 
-The callable can additionally take a reference of tf::Pipeflow, 
-which allows you to query the runtime information of a stage task,
-such as its line number and token number.
+可调用对象还可以引用 tf::Pipeflow，它允许您查询阶段任务的运行时信息，例如它的行号和标记号。
 
 @code{.cpp}
 tf::make_data_pipe<int, std::string>(
@@ -172,6 +134,9 @@ auto make_data_pipe(PipeType d, C&& callable) {
   return DataPipe<Input, Output, C>(d, std::forward<C>(callable));
 }
 
+
+
+
 // ----------------------------------------------------------------------------
 // Class Definition: DataPipeline
 // ----------------------------------------------------------------------------
@@ -183,13 +148,9 @@ auto make_data_pipe(PipeType d, C&& callable) {
 
 @tparam Ps data pipe types
 
-Similar to tf::Pipeline, a tf::DataPipeline is a composable graph object
-for users to create a <i>data-parallel pipeline scheduling framework</i> 
-using a module task in a taskflow.
-The only difference is that tf::DataPipeline provides a data abstraction
-for users to quickly express dataflow in a pipeline.
-The following example creates a data-parallel pipeline of three stages
-that generate dataflow from `void` to `int`, `std::string`, `float`, and `void`.
+与 tf::Pipeline 类似，tf::DataPipeline 是一个可组合的图形对象，供用户使用任务流中的模块任务创建 数据并行管道调度框架
+ 唯一不同的是，tf::DataPipeline 为用户提供了一种数据抽象，可以快速表达管道中的数据流。
+ 以下示例创建了一个包含三个阶段的数据并行管道，这些管道生成从“void”到“int”、“std::string”、“float”和“void”的数据流。
 
 @code{.cpp}
 #include <taskflow/taskflow.hpp>
@@ -221,21 +182,15 @@ int main() {
     })
   );
 
-  // build the pipeline graph using composition
   taskflow.composed_of(pl).name("pipeline");
-
-  // dump the pipeline graph structure (with composition)
   taskflow.dump(std::cout);
-
-  // run the pipeline
   executor.run(taskflow).wait();
 
   return 0;
 }
 @endcode
 
-The pipeline schedules five tokens over four parallel lines in a circular fashion, 
-as depicted below:
+管道以循环方式在四条平行线上调度五个令牌，如下所示
 
 @code{.shell-session}
 o -> o -> o
@@ -255,16 +210,12 @@ class DataPipeline {
 
   static_assert(sizeof...(Ps)>0, "must have at least one pipe");
 
-  /**
-  @private
-  */
+   // private
   struct Line {
     std::atomic<size_t> join_counter;
   };
 
-  /**
-  @private
-  */
+  // private
   struct PipeMeta {
     PipeType type;
   };
@@ -272,14 +223,13 @@ class DataPipeline {
 
   public:
   
-  /**
-  @brief internal storage type for each data token (default std::variant)
-  */
+  //  每个数据令牌的内部存储类型（默认 std::variant）
   using data_t = unique_variant_t<std::variant<std::conditional_t<
     std::is_void_v<typename Ps::output_t>, 
     std::monostate, 
     std::decay_t<typename Ps::output_t>>...
   >>;
+
 
   /**
   @brief constructs a data-parallel pipeline object
@@ -287,12 +237,11 @@ class DataPipeline {
   @param num_lines the number of parallel lines
   @param ps a list of pipes
 
-  Constructs a data-parallel pipeline of up to @c num_lines parallel lines to schedule
-  tokens through the given linear chain of pipes.
-  The first pipe must define a serial direction (tf::PipeType::SERIAL)
-  or an exception will be thrown.
+    构造一个最多  num_lines 平行线的数据并行管道，以通过给定的线性管道链安排令牌。 
+    第一个管道必须定义串行方向 (tf::PipeType::SERIAL) 否则将抛出异常。
   */
   DataPipeline(size_t num_lines, Ps&&... ps);
+
 
   /**
   @brief constructs a data-parallel pipeline object
@@ -300,55 +249,47 @@ class DataPipeline {
   @param num_lines the number of parallel lines
   @param ps a tuple of pipes
 
-  Constructs a data-parallel pipeline of up to @c num_lines parallel lines to schedule
-  tokens through the given linear chain of pipes stored in a std::tuple.
-  The first pipe must define a serial direction (tf::PipeType::SERIAL)
-  or an exception will be thrown.
+  构造最多 num_lines 条并行线的数据并行管道，以通过存储在 std::tuple 中的给定线性管道链来调度令牌。 
+  第一个管道必须定义串行方向 (tf::PipeType::SERIAL) 否则将抛出异常。
   */
   DataPipeline(size_t num_lines, std::tuple<Ps...>&& ps);
 
+
   /**
   @brief queries the number of parallel lines
-
-  The function returns the number of parallel lines given by the user
-  upon the construction of the pipeline.
-  The number of lines represents the maximum parallelism this pipeline
-  can achieve.
+  该函数返回用户在构建管道时给出的平行线数。 行数表示该流水线可以达到的最大并行度。
   */
   size_t num_lines() const noexcept;
 
+
   /**
   @brief queries the number of pipes
-
-  The Function returns the number of pipes given by the user
-  upon the construction of the pipeline.
+   该函数返回用户在构建管道时给出的管道数。
   */
   constexpr size_t num_pipes() const noexcept;
 
+
   /**
   @brief resets the pipeline
-
-  Resetting the pipeline to the initial state. After resetting a pipeline,
-  its token identifier will start from zero as if the pipeline was just
-  constructed.
+   将管道重置为初始状态。 重置管道后，其令牌标识符将从零开始，就像管道刚刚构建一样。
   */
   void reset();
 
+
+
   /**
   @brief queries the number of generated tokens in the pipeline
-
-  The number represents the total scheduling tokens that has been
-  generated by the pipeline so far.
+  该数字表示到目前为止管道已生成的总调度令牌。
   */
   size_t num_tokens() const noexcept;
 
   /**
   @brief obtains the graph object associated with the pipeline construct
-
-  This method is primarily used as an opaque data structure for creating
-  a module task of this pipeline.
+   此方法主要用作创建此管道的模块任务的不透明数据结构。
   */
   Graph& graph();
+
+
 
   private:
 
@@ -369,6 +310,7 @@ class DataPipeline {
   void _on_pipe(Pipeflow&, Runtime&);
   void _build();
 };
+
 
 // constructor
 template <typename... Ps>
@@ -392,13 +334,12 @@ DataPipeline<Ps...>::DataPipeline(size_t num_lines, Ps&&... ps) :
   _build();
 }
 
+
 // constructor
 template <typename... Ps>
 DataPipeline<Ps...>::DataPipeline(size_t num_lines, std::tuple<Ps...>&& ps) :
   _pipes     {std::forward<std::tuple<Ps...>>(ps)},
-  _meta      {_gen_meta(
-    std::forward<std::tuple<Ps...>>(ps), std::make_index_sequence<sizeof...(Ps)>{}
-  )},
+  _meta      {_gen_meta( std::forward<std::tuple<Ps...>>(ps), std::make_index_sequence<sizeof...(Ps)>{} )},
   _lines     (num_lines),
   _tasks     (num_lines + 1),
   _pipeflows (num_lines),
@@ -416,12 +357,14 @@ DataPipeline<Ps...>::DataPipeline(size_t num_lines, std::tuple<Ps...>&& ps) :
   _build();
 }
 
+
 // Function: _get_meta
 template <typename... Ps>
 template <size_t... I>
 auto DataPipeline<Ps...>::_gen_meta(std::tuple<Ps...>&& ps, std::index_sequence<I...>) {
   return std::array{PipeMeta{std::get<I>(ps).type()}...};
 }
+
 
 // Function: num_lines
 template <typename... Ps>
@@ -453,7 +396,7 @@ void DataPipeline<Ps...>::reset() {
 
   _num_tokens = 0;
 
-  for(size_t l = 0; l<num_lines(); l++) {
+  for(size_t l = 0; l < num_lines(); l++) {
     _pipeflows[l]._pipe = 0;
     _pipeflows[l]._line = l;
   }
@@ -490,7 +433,7 @@ void DataPipeline<Ps...>::_on_pipe(Pipeflow& pf, Runtime&) {
     using input_t     = std::decay_t<typename data_pipe_t::input_t>;
     using output_t    = std::decay_t<typename data_pipe_t::output_t>;
     
-    // first pipe
+    // 第一个管道
     if constexpr (std::is_invocable_v<callable_t, Pipeflow&>) {
       // [](tf::Pipeflow&) -> void {}, i.e., we only have one pipe
       if constexpr (std::is_void_v<output_t>) {
@@ -500,38 +443,33 @@ void DataPipeline<Ps...>::_on_pipe(Pipeflow& pf, Runtime&) {
         _buffer[pf._line].data = pipe._callable(pf);
       }
     }
-    // other pipes without pipeflow in the second argument
+    // 第二个参数中没有 pipeflow 的其他管道
     else if constexpr (std::is_invocable_v<callable_t, std::add_lvalue_reference_t<input_t> >) {
       // [](input_t&) -> void {}, i.e., the last pipe
       if constexpr (std::is_void_v<output_t>) {
         pipe._callable(std::get<input_t>(_buffer[pf._line].data));
       // [](input_t&) -> output_t {}
       } else {
-        _buffer[pf._line].data = pipe._callable(
-          std::get<input_t>(_buffer[pf._line].data)
-        );
+        _buffer[pf._line].data = pipe._callable( std::get<input_t>(_buffer[pf._line].data)   );
       }
     }
-    // other pipes with pipeflow in the second argument
+    // 第二个参数中带有 pipeflow 的其他管道
     else if constexpr (std::is_invocable_v<callable_t, input_t&, Pipeflow&>) {
       // [](input_t&, tf::Pipeflow&) -> void {}
       if constexpr (std::is_void_v<output_t>) {
         pipe._callable(std::get<input_t>(_buffer[pf._line].data), pf);
       // [](input_t&, tf::Pipeflow&) -> output_t {}
       } else {
-        _buffer[pf._line].data = pipe._callable(
-          std::get<input_t>(_buffer[pf._line].data), pf
-        );
+        _buffer[pf._line].data = pipe._callable(std::get<input_t>(_buffer[pf._line].data), pf );
       }
     }
-    //else if constexpr(std::is_invocable_v<callable_t, Pipeflow&, Runtime&>) {
-    //  pipe._callable(pf, rt);
-    //}
     else {
       static_assert(dependent_false_v<callable_t>, "un-supported pipe callable type");
     }
   }, _pipes, pf._pipe);
 }
+
+
 
 // Procedure: _build
 template <typename... Ps>
@@ -555,15 +493,12 @@ void DataPipeline<Ps...>::_build() {
 
       pipeline:
 
-      _lines[pf->_line][pf->_pipe].join_counter.store(
-        static_cast<size_t>(_meta[pf->_pipe].type), std::memory_order_relaxed
-      );
+      _lines[pf->_line][pf->_pipe].join_counter.store( static_cast<size_t>(_meta[pf->_pipe].type), std::memory_order_relaxed );
 
       if (pf->_pipe == 0) {
         pf->_token = _num_tokens;
         if (pf->_stop = false, _on_pipe(*pf, rt); pf->_stop == true) {
-          // here, the pipeline is not stopped yet because other
-          // lines of tasks may still be running their last stages
+          // 在这里，管道还没有停止，因为其他任务线可能仍在运行它们的最后阶段
           return;
         }
         ++_num_tokens;
@@ -579,37 +514,28 @@ void DataPipeline<Ps...>::_build() {
       pf->_pipe = n_f;
 
       // ---- scheduling starts here ----
-      // Notice that the shared variable f must not be changed after this
-      // point because it can result in data race due to the following
-      // condition:
-      //
+      // 请注意，在此之后不得更改共享变量 f，因为它可能会由于以下情况导致数据竞争： 
       // a -> b
       // |    |
       // v    v
       // c -> d
       //
-      // d will be spawned by either c or b, so if c changes f but b spawns d
-      // then data race on f will happen
+      // d 将由 c 或 b 生成，因此如果 c 更改 f 但 b 生成 d，则将发生 f 上的数据竞争
 
       std::array<int, 2> retval;
       size_t n = 0;
 
       // downward dependency
-      if(_meta[c_f].type == PipeType::SERIAL &&
-         _lines[n_l][c_f].join_counter.fetch_sub(
-           1, std::memory_order_acq_rel) == 1
-        ) {
+      if(_meta[c_f].type == PipeType::SERIAL &&  _lines[n_l][c_f].join_counter.fetch_sub(1, std::memory_order_acq_rel) == 1 ) {
         retval[n++] = 1;
       }
 
       // forward dependency
-      if(_lines[pf->_line][n_f].join_counter.fetch_sub(
-          1, std::memory_order_acq_rel) == 1
-        ) {
+      if(_lines[pf->_line][n_f].join_counter.fetch_sub(1, std::memory_order_acq_rel) == 1 ) {
         retval[n++] = 0;
       }
 
-      // notice that the task index starts from 1
+      //  注意 task 索引从 1 开始
       switch(n) {
         case 2: {
           rt.schedule(_tasks[n_l+1]);

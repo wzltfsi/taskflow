@@ -18,14 +18,10 @@ namespace tf {
 
 @brief class to create a critical region of limited workers to run tasks
 
-tf::CriticalSection is a warpper over tf::Semaphore and is specialized for
-limiting the maximum concurrency over a set of tasks.
-A critical section starts with an initial count representing that limit.
-When a task is added to the critical section,
-the task acquires and releases the semaphore internal to the critical section.
-This design avoids explicit call of tf::Task::acquire and tf::Task::release.
-The following example creates a critical section of one worker and adds
-the five tasks to the critical section.
+tf::CriticalSection 是 tf::Semaphore 的变形器，专门用于限制一组任务的最大并发性。 
+临界区以表示该限制的初始计数开始。 当一个任务被添加到临界区时，该任务获取并释放临界区内部的信号量。 
+这种设计避免了显式调用 tf::Task::acquire 和 tf::Task::release。 下面的示例创建一个 worker 的临界区，并将五个 tasks 添加到临界区。
+ 
 
 @code{.cpp}
 tf::Executor executor(8);   // create an executor of 8 workers

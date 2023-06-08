@@ -19,9 +19,9 @@ TF_FORCE_INLINE void launch_loop(
   
   using namespace std::string_literals;
 
-  for(size_t w=0; w<W; w++) {
+  for(size_t w = 0; w < W; w++) {
     auto r = N - next.load(std::memory_order_relaxed);
-    // no more loop work to do - finished by previous async tasks
+    //没有更多的循环工作要做 - 由以前的异步任务完成
     if(!r) {
       break;
     }
