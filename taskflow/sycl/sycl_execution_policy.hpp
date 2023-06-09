@@ -16,10 +16,8 @@ namespace tf {
 @tparam VT number of work units per thread
 
 Execution policy configures the kernel execution parameters in SYCL algorithms.
-The first template argument, @c NT, the number of threads per block should
-always be a power-of-two number.
-The second template argument, @c VT, the number of work units per thread
-is recommended to be an odd number to avoid bank conflict.
+The first template argument, @c NT, the number of threads per block should always be a power-of-two number.
+The second template argument, @c VT, the number of work units per thread is recommended to be an odd number to avoid bank conflict.
 
 Details can be referred to @ref SYCLSTDExecutionPolicy.
 */

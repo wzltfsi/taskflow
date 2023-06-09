@@ -26,19 +26,11 @@ class syclTask {
 
   public:
 
-    /**
-    @brief constructs an empty syclTask
-    */
+
     syclTask() = default;
 
-    /**
-    @brief copy-constructs a syclTask
-    */
     syclTask(const syclTask&) = default;
-
-    /**
-    @brief copy-assigns a syclTask
-    */
+    
     syclTask& operator = (const syclTask&) = default;
 
     /**

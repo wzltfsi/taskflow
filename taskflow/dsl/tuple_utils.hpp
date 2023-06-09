@@ -18,10 +18,8 @@ struct TupleElementByF<std::tuple<H, Ts...>, F, std::enable_if_t<F<H>::value>> {
 };
 
 template <template <typename> class F, typename H, typename... Ts>
-struct TupleElementByF<std::tuple<H, Ts...>, F,
-                       std::enable_if_t<!F<H>::value>> {
-  constexpr static size_t Index =
-      1 + TupleElementByF<std::tuple<Ts...>, F>::Index;
+struct TupleElementByF<std::tuple<H, Ts...>, F,   std::enable_if_t<!F<H>::value>> {
+  constexpr static size_t Index =   1 + TupleElementByF<std::tuple<Ts...>, F>::Index;
 };
 
 template <typename T, typename TUP, size_t... Is>
@@ -35,9 +33,7 @@ constexpr size_t TupleElementByF_v = detail::TupleElementByF<TUP, F>::Index;
 
 template <typename T, typename TUP>
 constexpr inline T AggregationByTup(TUP &&tup) {
-  return detail::AggregationByTupImpl<T>(
-      std::forward<TUP>(tup),
-      std::make_index_sequence<std::tuple_size<std::decay_t<TUP>>::size>{});
+  return detail::AggregationByTupImpl<T>(  std::forward<TUP>(tup),  std::make_index_sequence<std::tuple_size<std::decay_t<TUP>>::size>{});
 }
 } // namespace dsl
 } // namespace tf

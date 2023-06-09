@@ -46,30 +46,19 @@ class syclFlow {
     */
     syclFlow(sycl::queue& queue);
     
-    /**
-    @brief destroys the %syclFlow 
-     */
+
     ~syclFlow() = default;
 
-    /**
-    @brief queries the emptiness of the graph
-    */
+ 
     bool empty() const;
 
-    /**
-    @brief queries the number of tasks
-    */
+
     size_t num_tasks() const;
-    
-    /**
-    @brief dumps the %syclFlow graph into a DOT format through an
-           output stream
-    */
+  
+  
     void dump(std::ostream& os) const;
 
-    /**
-    @brief clear the associated graph
-    */
+ 
     void clear();
 
     // ------------------------------------------------------------------------
@@ -84,23 +73,16 @@ class syclFlow {
                 std::function<void(sycl::handler&)>
     
     Creates a task that is associated from the given command group.
-    In SYCL, each command group function object is given a unique 
-    command group handler object to perform all the necessary work 
-    required to correctly process data on a device using a kernel.
+    In SYCL, each command group function object is given a unique  command group handler object to perform all the necessary work   required to correctly process data on a device using a kernel.
     */
-    template <typename F, std::enable_if_t<
-      std::is_invocable_r_v<void, F, sycl::handler&>, void>* = nullptr
-    >
+    template <typename F, std::enable_if_t<  std::is_invocable_r_v<void, F, sycl::handler&>, void>* = nullptr >
     syclTask on(F&& func);
     
     /**
     @brief updates the task to the given command group function object
-
     Similar to tf::syclFlow::on but operates on an existing task.
     */
-    template <typename F, std::enable_if_t<
-      std::is_invocable_r_v<void, F, sycl::handler&>, void>* = nullptr
-    >
+    template <typename F, std::enable_if_t< std::is_invocable_r_v<void, F, sycl::handler&>, void>* = nullptr >
     void on(syclTask task, F&& func);
     
     /**
@@ -112,9 +94,7 @@ class syclFlow {
 
     @return a tf::syclTask handle
 
-    A memcpy task transfers @c bytes of data from a source locationA @c src
-    to a target location @c tgt. Both @c src and @c tgt may be either host 
-    or USM pointers.
+    A memcpy task transfers @c bytes of data from a source locationA @c src   to a target location @c tgt. Both @c src and @c tgt may be either host   or USM pointers.
     */ 
     syclTask memcpy(void* tgt, const void* src, size_t bytes);
     
@@ -142,15 +122,13 @@ class syclFlow {
     @param pattern pattern value to fill into the memory
     @param count number of items to fill the value
 
-    Creates a task that fills the specified memory with the 
-    specified value.
+    Creates a task that fills the specified memory with the  specified value.
     */
     template <typename T>
     syclTask fill(void* ptr, const T& pattern, size_t count);
     
     /**
-    @brief creates a copy task that copies typed data from a source to a target
-           memory block
+    @brief creates a copy task that copies typed data from a source to a target   memory block
 
     @tparam T trivially copyable value type
     
@@ -158,12 +136,9 @@ class syclFlow {
     @param source pointer to the pattern value to fill into the memory
     @param count number of items to fill the value
     
-    Creates a task that copies @c count items of type @c T from a source memory
-    location to a target memory location.
+    Creates a task that copies @c count items of type @c T from a source memory location to a target memory location.
     */
-    template <typename T,
-      std::enable_if_t<!std::is_same_v<T, void>, void>* = nullptr
-    >
+    template <typename T,  std::enable_if_t<!std::is_same_v<T, void>, void>* = nullptr  >
     syclTask copy(T* target, const T* source, size_t count);
     
     /**
@@ -171,11 +146,9 @@ class syclFlow {
 
     @tparam ArgsT arguments types
 
-    @param args arguments to forward to the parallel_for methods defined 
-                in the handler object
+    @param args arguments to forward to the parallel_for methods defined  in the handler object
 
-    Creates a kernel task from a parallel_for method through the handler 
-    object associated with a command group.
+    Creates a kernel task from a parallel_for method through the handler  object associated with a command group.
     */
     template <typename...ArgsT>
     syclTask parallel_for(ArgsT&&... args);
@@ -190,8 +163,7 @@ class syclFlow {
     @tparam F kernel function type
     @param func kernel function
 
-    Creates a task that launches the given function object using only one
-    kernel thread. 
+    Creates a task that launches the given function object using only one  kernel thread. 
     */
     template <typename F>
     syclTask single_task(F&& func);
@@ -263,8 +235,7 @@ class syclFlow {
     
     @return a tf::syclTask handle
     
-    This method is equivalent to the parallel execution of the following 
-    loop on a SYCL device:
+    This method is equivalent to the parallel execution of the following  loop on a SYCL device:
     
     @code{.cpp}
     while (first != last) {
@@ -275,6 +246,7 @@ class syclFlow {
     template <typename I, typename C, typename... S>
     syclTask transform(I first, I last, C&& callable, S... srcs);
     
+
     /**
     @brief performs parallel reduction over a range of items
     
@@ -289,8 +261,7 @@ class syclFlow {
     
     @return a tf::syclTask handle
     
-    This method is equivalent to the parallel execution of the following loop 
-    on a SYCL device:
+    This method is equivalent to the parallel execution of the following loop    on a SYCL device:
     
     @code{.cpp}
     while (first != last) {
@@ -302,11 +273,9 @@ class syclFlow {
     syclTask reduce(I first, I last, T* result, C&& op);
     
     /**
-    @brief similar to tf::syclFlow::reduce but does not assume any initial
-           value to reduce
+    @brief similar to tf::syclFlow::reduce but does not assume any initial  value to reduce
     
-    This method is equivalent to the parallel execution of the following loop 
-    on a SYCL device:
+    This method is equivalent to the parallel execution of the following loop    on a SYCL device:
     
     @code{.cpp}
     *result = *first++;  // no initial values partitipcate in the loop
@@ -323,18 +292,15 @@ class syclFlow {
     // ------------------------------------------------------------------------
 
     /**
-    @brief offloads the %syclFlow onto a GPU and repeatedly runs it until 
-    the predicate becomes true
+    @brief offloads the %syclFlow onto a GPU and repeatedly runs it until  the predicate becomes true
     
     @tparam P predicate type (a binary callable)
 
     @param predicate a binary predicate (returns @c true for stop)
 
-    Repetitively executes the present %syclFlow through the given queue object
-    until the predicate returns @c true.
+    Repetitively executes the present %syclFlow through the given queue object  until the predicate returns @c true.
 
-    By default, if users do not offload the %syclFlow, 
-    the executor will offload it once.
+    By default, if users do not offload the %syclFlow,    the executor will offload it once.
     */
     template <typename P>
     void offload_until(P&& predicate);
@@ -383,9 +349,7 @@ class syclFlow {
 
     Similar to tf::syclFlow::copy but operates on an existing task.
     */
-    template <typename T,
-      std::enable_if_t<!std::is_same_v<T, void>, void>* = nullptr
-    >
+    template <typename T,   std::enable_if_t<!std::is_same_v<T, void>, void>* = nullptr >
     void copy(syclTask task, T* target, const T* source, size_t count);
     
     /**
@@ -469,21 +433,15 @@ syclTask syclFlow::fill(void* ptr, const T& pattern, size_t count) {
 }
 
 // Function: copy
-template <typename T,
-  std::enable_if_t<!std::is_same_v<T, void>, void>*
->
+template <typename T, std::enable_if_t<!std::is_same_v<T, void>, void>*>
 syclTask syclFlow::copy(T* target, const T* source, size_t count) {
   return on([=](sycl::handler& h){ h.memcpy(target, source, count*sizeof(T)); });
 }
 
 // Function: on
-template <typename F, std::enable_if_t<
-  std::is_invocable_r_v<void, F, sycl::handler&>, void>*
->
+template <typename F, std::enable_if_t<  std::is_invocable_r_v<void, F, sycl::handler&>, void>*>
 syclTask syclFlow::on(F&& f) {
-  auto node = _graph.emplace_back(_graph, 
-    std::in_place_type_t<syclNode::CGH>{}, std::forward<F>(f)
-  );
+  auto node = _graph.emplace_back(_graph,  std::in_place_type_t<syclNode::CGH>{}, std::forward<F>(f) );
   return syclTask(node);
 }
 
@@ -576,43 +534,30 @@ inline void syclFlow::offload() {
 }
 
 // Function: on
-template <typename F, std::enable_if_t<
-  std::is_invocable_r_v<void, F, sycl::handler&>, void>*
->
+template <typename F, std::enable_if_t<  std::is_invocable_r_v<void, F, sycl::handler&>, void>* >
 void syclFlow::on(syclTask task, F&& f) {
-  std::get_if<syclNode::CGH>(&task._node->_handle)->work = 
-    std::forward<F>(f);
+  std::get_if<syclNode::CGH>(&task._node->_handle)->work =  std::forward<F>(f);
 }
 
 // Function: memcpy
-inline void syclFlow::memcpy(
-  syclTask task, void* tgt, const void* src, size_t bytes
-) {
+inline void syclFlow::memcpy(syclTask task, void* tgt, const void* src, size_t bytes) {
   on(task, [=](sycl::handler& h){ h.memcpy(tgt, src, bytes); });
 }
 
 // Function: memset
-inline void syclFlow::memset(
-  syclTask task, void* ptr, int value, size_t bytes
-) {
+inline void syclFlow::memset( syclTask task, void* ptr, int value, size_t bytes) {
   on(task, [=](sycl::handler& h){ h.memset(ptr, value, bytes); });
 }
 
 // Function: fill
 template <typename T>
-void syclFlow::fill(
-  syclTask task, void* ptr, const T& pattern, size_t count
-) {
+void syclFlow::fill( syclTask task, void* ptr, const T& pattern, size_t count) {
   on(task, [=](sycl::handler& h){ h.fill(ptr, pattern, count); });
 }
 
 // Function: copy
-template <typename T,
-  std::enable_if_t<!std::is_same_v<T, void>, void>*
->
-void syclFlow::copy(
-  syclTask task, T* target, const T* source, size_t count
-) {
+template <typename T, std::enable_if_t<!std::is_same_v<T, void>, void>* >
+void syclFlow::copy( syclTask task, T* target, const T* source, size_t count) {
   on(task, [=](sycl::handler& h){ 
     h.memcpy(target, source, count*sizeof(T));}
   );
@@ -659,9 +604,7 @@ Task FlowBuilder::emplace(C&& callable) {
 // ############################################################################
 
 // Procedure: _invoke_syclflow_task_entry (syclFlow)
-template <typename C, typename Q,
-  std::enable_if_t<is_syclflow_task_v<C>, void>*
->
+template <typename C, typename Q, std::enable_if_t<is_syclflow_task_v<C>, void>* >
 void Executor::_invoke_syclflow_task_entry(Node* node, C&& c, Q& queue) {
 
   auto h = std::get_if<Node::syclFlow>(&node->_handle);

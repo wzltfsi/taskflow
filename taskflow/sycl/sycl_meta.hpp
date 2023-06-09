@@ -141,162 +141,24 @@ template<unsigned nt, unsigned vt, unsigned vt0 = vt, typename I>
 auto sycl_mem_to_reg_strided(I mem, unsigned tid, unsigned count) {
   using T = typename std::iterator_traits<I>::value_type;
   syclArray<T, vt> x;
-  sycl_strided_iterate<nt, vt, vt0>(
-    [&](auto i, auto j) { x[i] = mem[j]; }, tid, count
-  );
+  sycl_strided_iterate<nt, vt, vt0>( [&](auto i, auto j) { x[i] = mem[j]; }, tid, count );
   return x;
 }
 
 template<unsigned nt, unsigned vt, unsigned vt0 = vt, typename T, typename it_t>
-void sycl_reg_to_mem_strided(
-  syclArray<T, vt> x, unsigned tid, unsigned count, it_t mem) {
-
-  sycl_strided_iterate<nt, vt, vt0>(
-    [=](auto i, auto j) { mem[j] = x[i]; }, tid, count
-  );
+void sycl_reg_to_mem_strided( syclArray<T, vt> x, unsigned tid, unsigned count, it_t mem) {
+  sycl_strided_iterate<nt, vt, vt0>( [=](auto i, auto j) { mem[j] = x[i]; }, tid, count );
 }
 
 template<unsigned nt, unsigned vt, unsigned vt0 = vt, typename I, typename O>
-auto sycl_transform_mem_to_reg_strided(
-  I mem, unsigned tid, unsigned count, O op
-) {
+auto sycl_transform_mem_to_reg_strided( I mem, unsigned tid, unsigned count, O op ) {
   using T = std::invoke_result_t<O, typename std::iterator_traits<I>::value_type>;
   syclArray<T, vt> x;
-  sycl_strided_iterate<nt, vt, vt0>(
-    [&](auto i, auto j) { x[i] = op(mem[j]); }, tid, count
-  );
+  sycl_strided_iterate<nt, vt, vt0>(  [&](auto i, auto j) { x[i] = op(mem[j]); }, tid, count );
   return x;
 }
 
-// ----------------------------------------------------------------------------
-// thread reg <-> shared
-// ----------------------------------------------------------------------------
 
-//template<unsigned nt, unsigned vt, typename T, unsigned shared_size>
-//void sycl_reg_to_shared_thread(
-//  syclArray<T, vt> x, unsigned tid, T (&shared)[shared_size], bool sync = true
-//) {
-//
-//  static_assert(shared_size >= nt * vt,
-//    "reg_to_shared_thread must have at least nt * vt storage");
-//
-//  sycl_thread_iterate<vt>([&](auto i, auto j) { shared[j] = x[i]; }, tid);
-//
-//  if(sync) __syncthreads();
-//}
-//
-//template<unsigned nt, unsigned vt, typename T, unsigned shared_size>
-//auto sycl_shared_to_reg_thread(
-//  const T (&shared)[shared_size], unsigned tid, bool sync = true
-//) {
-//
-//  static_assert(shared_size >= nt * vt,
-//    "reg_to_shared_thread must have at least nt * vt storage");
-//
-//  syclArray<T, vt> x;
-//  sycl_thread_iterate<vt>([&](auto i, auto j) {
-//    x[i] = shared[j];
-//  }, tid);
-//
-//  if(sync) __syncthreads();
-//
-//  return x;
-//}
-//
-//template<unsigned nt, unsigned vt, typename T, unsigned shared_size>
-//void sycl_reg_to_shared_strided(
-//  syclArray<T, vt> x, unsigned tid, T (&shared)[shared_size], bool sync = true
-//) {
-//
-//  static_assert(shared_size >= nt * vt,
-//    "reg_to_shared_strided must have at least nt * vt storage");
-//
-//  sycl_strided_iterate<nt, vt>(
-//    [&](auto i, auto j) { shared[j] = x[i]; }, tid
-//  );
-//
-//  if(sync) __syncthreads();
-//}
-//
-//template<unsigned nt, unsigned vt, typename T, unsigned shared_size>
-//auto sycl_shared_to_reg_strided(
-//  const T (&shared)[shared_size], unsigned tid, bool sync = true
-//) {
-//
-//  static_assert(shared_size >= nt * vt,
-//    "shared_to_reg_strided must have at least nt * vt storage");
-//
-//  syclArray<T, vt> x;
-//  sycl_strided_iterate<nt, vt>([&](auto i, auto j) { x[i] = shared[j]; }, tid);
-//  if(sync) __syncthreads();
-//
-//  return x;
-//}
-//
-//template<
-//  unsigned nt, unsigned vt, unsigned vt0 = vt, typename T, typename it_t,
-//  unsigned shared_size
-//>
-//auto sycl_reg_to_mem_thread(
-//  syclArray<T, vt> x, unsigned tid,
-//  unsigned count, it_t mem, T (&shared)[shared_size]
-//) {
-//  sycl_reg_to_shared_thread<nt>(x, tid, shared);
-//  auto y = sycl_shared_to_reg_strided<nt, vt>(shared, tid);
-//  sycl_reg_to_mem_strided<nt, vt, vt0>(y, tid, count, mem);
-//}
-//
-//template<
-//  unsigned nt, unsigned vt, unsigned vt0 = vt, typename T, typename it_t,
-//  unsigned shared_size
-//>
-//auto sycl_mem_to_reg_thread(
-//  it_t mem, unsigned tid, unsigned count, T (&shared)[shared_size]
-//) {
-//
-//  auto x = sycl_mem_to_reg_strided<nt, vt, vt0>(mem, tid, count);
-//  sycl_reg_to_shared_strided<nt, vt>(x, tid, shared);
-//  auto y = sycl_shared_to_reg_thread<nt, vt>(shared, tid);
-//  return y;
-//}
-//
-//template<unsigned nt, unsigned vt, typename T, unsigned S>
-//auto sycl_shared_gather(
-//  const T(&data)[S], syclArray<unsigned, vt> indices, bool sync = true
-//) {
-//
-//  static_assert(S >= nt * vt,
-//    "shared_gather must have at least nt * vt storage");
-//
-//  syclArray<T, vt> x;
-//  sycl_iterate<vt>([&](auto i) { x[i] = data[indices[i]]; });
-//
-//  if(sync) __syncthreads();
-//
-//  return x;
-//}
-//
-//
-//
-//// ----------------------------------------------------------------------------
-//// reg<->reg
-//// ----------------------------------------------------------------------------
-//
-//template<unsigned nt, unsigned vt, typename T, unsigned S>
-//auto sycl_reg_thread_to_strided(
-//  syclArray<T, vt> x, unsigned tid, T (&shared)[S]
-//) {
-//  sycl_reg_to_shared_thread<nt>(x, tid, shared);
-//  return sycl_shared_to_reg_strided<nt, vt>(shared, tid);
-//}
-//
-//template<unsigned nt, unsigned vt, typename T, unsigned S>
-//auto sycl_reg_strided_to_thread(
-//  syclArray<T, vt> x, unsigned tid, T (&shared)[S]
-//) {
-//  sycl_reg_to_shared_strided<nt>(x, tid, shared);
-//  return sycl_shared_to_reg_thread<nt, vt>(shared, tid);
-//}
 
 // ----------------------------------------------------------------------------
 // syclLoadStoreIterator
@@ -309,8 +171,7 @@ struct syclLoadStoreIterator : std::iterator_traits<const T*> {
   S store;
   I base;
 
-  syclLoadStoreIterator(L load_, S store_, I base_) :
-    load(load_), store(store_), base(base_) { }
+  syclLoadStoreIterator(L load_, S store_, I base_) :   load(load_), store(store_), base(base_) { }
 
   struct assign_t {
     L load;
@@ -318,14 +179,13 @@ struct syclLoadStoreIterator : std::iterator_traits<const T*> {
     I index;
 
     assign_t& operator=(T rhs) {
-      static_assert(!std::is_same<S, syclEmpty>::value,
-        "load_iterator is being stored to.");
+      static_assert(!std::is_same<S, syclEmpty>::value,  "load_iterator is being stored to.");
       store(rhs, index);
       return *this;
     }
+
     operator T() const {
-      static_assert(!std::is_same<L, syclEmpty>::value,
-        "store_iterator is being loaded from.");
+      static_assert(!std::is_same<L, syclEmpty>::value,  "store_iterator is being loaded from.");
       return load(index);
     }
   };
@@ -360,20 +220,6 @@ struct syclLoadStoreIterator : std::iterator_traits<const T*> {
   }
 };
 
-//template<typename T>
-//struct trivial_load_functor {
-//  template<typename I>
-//  T operator()(I index) const {
-//    return T();
-//  }
-//};
-
-//template<typename T>
-//struct trivial_store_functor {
-//  template<typename I>
-//  void operator()(T v, I index) const { }
-//};
-
 template <typename T, typename I = int, typename L, typename S>
 auto sycl_make_load_store_iterator(L load, S store, I base = 0) {
   return syclLoadStoreIterator<L, S, T, I>(load, store, base);
@@ -400,14 +246,6 @@ void sycl_swap(T& a, T& b) {
   b = c;
 }
 
-// ----------------------------------------------------------------------------
-// launch kernel
-// ----------------------------------------------------------------------------
-
-//template<typename F, typename... args_t>
-//__global__ void sycl_kernel(F f, args_t... args) {
-//  f(threadIdx.x, blockIdx.x, args...);
-//}
 
 // ----------------------------------------------------------------------------
 // operators

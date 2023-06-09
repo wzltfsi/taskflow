@@ -80,7 +80,7 @@ class syclNode {
   public:
 
   // variant index
-  constexpr static auto EMPTY = get_index_v<Empty, handle_t>;
+  constexpr static auto EMPTY                 = get_index_v<Empty, handle_t>;
   constexpr static auto COMMAND_GROUP_HANDLER = get_index_v<CGH, handle_t>;
 
     syclNode() = delete;
@@ -90,15 +90,15 @@ class syclNode {
 
   private:
 
-    syclGraph& _graph;
+    syclGraph&    _graph;
 
-    std::string _name;
+    std::string   _name;
 
     int _level;
 
-    sycl::event _event;
+    sycl::event    _event;
 
-    handle_t _handle;
+    handle_t       _handle;
 
     SmallVector<syclNode*> _successors;
     SmallVector<syclNode*> _dependents;
@@ -168,16 +168,10 @@ syclNode* syclGraph::emplace_back(ArgsT&&... args) {
   return _nodes.back().get();
 
   // TODO: object pool
-
-  //auto node = new syclNode(std::forward<ArgsT>(args)...);
-  //_nodes.push_back(node);
-  //return node;
 }
 
 // Procedure: dump the graph to a DOT format
-inline void syclGraph::dump(
-  std::ostream& os, const void* root, const std::string& root_name
-) const {
+inline void syclGraph::dump(  std::ostream& os, const void* root, const std::string& root_name) const {
 
   // recursive dump with stack
   std::stack<std::tuple<const syclGraph*, const syclNode*, int>> stack;
