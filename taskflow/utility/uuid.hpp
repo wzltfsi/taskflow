@@ -11,22 +11,13 @@ namespace tf {
 
 // Class: UUID
 //
-// A universally unique identifier (UUID) is an identifier standard used in software
-// construction. A UUID is simply a 128-bit value. The meaning of each bit is defined
-// by any of several variants.
-// For human-readable display, many systems use a canonical format using hexadecimal
-// text with inserted hyphen characters.
+// A universally unique identifier (UUID) is an identifier standard used in software construction. A UUID is simply a 128-bit value. The meaning of each bit is defined  by any of several variants.
+// For human-readable display, many systems use a canonical format using hexadecimal text with inserted hyphen characters.
 //
 // For example: 123e4567-e89b-12d3-a456-426655440000
 //
-// The intent of UUIDs is to enable distributed systems to uniquely identify information
-// without significant central coordination.
-//
-//   Copyright 2006 Andy Tompkins.
-//   Distributed under the Boost Software License, Version 1.0. (See
-//   accompanying file LICENSE_1_0.txt or copy at
-//   http://www.boost.org/LICENSE_1_0.txt)
-//
+// The intent of UUIDs is to enable distributed systems to uniquely identify information without significant central coordination.
+
 struct UUID {
 
   using value_type      = uint8_t;
@@ -74,10 +65,7 @@ inline UUID::UUID() {
     std::random_device{}()
   };
 
-  std::uniform_int_distribution<unsigned long> distribution(
-    (std::numeric_limits<unsigned long>::min)(),
-    (std::numeric_limits<unsigned long>::max)()
-  );
+  std::uniform_int_distribution<unsigned long> distribution(  (std::numeric_limits<unsigned long>::min)(),  (std::numeric_limits<unsigned long>::max)() );
 
   int i = 0;
   auto random_value = distribution(engine);
@@ -115,12 +103,12 @@ inline typename UUID::const_iterator UUID::begin() const {
 
 // Function: end
 inline typename UUID::iterator UUID::end() {
-  return data+size();
+  return data + size();
 }
 
 // Function: end
 inline typename UUID::const_iterator UUID::end() const {
-  return data+size();
+  return data + size();
 }
 
 // Function: is_nil

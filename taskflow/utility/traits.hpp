@@ -35,15 +35,6 @@ namespace tf {
 // Traits
 //-----------------------------------------------------------------------------
 
-//// Struct: dependent_false
-//template <typename... T>
-//struct dependent_false {
-//  static constexpr bool value = false;
-//};
-//
-//template <typename... T>
-//constexpr auto dependent_false_v = dependent_false<T...>::value;
-
 template<typename> inline constexpr bool dependent_false_v = false;
 
 // ----------------------------------------------------------------------------
@@ -51,8 +42,7 @@ template<typename> inline constexpr bool dependent_false_v = false;
 //-----------------------------------------------------------------------------
 template <typename T>
 struct is_pod {
-  static const bool value = std::is_trivial_v<T> && 
-                            std::is_standard_layout_v<T>;
+  static const bool value = std::is_trivial_v<T> &&   std::is_standard_layout_v<T>;
 };
 
 template <typename T>
@@ -103,16 +93,7 @@ auto make_moc(T&& m) {
 //-----------------------------------------------------------------------------
 // Visitors.
 //-----------------------------------------------------------------------------
-
-//// Overloadded.
-//template <typename... Ts>
-//struct Visitors : Ts... {
-//  using Ts::operator()... ;
-//};
-//
-//template <typename... Ts>
-//Visitors(Ts...) -> Visitors<Ts...>;
-
+ 
 // ----------------------------------------------------------------------------
 // std::variant
 // ----------------------------------------------------------------------------
@@ -192,10 +173,7 @@ struct stateful_index {
     std::is_integral_v<TS>, "decayed step must be an integral type"
   );
 
-  static_assert(
-    std::is_same_v<TB, TE> && std::is_same_v<TE, TS>,
-    "decayed index and step types must match"
-  );
+  static_assert(  std::is_same_v<TB, TE> && std::is_same_v<TE, TS>,  "decayed index and step types must match" );
 
   using type = TB;
 };
@@ -252,9 +230,7 @@ struct filter_duplicates { using type = T; };
 
 template <template <typename...> class C, typename... Ts, typename U, typename... Us>
 struct filter_duplicates<C<Ts...>, U, Us...>
-    : std::conditional_t<(std::is_same_v<U, Ts> || ...)
-                       , filter_duplicates<C<Ts...>, Us...>
-                       , filter_duplicates<C<Ts..., U>, Us...>> {};
+    : std::conditional_t<(std::is_same_v<U, Ts> || ...) , filter_duplicates<C<Ts...>, Us...> , filter_duplicates<C<Ts..., U>, Us...>> {};
 
 template <typename T>
 struct unique_variant;
