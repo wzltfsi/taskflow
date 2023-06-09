@@ -16,24 +16,13 @@ namespace tf {
 // ----------------------------------------------------------------------------
 
 /**
-@enum TaskPriority
-
-@brief enumeration of all task priority values
-
-A priority is an enumerated value of type @c unsigned.
-Currently, %Taskflow defines three priority levels, 
-@c HIGH, @c NORMAL, and @c LOW, starting from 0, 1, to 2.
-That is, the lower the value, the higher the priority.
-
+@enum TaskPriority  枚举所有任务优先级值
+优先级是@c unsigned 类型的枚举值。 目前，%Taskflow定义了@c HIGH、@c NORMAL、@c LOW三个优先级，从0、1到2，即数值越低，优先级越高。
 */
 enum class TaskPriority : unsigned {
-  /** @brief value of the highest priority (i.e., 0)  */
   HIGH = 0,
-  /** @brief value of the normal priority (i.e., 1)  */
   NORMAL = 1,
-  /** @brief value of the lowest priority (i.e., 2) */
   LOW = 2,
-  /** @brief conventional value for iterating priority values */
   MAX = 3
 };
 
@@ -46,25 +35,15 @@ enum class TaskPriority : unsigned {
 
 /**
 @class: TaskQueue
-
-@tparam T data type (must be a pointer type)
-@tparam TF_MAX_PRIORITY maximum level of the priority 
-
-@brief class to create a lock-free unbounded single-producer multiple-consumer queue
+@brief class 创建无锁无界单生产者多消费者队列（lock-free unbounded single-producer multiple-consumer queue）
 
 This class implements the work-stealing queue described in the paper,
 <a href="https://www.di.ens.fr/~zappa/readings/ppopp13.pdf">Correct and Efficient Work-Stealing for Weak Memory Models</a>,
 and extends it to include priority.
 
-Only the queue owner can perform pop and push operations,
-while others can steal data from the queue simultaneously.
-Priority starts from zero (highest priority) to the template value 
-`TF_MAX_PRIORITY-1` (lowest priority).
-All operations are associated with priority values to indicate
-the corresponding queues to which an operation is applied.
-
-The default template value, `TF_MAX_PRIORITY`, is `TaskPriority::MAX` 
-which applies only three priority levels to the task queue.
+只有队列所有者可以执行弹出和推送操作，而其他人可以同时从队列中窃取数据。 
+优先级从零（最高优先级）到模板值“TF_MAX_PRIORITY-1”（最低优先级）。 
+所有操作都与优先级值相关联，以指示应用操作的相应队列。 默认模板值“TF_MAX_PRIORITY”是“TaskPriority::MAX”，它仅将三个优先级应用于任务队列。
 
 @code{.cpp}
 auto [A, B, C, D, E] = taskflow.emplace(
@@ -91,13 +70,8 @@ D.priority(tf::TaskPriority::NORMAL);
 executor.run(taskflow).wait();
 @endcode
 
-In the above example, we have a task graph of five tasks,
-@c A, @c B, @c C, @c D, and @c E, in which @c B, @c C, and @c D
-can run in simultaneously when @c A finishes.
-Since we only uses one worker thread in the executor, 
-we can deterministically run @c B first, then @c D, and @c C
-in order of their priority values.
-The output is as follows:
+在上面的例子中，我们有五个任务的任务图，@c A、@c B、@c C、@c D和@c E，其中@c B、@c C和@c D可以 @c A 完成时同时运行。
+由于我们在执行器中只使用一个工作线程，我们可以确定地首先运行@c B，然后是@c D，然后@c C 按照它们的优先级值的顺序运行。 输出如下：
 
 @code{.shell-session}
 Task B: 0
@@ -150,8 +124,7 @@ class TaskQueue {
 
   };
 
-  // Doubling the alignment by 2 seems to generate the most
-  // decent performance.
+  // 将对齐方式加倍 2 似乎会产生最不错的性能。
   CachelineAligned<std::atomic<int64_t>> _top[TF_MAX_PRIORITY];
   CachelineAligned<std::atomic<int64_t>> _bottom[TF_MAX_PRIORITY];
   std::atomic<Array*> _array[TF_MAX_PRIORITY];
@@ -160,96 +133,38 @@ class TaskQueue {
   //std::atomic<T> _cache {nullptr};
 
   public:
-
-    /**
-    @brief constructs the queue with a given capacity
-
-    @param capacity the capacity of the queue (must be power of 2)
-    */
+    // 构造具有给定容量的队列 ， capacity 队列的容量（必须是2的幂）
     explicit TaskQueue(int64_t capacity = 512);
 
-    /**
-    @brief destructs the queue
-    */
     ~TaskQueue();
 
-    /**
-    @brief queries if the queue is empty at the time of this call
-    */
     bool empty() const noexcept;
 
-    /**
-    @brief queries if the queue is empty at a specific priority value
-    */
     bool empty(unsigned priority) const noexcept;
 
-    /**
-    @brief queries the number of items at the time of this call
-    */
+
     size_t size() const noexcept;
 
-    /**
-    @brief queries the number of items with the given priority
-           at the time of this call
-    */
+    // 查询调用时具有给定优先级的项目数
     size_t size(unsigned priority) const noexcept;
 
-    /**
-    @brief queries the capacity of the queue
-    */
+    // 查询队列容量
     int64_t capacity() const noexcept;
     
-    /**
-    @brief queries the capacity of the queue at a specific priority value
-    */
+    // 查询特定优先级值的队列容量
     int64_t capacity(unsigned priority) const noexcept;
 
-    /**
-    @brief inserts an item to the queue
-
-    @param item the item to push to the queue
-    @param priority priority value of the item to push (default = 0)
-    
-    Only the owner thread can insert an item to the queue.
-    The operation can trigger the queue to resize its capacity
-    if more space is required.
-    */
     TF_FORCE_INLINE void push(T item, unsigned priority);
 
-    /**
-    @brief pops out an item from the queue
-
-    Only the owner thread can pop out an item from the queue.
-    The return can be a @c nullptr if this operation failed (empty queue).
-    */
     T pop();
 
-    /**
-    @brief pops out an item with a specific priority value from the queue
-
-    @param priority priority of the item to pop
-
-    Only the owner thread can pop out an item from the queue.
-    The return can be a @c nullptr if this operation failed (empty queue).
-    */
     TF_FORCE_INLINE T pop(unsigned priority);
 
-    /**
-    @brief steals an item from the queue
 
-    Any threads can try to steal an item from the queue.
-    The return can be a @c nullptr if this operation failed (not necessary empty).
-    */
+    //   从队列中窃取一个项目 任何线程都可以尝试从队列中窃取一个项目。 如果此操作失败（不一定为空），则返回可以是 @c nullptr。
     T steal();
 
-    /**
-    @brief steals an item with a specific priority value from the queue
-
-    @param priority priority of the item to steal
-
-    Any threads can try to steal an item from the queue.
-    The return can be a @c nullptr if this operation failed (not necessary empty).
-    */
+    // 从队列中窃取具有特定优先级值的项目 ,  priority 要窃取的项目的优先级 ,  任何线程都可以尝试从队列中窃取项目。 如果此操作失败（不一定为空），则返回可以是  nullptr。
     T steal(unsigned priority);
 
   private:
@@ -348,7 +263,7 @@ template <typename T, unsigned TF_MAX_PRIORITY>
 TF_FORCE_INLINE T TaskQueue<T, TF_MAX_PRIORITY>::pop(unsigned p) {
 
   int64_t b = _bottom[p].data.load(std::memory_order_relaxed) - 1;
-  Array* a = _array[p].load(std::memory_order_relaxed);
+  Array*  a = _array[p].load(std::memory_order_relaxed);
   _bottom[p].data.store(b, std::memory_order_relaxed);
   std::atomic_thread_fence(std::memory_order_seq_cst);
   int64_t t = _top[p].data.load(std::memory_order_relaxed);
@@ -359,9 +274,7 @@ TF_FORCE_INLINE T TaskQueue<T, TF_MAX_PRIORITY>::pop(unsigned p) {
     item = a->pop(b);
     if(t == b) {
       // the last item just got stolen
-      if(!_top[p].data.compare_exchange_strong(t, t+1,
-                                               std::memory_order_seq_cst,
-                                               std::memory_order_relaxed)) {
+      if(!_top[p].data.compare_exchange_strong(t, t+1, std::memory_order_seq_cst, std::memory_order_relaxed)) {
         item = nullptr;
       }
       _bottom[p].data.store(b + 1, std::memory_order_relaxed);
@@ -398,9 +311,7 @@ T TaskQueue<T, TF_MAX_PRIORITY>::steal(unsigned p) {
   if(t < b) {
     Array* a = _array[p].load(std::memory_order_consume);
     item = a->pop(t);
-    if(!_top[p].data.compare_exchange_strong(t, t+1,
-                                             std::memory_order_seq_cst,
-                                             std::memory_order_relaxed)) {
+    if(!_top[p].data.compare_exchange_strong(t, t+1, std::memory_order_seq_cst, std::memory_order_relaxed)) {
       return nullptr;
     }
   }
@@ -432,8 +343,7 @@ TF_NO_INLINE typename TaskQueue<T, TF_MAX_PRIORITY>::Array*
   _garbage[p].push_back(a);
   std::swap(a, tmp);
   _array[p].store(a, std::memory_order_release);
-  // Note: the original paper using relaxed causes t-san to complain
-  //_array.store(a, std::memory_order_relaxed);
+  
   return a;
 }
 

@@ -17,13 +17,9 @@ namespace tf {
 
 /**
 @class Worker
-
-@brief class to create a worker in an executor
-
-The class is primarily used by the executor to perform work-stealing algorithm.
-Users can access a worker object and alter its property
-(e.g., changing the thread affinity in a POSIX-like system)
-using tf::WorkerInterface.
+class 在执行器中创建一个 worker
+该类主要由执行者用来执行工作窃取算法。 
+用户可以使用 tf::WorkerInterface 访问工作对象并更改其属性（例如，更改类 POSIX 系统中的线程关联）。
 */
 class Worker {
 
@@ -32,85 +28,39 @@ class Worker {
 
   public:
 
-    /**
-    @brief queries the worker id associated with its parent executor
-
-    A worker id is a unsigned integer in the range <tt>[0, N)</tt>,
-    where @c N is the number of workers spawned at the construction
-    time of the executor.
-    */
+    // 查询与其父执行器相关联的工作人员 ID 工作人员 ID 是 [0, N) 范围内的无符号整数，其中  N 是在 executor 的构造时产生的 workers 数量。
     inline size_t id() const { return _id; }
 
-    /**
-    @brief acquires a pointer access to the underlying thread
-    */
+    // 获取对底层线程的指针访问
     inline std::thread* thread() const { return _thread; }
 
-    /**
-    @brief queries the size of the queue (i.e., number of enqueued tasks to
-           run) associated with the worker
-    */
+    // 查询与 worker 关联的队列大小（即要运行的排队任务数）
     inline size_t queue_size() const { return _wsq.size(); }
     
-    /**
-    @brief queries the current capacity of the queue
-    */
+    // 查询队列的当前容量
     inline size_t queue_capacity() const { return static_cast<size_t>(_wsq.capacity()); }
 
   private:
 
-    size_t _id;
-    size_t _vtm;
-    Executor* _executor;
-    std::thread* _thread;
-    Notifier::Waiter* _waiter;
+    size_t                     _id;
+    size_t                     _vtm;
+    Executor*                  _executor;
+    std::thread*               _thread;
+    Notifier::Waiter*          _waiter;
     std::default_random_engine _rdgen { std::random_device{}() };
-    TaskQueue<Node*> _wsq;
-    Node* _cache;
+    TaskQueue<Node*>           _wsq;
+    Node*                      _cache;
 };
-
-// ----------------------------------------------------------------------------
-// Class Definition: PerThreadWorker
-// ----------------------------------------------------------------------------
-
-/**
-@private
-*/
-//struct PerThreadWorker {
-//
-//  Worker* worker;
-//
-//  PerThreadWorker() : worker {nullptr} {}
-//
-//  PerThreadWorker(const PerThreadWorker&) = delete;
-//  PerThreadWorker(PerThreadWorker&&) = delete;
-//
-//  PerThreadWorker& operator = (const PerThreadWorker&) = delete;
-//  PerThreadWorker& operator = (PerThreadWorker&&) = delete;
-//};
-
-/**
-@private
-*/
-//inline PerThreadWorker& this_worker() {
-//  thread_local PerThreadWorker worker;
-//  return worker;
-//}
-
-
+ 
 // ----------------------------------------------------------------------------
 // Class Definition: WorkerView
 // ----------------------------------------------------------------------------
 
 /**
 @class WorkerView
-
-@brief class to create an immutable view of a worker in an executor
-
-An executor keeps a set of internal worker threads to run tasks.
-A worker view provides users an immutable interface to observe
-when a worker runs a task, and the view object is only accessible
-from an observer derived from tf::ObserverInterface.
+ 
+用于在 executor 中创建 worker 的不可变视图的类 ,executor保留一组内部 worker 线程来运行 tasks  
+ worker view 为用户提供了一个不可变的接口来观察 worker 何时运行 task ，并且视图对象只能从派生自 tf::ObserverInterface 的观察者访问
 */
 class WorkerView {
 
@@ -118,24 +68,10 @@ class WorkerView {
 
   public:
 
-    /**
-    @brief queries the worker id associated with its parent executor
-
-    A worker id is a unsigned integer in the range <tt>[0, N)</tt>,
-    where @c N is the number of workers spawned at the construction
-    time of the executor.
-    */
     size_t id() const;
 
-    /**
-    @brief queries the size of the queue (i.e., number of pending tasks to
-           run) associated with the worker
-    */
     size_t queue_size() const;
 
-    /**
-    @brief queries the current capacity of the queue
-    */
     size_t queue_capacity() const;
 
   private:
@@ -148,8 +84,7 @@ class WorkerView {
 };
 
 // Constructor
-inline WorkerView::WorkerView(const Worker& w) : _worker{w} {
-}
+inline WorkerView::WorkerView(const Worker& w) : _worker{w} {}
 
 // function: id
 inline size_t WorkerView::id() const {
@@ -173,25 +108,17 @@ inline size_t WorkerView::queue_capacity() const {
 
 /**
 @class WorkerInterface
+在 executor 中配置 worker 行为的类 
 
-@brief class to configure worker behavior in an executor
-
-The tf::WorkerInterface class lets users interact with the executor
-to customize the worker behavior,
-such as calling custom methods before and after a worker enters and leaves
-the loop.
-When you create an executor, it spawns a set of workers to run tasks.
-The interaction between the executor and its spawned workers looks like
-the following:
+tf::WorkerInterface 类允许用户与 executor  交互以自定义 worker 行为，例如在 worker 进入和离开循环之前和之后调用自定义方法。 
+当您创建执行程序时，它会生成一组工作程序来运行任务。 executor 和它派生的 worker 之间的交互如下所示：
 
 for(size_t n=0; n<num_workers; n++) {
   create_thread([](Worker& worker)
   
-    // pre-processing executor-specific worker information
-    // ...
+    // 预处理 executor-specific worker 信息
   
-    // enter the scheduling loop
-    // Here, WorkerInterface::scheduler_prologue is invoked, if any
+    // 进入调度循环。 在这里，WorkerInterface::scheduler_prologue 被调用，如果有的话
     
     while(1) {
       perform_work_stealing_algorithm();
@@ -200,47 +127,30 @@ for(size_t n=0; n<num_workers; n++) {
       }
     }
   
-    // leaves the scheduling loop and joins this worker thread
-    // Here, WorkerInterface::scheduler_epilogue is invoked, if any
+    // 离开调度循环并加入这个工作线程。在这里，WorkerInterface::scheduler_epilogue 被调用，如果有的话
   );
 }
 
-@note
-Methods defined in tf::WorkerInterface are not thread-safe and may be
-be invoked by multiple workers concurrently.
+tf::WorkerInterface 中定义的方法不是线程安全的，可能会被多个 worker 同时调用。
 
 */
 class WorkerInterface {
 
   public:
-  
-  /**
-  @brief default destructor
-  */
   virtual ~WorkerInterface() = default;
   
-  /**
-  @brief method to call before a worker enters the scheduling loop
-  @param worker a reference to the worker
-
-  The method is called by the constructor of an executor.
-  */
+  /*  在 worker 进入调度循环之前调用的方法 
+      该方法由 executor 的 constructor 调用*/
   virtual void scheduler_prologue(Worker& worker) = 0;
   
-  /**
-  @brief method to call after a worker leaves the scheduling loop
-  @param worker a reference to the worker
-  @param ptr an pointer to the exception thrown by the scheduling loop
 
-  The method is called by the constructor of an executor.
-  */
+  /*  worker 离开调度循环后调用的方法 
+      该方法由 executor 的 constructor 调用*/
   virtual void scheduler_epilogue(Worker& worker, std::exception_ptr ptr) = 0;
-
 };
 
-/**
-@brief helper function to create an instance derived from tf::WorkerInterface
-
+/* 创建从 tf::WorkerInterface 派生的实例的函数 
+ 
 @tparam T type derived from tf::WorkerInterface
 @tparam ArgsT argument types to construct @c T
 
@@ -248,10 +158,7 @@ class WorkerInterface {
 */
 template <typename T, typename... ArgsT>
 std::shared_ptr<T> make_worker_interface(ArgsT&&... args) {
-  static_assert(
-    std::is_base_of_v<WorkerInterface, T>, 
-    "T must be derived from WorkerInterface"
-  );
+  static_assert(  std::is_base_of_v<WorkerInterface, T>,   "T must be derived from WorkerInterface" );
   return std::make_shared<T>(std::forward<ArgsT>(args)...);
 }
 

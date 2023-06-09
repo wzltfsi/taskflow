@@ -16,9 +16,7 @@ namespace tf {
 
 @brief class to create a taskflow object
 
-A %taskflow manages a task dependency graph where each task represents a
-callable object (e.g., @std_lambda, @std_function) and an edge represents a
-dependency between two tasks. A task is one of the following types:
+%taskflow 管理任务依赖关系图，其中每个任务代表一个可调用对象（例如，@std_lambda、@std_function），一条边代表两个任务之间的依赖关系。 任务是以下类型之一：
 
   1. static task         : the callable constructible from
                            @c std::function<void()>
@@ -31,12 +29,8 @@ dependency between two tasks. A task is one of the following types:
   5. module task         : the task constructed from tf::Taskflow::composed_of
                            @c std::function<void(tf::Runtime&)>
 
-Each task is a basic computation unit and is run by one worker thread
-from an executor.
-The following example creates a simple taskflow graph of four static tasks,
-@c A, @c B, @c C, and @c D, where
-@c A runs before @c B and @c C and
-@c D runs after  @c B and @c C.
+每个任务都是一个基本的计算单元，由一个来自 executor 的工作线程运行。 
+以下示例创建了一个包含四个静态任务的简单任务流图，A、 B、 C 和 D，其中 A 在 B 之前运行， C 和 D 在之后运行  B 和 C。
 
 @code{.cpp}
 tf::Executor executor;
@@ -53,16 +47,9 @@ D.succeed(B, C);  // D runs after  B and C
 executor.run(taskflow).wait();
 @endcode
 
-The taskflow object itself is NOT thread-safe. You should not
-modifying the graph while it is running,
-such as adding new tasks, adding new dependencies, and moving
-the taskflow to another.
-To minimize the overhead of task creation,
-our runtime leverages a global object pool to recycle
-tasks in a thread-safe manner.
-
-Please refer to @ref Cookbook to learn more about each task type
-and how to submit a taskflow to an executor.
+taskflow object  对象本身不是线程安全的。 您不应该在 graph  运行时对其进行修改，例如添加新任务、添加新依赖项以及将任务流移动到另一个。 
+为了最大限度地减少任务创建的开销，我们的运行时利用全局对象池以线程安全的方式回收任务。 
+请参阅@ref Cookbook 以了解有关每种任务类型以及如何将任务流提交给执行者的更多信息。
 */
 class Taskflow : public FlowBuilder {
 
@@ -77,78 +64,31 @@ class Taskflow : public FlowBuilder {
   };
 
   public:
-
-    /**
-    @brief constructs a taskflow with the given name
-
-    @code{.cpp}
-    tf::Taskflow taskflow("My Taskflow");
-    std::cout << taskflow.name();         // "My Taskflow"
-    @endcode
-    */
+ 
     Taskflow(const std::string& name);
-
-    /**
-    @brief constructs a taskflow
-    */
+ 
     Taskflow();
 
-    /**
-    @brief constructs a taskflow from a moved taskflow
-
-    Constructing a taskflow @c taskflow1 from a moved taskflow @c taskflow2 will
-    migrate the graph of @c taskflow2 to @c taskflow1.
-    After the move, @c taskflow2 will become empty.
-
-    @code{.cpp}
-    tf::Taskflow taskflow1(std::move(taskflow2));
-    assert(taskflow2.empty());
-    @endcode
-
-    Notice that @c taskflow2 should not be running in an executor
-    during the move operation, or the behavior is undefined.
-    */
     Taskflow(Taskflow&& rhs);
-
-    /**
-    @brief move assignment operator
-
-    Moving a taskflow @c taskflow2 to another taskflow @c taskflow1 will destroy
-    the existing graph of @c taskflow1 and assign it the graph of @c taskflow2.
-    After the move, @c taskflow2 will become empty.
-
-    @code{.cpp}
-    taskflow1 = std::move(taskflow2);
-    assert(taskflow2.empty());
-    @endcode
-
-    Notice that both @c taskflow1 and @c taskflow2 should not be running
-    in an executor during the move operation, or the behavior is undefined.
-    */
+ 
     Taskflow& operator = (Taskflow&& rhs);
 
     /**
     @brief default destructor
 
-    When the destructor is called, all tasks and their associated data
-    (e.g., captured data) will be destroyed.
-    It is your responsibility to ensure all submitted execution of this
-    taskflow have completed before destroying it.
-    For instance, the following code results in undefined behavior
-    since the executor may still be running the taskflow while
-    it is destroyed after the block.
+当调用 destructor 时，所有 tasks 及其相关数据（例如，捕获的数据）都将被销毁。 您有责任确保此任务流的所有提交执行都已完成，然后再销毁它。 
+例如，以下代码会导致未定义的行为，因为执行程序可能仍在运行任务流，而它在块后被销毁。
 
-    @code{.cpp}
+    @code{.cpp}  错误的
     {
       tf::Taskflow taskflow;
       executor.run(taskflow);
     }
     @endcode
 
-    To fix the problem, we must wait for the execution to complete
-    before destroying the taskflow.
+要解决这个问题，我们必须在销毁任务流之前等待执行完成。
 
-    @code{.cpp}
+    @code{.cpp}  正确的
     {
       tf::Taskflow taskflow;
       executor.run(taskflow).wait();
@@ -156,88 +96,27 @@ class Taskflow : public FlowBuilder {
     @endcode
     */
     ~Taskflow() = default;
+ 
 
-    /**
-    @brief dumps the taskflow to a DOT format through a std::ostream target
-
-    @code{.cpp}
-    taskflow.dump(std::cout);  // dump the graph to the standard output
-
-    std::ofstream ofs("output.dot");
-    taskflow.dump(ofs);        // dump the graph to the file output.dot
-    @endcode
-
-    For dynamically spawned tasks, such as module tasks, subflow tasks,
-    and GPU tasks, you need to run the taskflow first before you can
-    dump the entire graph.
-
-    @code{.cpp}
-    tf::Task parent = taskflow.emplace([](tf::Subflow sf){
-      sf.emplace([](){ std::cout << "child\n"; });
-    });
-    taskflow.dump(std::cout);      // this dumps only the parent tasks
-    executor.run(taskflow).wait();
-    taskflow.dump(std::cout);      // this dumps both parent and child tasks
-    @endcode
-    */
     void dump(std::ostream& ostream) const;
 
-    /**
-    @brief dumps the taskflow to a std::string of DOT format
-
-    This method is similar to tf::Taskflow::dump(std::ostream& ostream),
-    but returning a string of the graph in DOT format.
-    */
+ 
     std::string dump() const;
-
-    /**
-    @brief queries the number of tasks
-    */
+ 
     size_t num_tasks() const;
-
-    /**
-    @brief queries the emptiness of the taskflow
-
-    An empty taskflow has no tasks. That is the return of
-    tf::Taskflow::num_tasks is zero.
-    */
+ 
     bool empty() const;
-
-    /**
-    @brief assigns a name to the taskflow
-
-    @code{.cpp}
-    taskflow.name("assign another name");
-    @endcode
-    */
+ 
     void name(const std::string&);
 
-    /**
-    @brief queries the name of the taskflow
-
-    @code{.cpp}
-    std::cout << "my name is: " << taskflow.name();
-    @endcode
-    */
+     
     const std::string& name() const;
-
-    /**
-    @brief clears the associated task dependency graph
-
-    When you clear a taskflow, all tasks and their associated data
-    (e.g., captured data in task callables) will be destroyed.
-    The behavior of clearing a running taskflow is undefined.
-    */
+ 
     void clear();
 
     /**
-    @brief applies a visitor to each task in the taskflow
-
-    A visitor is a callable that takes an argument of type tf::Task
-    and returns nothing. The following example iterates each task in a
-    taskflow and prints its name:
-
-    @code{.cpp}
+    访问者是一个可调用对象，它接受类型为 tf::Task 的参数并且不返回任何内容。 以下示例迭代任务流中的每个任务并打印其名称：
+   @code{.cpp}
     taskflow.for_each_task([](tf::Task task){
       std::cout << task.name() << '\n';
     });
@@ -248,20 +127,17 @@ class Taskflow : public FlowBuilder {
 
     /**
     @brief returns a reference to the underlying graph object
-
-    A graph object (of type tf::Graph) is the ultimate storage for the
-    task dependency graph and should only be used as an opaque
-    data structure to interact with the executor (e.g., composition).
+    图对象（类型为 tf::Graph）是任务依赖图的最终存储，只能用作不透明的数据结构来与 executor 交互（例如，composition）。
     */
     Graph& graph();
 
   private:
 
-    mutable std::mutex _mutex;
+    mutable std::mutex  _mutex;
 
-    std::string _name;
+    std::string         _name;
 
-    Graph _graph;
+    Graph               _graph;
 
     std::queue<std::shared_ptr<Topology>> _topologies;
 
@@ -279,18 +155,17 @@ inline Taskflow::Taskflow(const std::string& name) :
 }
 
 // Constructor
-inline Taskflow::Taskflow() : FlowBuilder{_graph} {
-}
+inline Taskflow::Taskflow() : FlowBuilder{_graph} {}
 
 // Move constructor
 inline Taskflow::Taskflow(Taskflow&& rhs) : FlowBuilder{_graph} {
 
   std::scoped_lock<std::mutex> lock(rhs._mutex);
 
-  _name = std::move(rhs._name);
-  _graph = std::move(rhs._graph);
+  _name       = std::move(rhs._name);
+  _graph      = std::move(rhs._graph);
   _topologies = std::move(rhs._topologies);
-  _satellite = rhs._satellite;
+  _satellite  = rhs._satellite;
 
   rhs._satellite.reset();
 }
@@ -299,10 +174,10 @@ inline Taskflow::Taskflow(Taskflow&& rhs) : FlowBuilder{_graph} {
 inline Taskflow& Taskflow::operator = (Taskflow&& rhs) {
   if(this != &rhs) {
     std::scoped_lock<std::mutex, std::mutex> lock(_mutex, rhs._mutex);
-    _name = std::move(rhs._name);
-    _graph = std::move(rhs._graph);
+    _name       = std::move(rhs._name);
+    _graph      = std::move(rhs._graph);
     _topologies = std::move(rhs._topologies);
-    _satellite = rhs._satellite;
+    _satellite  = rhs._satellite;
     rhs._satellite.reset();
   }
   return *this;
@@ -395,9 +270,7 @@ inline void Taskflow::_dump(std::ostream& os, const Graph* top) const {
 }
 
 // Procedure: _dump
-inline void Taskflow::_dump(
-  std::ostream& os, const Node* node, Dumper& dumper
-) const {
+inline void Taskflow::_dump( std::ostream& os, const Node* node, Dumper& dumper) const {
 
   os << 'p' << node << "[label=\"";
   if(node->_name.empty()) os << 'p' << node;
@@ -421,17 +294,14 @@ inline void Taskflow::_dump(
   for(size_t s=0; s<node->_successors.size(); ++s) {
     if(node->_is_conditioner()) {
       // case edge is dashed
-      os << 'p' << node << " -> p" << node->_successors[s]
-         << " [style=dashed label=\"" << s << "\"];\n";
+      os << 'p' << node << " -> p" << node->_successors[s] << " [style=dashed label=\"" << s << "\"];\n";
     } else {
       os << 'p' << node << " -> p" << node->_successors[s] << ";\n";
     }
   }
 
   // subflow join node
-  if(node->_parent && node->_parent->_handle.index() == Node::DYNAMIC &&
-     node->_successors.size() == 0
-    ) {
+  if(node->_parent && node->_parent->_handle.index() == Node::DYNAMIC && node->_successors.size() == 0  ) {
     os << 'p' << node << " -> p" << node->_parent << ";\n";
   }
 
@@ -458,9 +328,7 @@ inline void Taskflow::_dump(
 }
 
 // Procedure: _dump
-inline void Taskflow::_dump(
-  std::ostream& os, const Graph* graph, Dumper& dumper
-) const {
+inline void Taskflow::_dump( std::ostream& os, const Graph* graph, Dumper& dumper) const {
 
   for(const auto& n : graph->_nodes) {
 
@@ -500,32 +368,23 @@ inline void Taskflow::_dump(
 
 @brief class to access the result of an execution
 
-tf::Future is a derived class from std::future that will eventually hold the
-execution result of a submitted taskflow (tf::Executor::run)
-In addition to the base methods inherited from std::future,
-you can call tf::Future::cancel to cancel the execution of the running taskflow
-associated with this future object.
-The following example cancels a submission of a taskflow that contains
-1000 tasks each running one second.
+tf::Future 是 std::future 的派生类，最终会保存提交的任务流的执行结果（tf::Executor::run） 
+除了继承自 std::future 的基类方法外，还可以调用 tf ::Future::cancel 取消与此未来对象关联的正在运行的任务流的执行。 
+以下示例取消提交包含 1000 个任务的任务流，每个任务运行一秒。
+ 
 
 @code{.cpp}
 tf::Executor executor;
 tf::Taskflow taskflow;
 
 for(int i=0; i<1000; i++) {
-  taskflow.emplace([](){
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-  });
+  taskflow.emplace([](){ std::this_thread::sleep_for(std::chrono::seconds(1)); });
 }
-
-// submit the taskflow
+ 
 tf::Future fu = executor.run(taskflow);
-
-// request to cancel the submitted execution above
 fu.cancel();
-
-// wait until the cancellation finishes
 fu.get();
+
 @endcode
 */
 template <typename T>
@@ -535,48 +394,26 @@ class Future : public std::future<T>  {
   friend class Subflow;
   friend class Runtime;
 
-  using handle_t = std::variant<
-    std::monostate, std::weak_ptr<Topology>
-  >;
+  using handle_t = std::variant<std::monostate, std::weak_ptr<Topology>>;
 
   public:
-
-    /**
-    @brief default constructor
-    */
+ 
     Future() = default;
-
-    /**
-    @brief disabled copy constructor
-    */
+ 
     Future(const Future&) = delete;
-
-    /**
-    @brief default move constructor
-    */
+ 
     Future(Future&&) = default;
 
-    /**
-    @brief disabled copy assignment
-    */
     Future& operator = (const Future&) = delete;
 
-    /**
-    @brief default move assignment
-    */
     Future& operator = (Future&&) = default;
 
     /**
-    @brief cancels the execution of the running taskflow associated with
-           this future object
-
+    @brief 取消与此未来对象关联的正在运行的 taskflow 的执行    
     @return @c true if the execution can be cancelled or
             @c false if the execution has already completed
 
-    When you request a cancellation, the executor will stop scheduling
-    any tasks onwards. Tasks that are already running will continue to finish
-    (non-preemptive).
-    You can call tf::Future::wait to wait for the cancellation to complete.
+   当您请求取消时，executor  将停止安排任何任务。 已经在运行的任务将继续完成（非抢占式）。 您可以调用 tf::Future::wait 等待取消完成。
     */
     bool cancel();
 
@@ -590,10 +427,7 @@ class Future : public std::future<T>  {
 
 template <typename T>
 template <typename P>
-Future<T>::Future(std::future<T>&& fu, P&& p) :
-  std::future<T> {std::move(fu)},
-  _handle        {std::forward<P>(p)} {
-}
+Future<T>::Future(std::future<T>&& fu, P&& p) : std::future<T> {std::move(fu)},   _handle   {std::forward<P>(p)} {}
 
 // Function: cancel
 template <typename T>
