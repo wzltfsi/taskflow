@@ -5,9 +5,7 @@
 namespace tf {
 
 // rounds the given 64-bit unsigned integer to the nearest power of 2
-template <typename T, std::enable_if_t<
-  (std::is_unsigned_v<std::decay_t<T>> && sizeof(T) == 8) , void
->* = nullptr>
+template <typename T, std::enable_if_t<(std::is_unsigned_v<std::decay_t<T>> && sizeof(T) == 8) , void>* = nullptr>
 constexpr T next_pow2(T x) {
   if(x == 0) return 1;
   x--;
@@ -22,9 +20,7 @@ constexpr T next_pow2(T x) {
 }
 
 // rounds the given 32-bit unsigned integer to the nearest power of 2
-template <typename T, std::enable_if_t<
-  (std::is_unsigned_v<std::decay_t<T>> && sizeof(T) == 4), void
->* = nullptr>
+template <typename T, std::enable_if_t< (std::is_unsigned_v<std::decay_t<T>> && sizeof(T) == 4), void>* = nullptr>
 constexpr T next_pow2(T x) {
   if(x == 0) return 1;
   x--;
@@ -38,21 +34,12 @@ constexpr T next_pow2(T x) {
 }
 
 // checks if the given number if a power of 2
-template <typename T, std::enable_if_t<
-  std::is_integral_v<std::decay_t<T>>, void>* = nullptr
->
+template <typename T, std::enable_if_t< std::is_integral_v<std::decay_t<T>>, void>* = nullptr>
 constexpr bool is_pow2(const T& x) {
   return x && (!(x&(x-1)));
 }
 
-//// finds the ceil of x divided by b
-//template <typename T, std::enable_if_t<
-//  std::is_integral_v<std::decay_t<T>>, void>* = nullptr
-//>
-//constexpr T ceil(const T& x, const T& y) {
-//  //return (x + y - 1) / y;
-//  return (x-1) / y + 1;
-//}
+
 
 /**
 @brief returns floor(log2(n)), assumes n > 0
@@ -67,8 +54,7 @@ constexpr int log2(T n) {
 }
 
 /**
-@brief finds the median of three numbers of dereferenced iterators using
-       the given comparator
+@brief finds the median of three numbers of dereferenced iterators using  the given comparator
 */
 template <typename RandItr, typename C>
 RandItr median_of_three(RandItr l, RandItr m, RandItr r, C cmp) {
@@ -77,8 +63,7 @@ RandItr median_of_three(RandItr l, RandItr m, RandItr r, C cmp) {
 }
 
 /**
-@brief finds the pseudo median of a range of items using spreaded
-       nine numbers
+@brief finds the pseudo median of a range of items using spreaded   nine numbers
  */
 template <typename RandItr, typename C>
 RandItr pseudo_median_of_nine(RandItr beg, RandItr end, C cmp) {
@@ -93,8 +78,7 @@ RandItr pseudo_median_of_nine(RandItr beg, RandItr end, C cmp) {
 }
 
 /**
-@brief sorts two elements of dereferenced iterators using the given
-       comparison function
+@brief sorts two elements of dereferenced iterators using the given  comparison function
 */
 template<typename Iter, typename Compare>
 void sort2(Iter a, Iter b, Compare comp) {
@@ -102,8 +86,7 @@ void sort2(Iter a, Iter b, Compare comp) {
 }
 
 /**
-@brief sorts three elements of dereferenced iterators using the given
-       comparison function
+@brief sorts three elements of dereferenced iterators using the given  comparison function
 */
 template<typename Iter, typename Compare>
 void sort3(Iter a, Iter b, Iter c, Compare comp) {
@@ -127,10 +110,7 @@ T unique_id() {
 template <typename T>
 inline void atomic_max(std::atomic<T>& v, const T& max_v) noexcept {
   T prev = v.load(std::memory_order_relaxed);
-  while(prev < max_v && 
-        !v.compare_exchange_weak(prev, max_v, std::memory_order_relaxed,
-                                              std::memory_order_relaxed)) {
-  }
+  while(prev < max_v &&   !v.compare_exchange_weak(prev, max_v, std::memory_order_relaxed, std::memory_order_relaxed)) { }
 }
 
 /**
@@ -139,9 +119,7 @@ inline void atomic_max(std::atomic<T>& v, const T& max_v) noexcept {
 template <typename T>
 inline void atomic_min(std::atomic<T>& v, const T& min_v) noexcept {
   T prev = v.load(std::memory_order_relaxed);
-  while(prev > min_v && 
-        !v.compare_exchange_weak(prev, min_v, std::memory_order_relaxed,
-                                              std::memory_order_relaxed)) {
+  while(prev > min_v &&   !v.compare_exchange_weak(prev, min_v, std::memory_order_relaxed, std::memory_order_relaxed)) {
   }
 }
 

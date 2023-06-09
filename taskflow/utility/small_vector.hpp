@@ -28,9 +28,7 @@ namespace tf { namespace detail {
 
 /**
 @private
-@brief NextCapacity - Returns the next power of two (in 64-bits)
-       that is strictly greater than A.  Returns zero on overflow.
-       this function assumes A to be positive
+@brief NextCapacity - Returns the next power of two (in 64-bits) that is strictly greater than A.  Returns zero on overflow. this function assumes A to be positive
 */
 inline uint64_t NextCapacity(uint64_t A) {
   A |= (A >> 1);
@@ -51,8 +49,7 @@ namespace tf {
 @private
 */
 template <typename T>
-struct IsPod : std::integral_constant<bool, std::is_standard_layout<T>::value &&
-                                            std::is_trivial<T>::value> {};
+struct IsPod : std::integral_constant<bool, std::is_standard_layout<T>::value &&   std::is_trivial<T>::value> {};
 
 /**
 @private
@@ -62,11 +59,9 @@ protected:
   void *BeginX, *EndX, *CapacityX;
 
 protected:
-  SmallVectorBase(void *FirstEl, size_t Size)
-    : BeginX(FirstEl), EndX(FirstEl), CapacityX((char*)FirstEl+Size) {}
+  SmallVectorBase(void *FirstEl, size_t Size)   : BeginX(FirstEl), EndX(FirstEl), CapacityX((char*)FirstEl+Size) {}
 
-  /// This is an implementation of the grow() method which only works
-  /// on POD-like data types and is out of line to reduce code duplication.
+  /// This is an implementation of the grow() method which only works  on POD-like data types and is out of line to reduce code duplication.
   void grow_pod(void *FirstEl, size_t MinSizeInBytes, size_t TSize){
     size_t CurSizeBytes = size_in_bytes();
     size_t NewCapacityInBytes = 2 * capacity_in_bytes() + TSize; // Always grow.
@@ -86,8 +81,8 @@ protected:
     }
     //assert(NewElts && "Out of memory");
 
-    this->EndX = (char*)NewElts+CurSizeBytes;
-    this->BeginX = NewElts;
+    this->EndX      = (char*)NewElts+CurSizeBytes;
+    this->BeginX    = NewElts;
     this->CapacityX = (char*)this->BeginX + NewCapacityInBytes;
   }
 
@@ -108,7 +103,8 @@ public:
 /**
 @private
 */
-template <typename T, unsigned N> struct SmallVectorStorage;
+template <typename T, unsigned N> 
+struct SmallVectorStorage;
 
 /**
 @private
@@ -117,16 +113,15 @@ template <typename T, typename = void>
 class SmallVectorTemplateCommon : public SmallVectorBase {
 
   private:
-  template <typename, unsigned> friend struct SmallVectorStorage;
+  template <typename, unsigned> 
+  friend struct SmallVectorStorage;
 
   template <typename X>
   struct AlignedUnionType {
     alignas(X) std::byte buff[std::max(sizeof(std::byte), sizeof(X))];
   };
 
-  // Allocate raw space for N elements of type T.  If T has a ctor or dtor, we
-  // don't want it to be automatically run, so we need to represent the space as
-  // something else.  Use an array of char of sufficient alignment.
+  // Allocate raw space for N elements of type T.  If T has a ctor or dtor, we don't want it to be automatically run, so we need to represent the space as something else.  Use an array of char of sufficient alignment.
   
   // deprecated in c++23
   //typedef typename std::aligned_union<1, T>::type U;
@@ -142,8 +137,7 @@ class SmallVectorTemplateCommon : public SmallVectorBase {
     SmallVectorBase::grow_pod(&FirstEl, MinSizeInBytes, TSize);
   }
 
-  /// Return true if this is a smallvector which has not had dynamic
-  /// memory allocated for it.
+  /// Return true if this is a smallvector which has not had dynamic memory allocated for it.
   bool isSmall() const {
     return BeginX == static_cast<const void*>(&FirstEl);
   }
@@ -156,19 +150,19 @@ class SmallVectorTemplateCommon : public SmallVectorBase {
   void setEnd(T *P) { this->EndX = P; }
 
   public:
-  typedef size_t size_type;
-  typedef ptrdiff_t difference_type;
-  typedef T value_type;
-  typedef T *iterator;
-  typedef const T *const_iterator;
+  typedef size_t      size_type;
+  typedef ptrdiff_t   difference_type;
+  typedef T           value_type;
+  typedef T           *iterator;
+  typedef const T     *const_iterator;
 
-  typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-  typedef std::reverse_iterator<iterator> reverse_iterator;
+  typedef std::reverse_iterator<const_iterator>  const_reverse_iterator;
+  typedef std::reverse_iterator<iterator>        reverse_iterator;
 
-  typedef T &reference;
-  typedef const T &const_reference;
-  typedef T *pointer;
-  typedef const T *const_pointer;
+  typedef T              &reference;
+  typedef const T        &const_reference;
+  typedef T              *pointer;
+  typedef const T        *const_pointer;
 
   // forward iterator creation methods.
   inline iterator begin() { return (iterator)this->BeginX; }
