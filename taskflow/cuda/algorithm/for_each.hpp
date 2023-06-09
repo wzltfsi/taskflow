@@ -197,12 +197,7 @@ cudaTask cudaFlow::for_each(I first, I last, C c) {
   using E = cudaDefaultExecutionPolicy;
   
   unsigned count = std::distance(first, last);
-  
-  // TODO:
-  //if(count == 0) {
-  //  return;
-  //}
-
+ 
   return kernel(
     E::num_blocks(count), E::nt, 0, 
     detail::cuda_for_each_kernel<E::nt, E::vt, I, C>, first, count, c
@@ -216,11 +211,6 @@ void cudaFlow::for_each(cudaTask task, I first, I last, C c) {
   using E = cudaDefaultExecutionPolicy;
   
   unsigned count = std::distance(first, last);
-
-  // TODO:
-  //if(count == 0) {
-  //  return;
-  //}
   
   kernel(task, 
     E::num_blocks(count), E::nt, 0, 
@@ -235,12 +225,7 @@ cudaTask cudaFlow::for_each_index(I first, I last, I inc, C c) {
   using E = cudaDefaultExecutionPolicy;
 
   unsigned count = distance(first, last, inc);
-
-  // TODO:
-  //if(count == 0) {
-  //  return;
-  //}
-
+ 
   return kernel(
     E::num_blocks(count), E::nt, 0, 
     detail::cuda_for_each_index_kernel<E::nt, E::vt, I, C>, first, inc, count, c
@@ -254,12 +239,7 @@ void cudaFlow::for_each_index(cudaTask task, I first, I last, I inc, C c) {
   using E = cudaDefaultExecutionPolicy;
 
   unsigned count = distance(first, last, inc);
-  
-  // TODO:
-  //if(count == 0) {
-  //  return;
-  //}
-
+   
   return kernel(task,
     E::num_blocks(count), E::nt, 0, 
     detail::cuda_for_each_index_kernel<E::nt, E::vt, I, C>, first, inc, count, c
@@ -296,9 +276,7 @@ void cudaFlowCapturer::for_each(cudaTask task, I first, I last, C c) {
 
 // Function: for_each_index
 template <typename I, typename C>
-void cudaFlowCapturer::for_each_index(
-  cudaTask task, I beg, I end, I inc, C c
-) {
+void cudaFlowCapturer::for_each_index( cudaTask task, I beg, I end, I inc, C c) {
   on(task, [=] (cudaStream_t stream) mutable {
     cuda_for_each_index(cudaDefaultExecutionPolicy(stream), beg, end, inc, c);
   });

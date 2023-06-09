@@ -37,9 +37,7 @@ __global__ void cuda_transform_kernel(I first, unsigned count, O output, C op) {
 @private
 */
 template <size_t nt, size_t vt, typename I1, typename I2, typename O, typename C>
-__global__ void cuda_transform_kernel(
-  I1 first1, I2 first2, unsigned count, O output, C op
-) {
+__global__ void cuda_transform_kernel( I1 first1, I2 first2, unsigned count, O output, C op) {
   auto tid = threadIdx.x;
   auto bid = blockIdx.x;
   auto tile = cuda_get_tile(bid, nt*vt, count);
@@ -93,10 +91,7 @@ void cuda_transform(P&& p, I first, I last, O output, C op) {
     return;
   }
 
-  detail::cuda_transform_kernel<E::nt, E::vt, I, O, C>
-    <<<E::num_blocks(count), E::nt, 0, p.stream()>>> (
-    first, count, output, op
-  );
+  detail::cuda_transform_kernel<E::nt, E::vt, I, O, C>  <<<E::num_blocks(count), E::nt, 0, p.stream()>>> ( first, count, output, op );
 }
 
 /**
@@ -124,9 +119,7 @@ while (first1 != last1) {
 @endcode
 */
 template <typename P, typename I1, typename I2, typename O, typename C>
-void cuda_transform(
-  P&& p, I1 first1, I1 last1, I2 first2, O output, C op
-) {
+void cuda_transform( P&& p, I1 first1, I1 last1, I2 first2, O output, C op) {
   
   using E = std::decay_t<P>;
 
@@ -136,10 +129,7 @@ void cuda_transform(
     return;
   }
 
-  detail::cuda_transform_kernel<E::nt, E::vt, I1, I2, O, C>
-    <<<E::num_blocks(count), E::nt, 0, p.stream()>>> (
-    first1, first2, count, output, op
-  );
+  detail::cuda_transform_kernel<E::nt, E::vt, I1, I2, O, C>   <<<E::num_blocks(count), E::nt, 0, p.stream()>>> ( first1, first2, count, output, op);
 }
 
 // ----------------------------------------------------------------------------
@@ -153,17 +143,8 @@ cudaTask cudaFlow::transform(I first, I last, O output, C c) {
   using E = cudaDefaultExecutionPolicy;
 
   unsigned count = std::distance(first, last);
-  
-  // TODO:
-  //if(count == 0) {
-  //  return;
-  //}
 
-  return kernel(
-    E::num_blocks(count), E::nt, 0,
-    detail::cuda_transform_kernel<E::nt, E::vt, I, O, C>,
-    first, count, output, c
-  );
+  return kernel( E::num_blocks(count), E::nt, 0, detail::cuda_transform_kernel<E::nt, E::vt, I, O, C>,  first, count, output, c );
 }
 
 // Function: transform
@@ -173,17 +154,8 @@ cudaTask cudaFlow::transform(I1 first1, I1 last1, I2 first2, O output, C c) {
   using E = cudaDefaultExecutionPolicy;
 
   unsigned count = std::distance(first1, last1);
-  
-  // TODO:
-  //if(count == 0) {
-  //  return;
-  //}
 
-  return kernel(
-    E::num_blocks(count), E::nt, 0,
-    detail::cuda_transform_kernel<E::nt, E::vt, I1, I2, O, C>,
-    first1, first2, count, output, c
-  );
+  return kernel(  E::num_blocks(count), E::nt, 0, detail::cuda_transform_kernel<E::nt, E::vt, I1, I2, O, C>,  first1, first2, count, output, c );
 }
 
 // Function: update transform
@@ -193,38 +165,19 @@ void cudaFlow::transform(cudaTask task, I first, I last, O output, C c) {
   using E = cudaDefaultExecutionPolicy;
 
   unsigned count = std::distance(first, last);
-  
-  // TODO:
-  //if(count == 0) {
-  //  return;
-  //}
 
-  kernel(task,
-    E::num_blocks(count), E::nt, 0,
-    detail::cuda_transform_kernel<E::nt, E::vt, I, O, C>,
-    first, count, output, c
-  );
+  kernel(task,  E::num_blocks(count), E::nt, 0,  detail::cuda_transform_kernel<E::nt, E::vt, I, O, C>,  first, count, output, c );
 }
 
 // Function: update transform
 template <typename I1, typename I2, typename O, typename C>
-void cudaFlow::transform(
-  cudaTask task, I1 first1, I1 last1, I2 first2, O output, C c
-) {
+void cudaFlow::transform( cudaTask task, I1 first1, I1 last1, I2 first2, O output, C c) {
+  
   using E = cudaDefaultExecutionPolicy;
 
   unsigned count = std::distance(first1, last1);
-  
-  // TODO:
-  //if(count == 0) {
-  //  return;
-  //}
 
-  kernel(task,
-    E::num_blocks(count), E::nt, 0,
-    detail::cuda_transform_kernel<E::nt, E::vt, I1, I2, O, C>,
-    first1, first2, count, output, c
-  );
+  kernel(task, E::num_blocks(count), E::nt, 0,   detail::cuda_transform_kernel<E::nt, E::vt, I1, I2, O, C>,  first1, first2, count, output, c );
 }
 
 // ----------------------------------------------------------------------------
@@ -242,9 +195,7 @@ cudaTask cudaFlowCapturer::transform(I first, I last, O output, C op) {
 
 // Function: transform
 template <typename I1, typename I2, typename O, typename C>
-cudaTask cudaFlowCapturer::transform(
-  I1 first1, I1 last1, I2 first2, O output, C op
-) {
+cudaTask cudaFlowCapturer::transform(  I1 first1, I1 last1, I2 first2, O output, C op) {
   return on([=](cudaStream_t stream) mutable {
     cudaDefaultExecutionPolicy p(stream);
     cuda_transform(p, first1, last1, first2, output, op);
@@ -253,9 +204,7 @@ cudaTask cudaFlowCapturer::transform(
 
 // Function: transform
 template <typename I, typename O, typename C>
-void cudaFlowCapturer::transform(
-  cudaTask task, I first, I last, O output, C op
-) {
+void cudaFlowCapturer::transform(cudaTask task, I first, I last, O output, C op) {
   on(task, [=] (cudaStream_t stream) mutable {
     cudaDefaultExecutionPolicy p(stream);
     cuda_transform(p, first, last, output, op);
@@ -264,9 +213,7 @@ void cudaFlowCapturer::transform(
 
 // Function: transform
 template <typename I1, typename I2, typename O, typename C>
-void cudaFlowCapturer::transform(
-  cudaTask task, I1 first1, I1 last1, I2 first2, O output, C op
-) {
+void cudaFlowCapturer::transform( cudaTask task, I1 first1, I1 last1, I2 first2, O output, C op) {
   on(task, [=] (cudaStream_t stream) mutable {
     cudaDefaultExecutionPolicy p(stream);
     cuda_transform(p, first1, last1, first2, output, op);

@@ -40,9 +40,7 @@ constexpr int cuda_find_log2(int x, bool round_up = false) {
 
 /** @private */
 template<typename T, unsigned vt, typename C>
-__device__ auto cuda_odd_even_sort(
-  cudaArray<T, vt> x, C comp, int flags = 0
-) {
+__device__ auto cuda_odd_even_sort(cudaArray<T, vt> x, C comp, int flags = 0) {
   cuda_iterate<vt>([&](auto I) {
     #pragma unroll
     for(auto i = 1 & I; i < vt - 1; i += 2) {
@@ -55,9 +53,7 @@ __device__ auto cuda_odd_even_sort(
 
 /** @private */
 template<typename K, typename V, unsigned vt, typename C>
-__device__ auto cuda_odd_even_sort(
-  cudaKVArray<K, V, vt> x, C comp, int flags = 0
-) {
+__device__ auto cuda_odd_even_sort(cudaKVArray<K, V, vt> x, C comp, int flags = 0) {
   cuda_iterate<vt>([&](auto I) {
     #pragma unroll
     for(auto i = 1 & I; i < vt - 1; i += 2) {
@@ -86,9 +82,7 @@ __device__ inline int cuda_out_of_range_flags(int first, int vt, int count) {
 }
 
 /** @private */
-__device__ inline auto cuda_compute_merge_sort_frame(
-  unsigned partition, unsigned coop, unsigned spacing
-) {
+__device__ inline auto cuda_compute_merge_sort_frame( unsigned partition, unsigned coop, unsigned spacing) {
 
   unsigned size = spacing * (coop / 2);
   unsigned start = ~(coop - 1) & partition;
@@ -104,9 +98,7 @@ __device__ inline auto cuda_compute_merge_sort_frame(
 }
 
 /** @private */
-__device__ inline auto cuda_compute_merge_sort_range(
-  unsigned count, unsigned partition, unsigned coop, unsigned spacing
-) {
+__device__ inline auto cuda_compute_merge_sort_range(unsigned count, unsigned partition, unsigned coop, unsigned spacing) {
 
   auto frame = cuda_compute_merge_sort_frame(partition, coop, spacing);
 
@@ -119,10 +111,7 @@ __device__ inline auto cuda_compute_merge_sort_range(
 }
 
 /** @private */
-__device__ inline auto cuda_compute_merge_sort_range(
-  unsigned count, unsigned partition, unsigned coop, unsigned spacing,
-  unsigned mp0, unsigned mp1
-) {
+__device__ inline auto cuda_compute_merge_sort_range( unsigned count, unsigned partition, unsigned coop, unsigned spacing, unsigned mp0, unsigned mp1) {
 
   auto range = cuda_compute_merge_sort_range(count, partition, coop, spacing);
 
@@ -149,7 +138,7 @@ __device__ inline auto cuda_compute_merge_sort_range(
 template<unsigned nt, unsigned vt, typename K, typename V>
 struct cudaBlockSort {
 
-  static constexpr bool has_values = !std::is_same<V, cudaEmpty>::value;
+  static constexpr bool     has_values = !std::is_same<V, cudaEmpty>::value;
   static constexpr unsigned num_passes = log2(nt);
 
   /** @private */
@@ -168,22 +157,19 @@ struct cudaBlockSort {
   ) const {
 
     // Divide the CTA's keys into lists.
-    unsigned coop = 2 << pass;
-    auto range = cuda_compute_merge_sort_range(count, tid, coop, vt);
-    unsigned diag = vt * tid - range.a_begin;
+    unsigned coop  = 2 << pass;
+    auto     range = cuda_compute_merge_sort_range(count, tid, coop, vt);
+    unsigned diag  = vt * tid - range.a_begin;
 
     // Store the keys into shared memory for searching.
     cuda_reg_to_shared_thread<nt, vt>(x.keys, tid, storage.keys);
 
     // Search for the merge path for this thread within its list.
-    auto mp = cuda_merge_path<cudaMergeBoundType::LOWER>(
-      storage.keys, range, diag, comp
-    );
+    auto mp = cuda_merge_path<cudaMergeBoundType::LOWER>( storage.keys, range, diag, comp  );
 
     // Run a serial merge and return.
-    auto merge = cuda_serial_merge<cudaMergeBoundType::LOWER, vt>(
-      storage.keys, range.partition(mp, diag), comp
-    );
+    auto merge = cuda_serial_merge<cudaMergeBoundType::LOWER, vt>(storage.keys, range.partition(mp, diag), comp  );
+   
     x.keys = merge.keys;
 
     if(has_values) {
@@ -196,9 +182,7 @@ struct cudaBlockSort {
   }
 
   template<typename C>
-  __device__ auto block_sort(cudaKVArray<K, V, vt> x,
-    unsigned tid, unsigned count, C comp, Storage& storage
-  ) const {
+  __device__ auto block_sort(cudaKVArray<K, V, vt> x,unsigned tid, unsigned count, C comp, Storage& storage) const {
 
     // Sort the inputs within each thread. If any threads have fewer than
     // vt items, use the segmented sort network to prevent out-of-range
@@ -221,10 +205,7 @@ struct cudaBlockSort {
 
 /** @private */
 template<typename P, typename K, typename C>
-void cuda_merge_sort_partitions(
-  P&& p, K keys, unsigned count,
-  unsigned coop, unsigned spacing, C comp, unsigned* buf
-) {
+void cuda_merge_sort_partitions( P&& p, K keys, unsigned count, unsigned coop, unsigned spacing, C comp, unsigned* buf) {
 
   // bufer size is num_partitions + 1
   unsigned num_partitions = (count + spacing - 1) / spacing + 1;
@@ -252,9 +233,7 @@ void cuda_merge_sort_partitions(
 
 /** @private */
 template<typename P, typename K_it, typename V_it, typename C>
-void merge_sort_loop(
-  P&& p, K_it keys_input, V_it vals_input, unsigned count, C comp, void* buf
-) {
+void merge_sort_loop( P&& p, K_it keys_input, V_it vals_input, unsigned count, C comp, void* buf) {
 
   using K = typename std::iterator_traits<K_it>::value_type;
   using V = typename std::iterator_traits<V_it>::value_type;
@@ -279,15 +258,7 @@ void merge_sort_loop(
       mp_data = (unsigned*)(keys_output + count);
     }
   }
-
-  //cudaDeviceVector<K> keys_temp(R ? count : 0);
-  //auto keys_output = keys_temp.data();
-  ////std::cout << "keys_output = " << keys_temp.size()*sizeof(K) << std::endl;
-
-  //cudaDeviceVector<V> vals_temp((has_values && R) ? count : 0);
-  //auto vals_output = vals_temp.data();
-  //std::cout << "vals_output = " << vals_temp.size()*sizeof(V) << std::endl;
-
+ 
   auto keys_blocksort = (1 & R) ? keys_output : keys_input;
   auto vals_blocksort = (1 & R) ? vals_output : vals_input;
 
@@ -307,28 +278,20 @@ void merge_sort_loop(
 
     // Load the keys and values.
     cudaKVArray<K, V, E::vt> unsorted;
-    unsorted.keys = cuda_mem_to_reg_thread<E::nt, E::vt>(
-      keys_input + tile.begin, tid, tile.count(), shared.keys
-    );
+    unsorted.keys  = cuda_mem_to_reg_thread<E::nt, E::vt>(  keys_input + tile.begin, tid, tile.count(), shared.keys);
 
     if(has_values) {
-      unsorted.vals = cuda_mem_to_reg_thread<E::nt, E::vt>(
-        vals_input + tile.begin, tid, tile.count(), shared.vals
-      );
+      unsorted.vals = cuda_mem_to_reg_thread<E::nt, E::vt>(  vals_input + tile.begin, tid, tile.count(), shared.vals );
     }
 
     // Blocksort.
     auto sorted = sort_t().block_sort(unsorted, tid, tile.count(), comp, shared.sort);
 
     // Store the keys and values.
-    cuda_reg_to_mem_thread<E::nt, E::vt>(
-      sorted.keys, tid, tile.count(), keys_blocksort + tile.begin, shared.keys
-    );
+    cuda_reg_to_mem_thread<E::nt, E::vt>( sorted.keys, tid, tile.count(), keys_blocksort + tile.begin, shared.keys );
 
     if(has_values) {
-      cuda_reg_to_mem_thread<E::nt, E::vt>(
-        sorted.vals, tid, tile.count(), vals_blocksort + tile.begin, shared.vals
-      );
+      cuda_reg_to_mem_thread<E::nt, E::vt>( sorted.vals, tid, tile.count(), vals_blocksort + tile.begin, shared.vals);
     }
   });
 
@@ -339,19 +302,11 @@ void merge_sort_loop(
     std::swap(vals_input, vals_output);
   }
 
-  // number of partitions
-  //unsigned num_partitions = B + 1;
-  //cudaDeviceVector<unsigned> mem(num_partitions);
-  //auto mp_data = mem.data();
-  //std::cout << "num_partitions = " << (B+1)*sizeof(unsigned) << std::endl;
-
   for(unsigned pass = 0; pass < R; ++pass) {
 
     unsigned coop = 2 << pass;
 
-    cuda_merge_sort_partitions(
-      p, keys_input, count, coop, E::nv, comp, mp_data
-    );
+    cuda_merge_sort_partitions(  p, keys_input, count, coop, E::nv, comp, mp_data);
 
     cuda_kernel<<<B, E::nt, 0, p.stream()>>>([=]__device__(auto tid, auto bid) {
 
@@ -363,24 +318,16 @@ void merge_sort_loop(
       auto tile = cuda_get_tile(bid, E::nv, count);
 
       // Load the range for this CTA and merge the values into register.
-      auto range = cuda_compute_merge_sort_range(
-        count, bid, coop, E::nv, mp_data[bid + 0], mp_data[bid + 1]
-      );
+      auto range = cuda_compute_merge_sort_range(   count, bid, coop, E::nv, mp_data[bid + 0], mp_data[bid + 1]);
 
-      auto merge = block_merge_from_mem<cudaMergeBoundType::LOWER, E::nt, E::vt>(
-        keys_input, keys_input, range, tid, comp, shared.keys
-      );
+      auto merge = block_merge_from_mem<cudaMergeBoundType::LOWER, E::nt, E::vt>(  keys_input, keys_input, range, tid, comp, shared.keys);
 
       // Store merged values back out.
-      cuda_reg_to_mem_thread<E::nt>(
-        merge.keys, tid, tile.count(), keys_output + tile.begin, shared.keys
-      );
+      cuda_reg_to_mem_thread<E::nt>( merge.keys, tid, tile.count(), keys_output + tile.begin, shared.keys );
 
       if(has_values) {
         // Transpose the indices from thread order to strided order.
-        auto indices = cuda_reg_thread_to_strided<E::nt>(
-          merge.indices, tid, shared.indices
-        );
+        auto indices = cuda_reg_thread_to_strided<E::nt>(  merge.indices, tid, shared.indices );
 
         // Gather the input values and merge into the output values.
         cuda_transfer_two_streams_strided<E::nt>(
@@ -464,9 +411,7 @@ After sort:
 
 */
 template<typename P, typename K_it, typename V_it, typename C>
-void cuda_sort_by_key(
-  P&& p, K_it k_first, K_it k_last, V_it v_first, C comp, void* buf
-) {
+void cuda_sort_by_key(  P&& p, K_it k_first, K_it k_last, V_it v_first, C comp, void* buf) {
 
   unsigned N = std::distance(k_first, k_last);
 

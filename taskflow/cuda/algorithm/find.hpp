@@ -68,15 +68,7 @@ ls
     // reduce to a scalar per block.
     //__shared__ typename cudaBlockReduce<E::nt, unsigned>::Storage shm;
 
-    //id = cudaBlockReduce<E::nt, unsigned>()(
-    //  tid,
-    //  id,
-    //  shm,
-    //  (tile.count() < E::nt ? tile.count() : E::nt),
-    //  cuda_minimum<unsigned>{},
-    //  false
-    //);
-
+  
     // only need the minimum id
     atomicMin(&shm_id, id);
     __syncthreads();

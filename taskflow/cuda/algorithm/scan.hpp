@@ -141,10 +141,7 @@ __device__ cudaScanResult<T, vt> cudaBlockScan<nt, T>::operator()(
   }
 
   // Scan the thread-local reductions for a carry-in for each thread.
-  auto result = operator()(
-    tid, x[vt - 1], storage,
-    (count + vt - 1) / vt, op, init, cudaScanType::EXCLUSIVE
-  );
+  auto result = operator()( tid, x[vt - 1], storage, (count + vt - 1) / vt, op, init, cudaScanType::EXCLUSIVE);
 
   // Perform the scan downsweep and add both the global carry-in and the
   // thread carry-in to the values.
@@ -201,15 +198,12 @@ void cuda_single_pass_scan(
       // Cooperatively load values into register.
       auto count2 = min(count - cur, E::nv);
 
-      auto x = cuda_mem_to_reg_thread<E::nt, E::vt>(input + cur,
-        tid, count2, shared.values);
+      auto x = cuda_mem_to_reg_thread<E::nt, E::vt>(input + cur, tid, count2, shared.values);
 
-      auto result = scan_t()(tid, x, shared.scan,
-        carry_in, cur > 0, count2, op, T(), scan_type);
+      auto result = scan_t()(tid, x, shared.scan,  carry_in, cur > 0, count2, op, T(), scan_type);
 
       // Store the scanned values back to global memory.
-      cuda_reg_to_mem_thread<E::nt, E::vt>(result.scan, tid, count2,
-        output + cur, shared.values);
+      cuda_reg_to_mem_thread<E::nt, E::vt>(result.scan, tid, count2,  output + cur, shared.values);
 
       // Roll the reduction into carry_in.
       carry_in = result.reduction;
@@ -258,9 +252,7 @@ void cuda_scan_loop(
 
       // Load the tile's data into register.
       auto tile = cuda_get_tile(bid, E::nv, count);
-      auto x = cuda_mem_to_reg_strided<E::nt, E::vt>(
-        input + tile.begin, tid, tile.count()
-      );
+      auto x = cuda_mem_to_reg_strided<E::nt, E::vt>(  input + tile.begin, tid, tile.count()  );
 
       // Reduce the thread's values into a scalar.
       T scalar;
@@ -270,9 +262,7 @@ void cuda_scan_loop(
       );
 
       // Reduce across all threads.
-      auto all_reduce = cudaBlockReduce<E::nt, T>()(
-        tid, scalar, shm, tile.count(), op
-      );
+      auto all_reduce = cudaBlockReduce<E::nt, T>()( tid, scalar, shm, tile.count(), op  );
 
       // Store the final reduction to the partials.
       if(!tid) {
@@ -282,9 +272,7 @@ void cuda_scan_loop(
 
     // recursively call scan
     //cuda_scan_loop(p, cudaScanType::EXCLUSIVE, buffer, B, buffer, op, S);
-    cuda_scan_loop(
-      p, cudaScanType::EXCLUSIVE, buffer, B, buffer, op, buffer+B
-    );
+    cuda_scan_loop( p, cudaScanType::EXCLUSIVE, buffer, B, buffer, op, buffer+B );
 
     // downsweep: perform an intra-tile scan and add the scan of the partials
     // as carry-in
@@ -299,18 +287,13 @@ void cuda_scan_loop(
 
       // Load a tile to register in thread order.
       auto tile = cuda_get_tile(bid, E::nv, count);
-      auto x = cuda_mem_to_reg_thread<E::nt, E::vt>(
-        input + tile.begin, tid, tile.count(), shared.values
-      );
+      auto x = cuda_mem_to_reg_thread<E::nt, E::vt>(  input + tile.begin, tid, tile.count(), shared.values );
 
       // Scan the array with carry-in from the partials.
-      auto y = scan_t()(tid, x, shared.scan,
-        buffer[bid], bid > 0, tile.count(), op, T(),
-        scan_type).scan;
+      auto y = scan_t()(tid, x, shared.scan, buffer[bid], bid > 0, tile.count(), op, T(), scan_type).scan;
 
       // Store the scanned values to the output.
-      cuda_reg_to_mem_thread<E::nt, E::vt>(
-        y, tid, tile.count(), output + tile.begin, shared.values
+      cuda_reg_to_mem_thread<E::nt, E::vt>(  y, tid, tile.count(), output + tile.begin, shared.values
       );
     });
   }
@@ -330,7 +313,7 @@ template <typename T>
 unsigned cudaExecutionPolicy<NT, VT>::scan_bufsz(unsigned count) {
   unsigned B = num_blocks(count);
   unsigned n = 0;
-  for(auto b=B; b>detail::cudaScanRecursionThreshold; b=num_blocks(b)) {
+  for(auto b = B; b > detail::cudaScanRecursionThreshold; b = num_blocks(b)) {
     n += b;
   }
   return n*sizeof(T);
@@ -354,9 +337,7 @@ unsigned cudaExecutionPolicy<NT, VT>::scan_bufsz(unsigned count) {
 
 */
 template<typename P, typename I, typename O, typename C>
-void cuda_inclusive_scan(
-  P&& p, I first, I last, O output, C op, void* buf
-) {
+void cuda_inclusive_scan( P&& p, I first, I last, O output, C op, void* buf) {
 
   unsigned count = std::distance(first, last);
 
@@ -365,9 +346,7 @@ void cuda_inclusive_scan(
   }
 
   // launch the scan loop
-  detail::cuda_scan_loop(
-    p, detail::cudaScanType::INCLUSIVE, first, count, output, op, buf
-  );
+  detail::cuda_scan_loop(p, detail::cudaScanType::INCLUSIVE, first, count, output, op, buf);
 }
 
 /**
@@ -389,9 +368,7 @@ void cuda_inclusive_scan(
 
 */
 template<typename P, typename I, typename O, typename C, typename U>
-void cuda_transform_inclusive_scan(
-  P&& p, I first, I last, O output, C bop, U uop, void* buf
-) {
+void cuda_transform_inclusive_scan(  P&& p, I first, I last, O output, C bop, U uop, void* buf) {
 
   using T = typename std::iterator_traits<O>::value_type;
 
@@ -426,9 +403,7 @@ void cuda_transform_inclusive_scan(
 
 */
 template<typename P, typename I, typename O, typename C>
-void cuda_exclusive_scan(
-  P&& p, I first, I last, O output, C op, void* buf
-) {
+void cuda_exclusive_scan( P&& p, I first, I last, O output, C op, void* buf) {
 
   unsigned count = std::distance(first, last);
 
@@ -461,9 +436,7 @@ void cuda_exclusive_scan(
 
 */
 template<typename P, typename I, typename O, typename C, typename U>
-void cuda_transform_exclusive_scan(
-  P&& p, I first, I last, O output, C bop, U uop, void* buf
-) {
+void cuda_transform_exclusive_scan( P&& p, I first, I last, O output, C bop, U uop, void* buf) {
 
   using T = typename std::iterator_traits<O>::value_type;
 

@@ -99,9 +99,7 @@ __device__ auto cuda_merge_path(
 
 /** @private */
 template<cudaMergeBoundType bounds, typename keys_it, typename comp_t>
-__device__ auto cuda_merge_path(
-  keys_it keys, cudaMergeRange range, unsigned diag, comp_t comp
-) {
+__device__ auto cuda_merge_path( keys_it keys, cudaMergeRange range, unsigned diag, comp_t comp) {
 
   return cuda_merge_path<bounds>(
     keys + range.a_begin, range.a_count(),
@@ -111,9 +109,7 @@ __device__ auto cuda_merge_path(
 
 /** @private */
 template<cudaMergeBoundType bounds, bool range_check, typename T, typename comp_t>
-__device__ bool cuda_merge_predicate(
-  T a_key, T b_key, cudaMergeRange range, comp_t comp
-) {
+__device__ bool cuda_merge_predicate(T a_key, T b_key, cudaMergeRange range, comp_t comp) {
 
   bool p;
   if(range_check && !range.a_valid()) {
@@ -150,9 +146,7 @@ with raw pointer types. Fixed not to use pointer arithmetic so that
 we don't get undefined behaviors with unaligned types.
 */
 template<unsigned nt, unsigned vt, typename T>
-__device__ auto cuda_load_two_streams_reg(
-  const T* a, unsigned a_count, const T* b, unsigned b_count, unsigned tid
-) {
+__device__ auto cuda_load_two_streams_reg( const T* a, unsigned a_count, const T* b, unsigned b_count, unsigned tid) {
 
   b -= a_count;
   cudaArray<T, vt> x;
@@ -166,11 +160,8 @@ __device__ auto cuda_load_two_streams_reg(
 
 /** @private */
 template<unsigned nt, unsigned vt, typename T, typename a_it, typename b_it>
-__device__
-std::enable_if_t<
-  !(std::is_pointer<a_it>::value && std::is_pointer<b_it>::value),
-  cudaArray<T, vt>
-> load_two_streams_reg(a_it a, unsigned a_count, b_it b, unsigned b_count, unsigned tid) {
+__device__   std::enable_if_t< !(std::is_pointer<a_it>::value && std::is_pointer<b_it>::value), cudaArray<T, vt>> 
+                         load_two_streams_reg(a_it a, unsigned a_count, b_it b, unsigned b_count, unsigned tid) {
   b -= a_count;
   cudaArray<T, vt> x;
   cuda_strided_iterate<nt, vt>([&](auto i, auto index) {
@@ -181,9 +172,7 @@ std::enable_if_t<
 
 /** @private */
 template<unsigned nt, unsigned vt, typename A, typename B, typename T, unsigned S>
-__device__ void cuda_load_two_streams_shared(A a, unsigned a_count,
-  B b, unsigned b_count, unsigned tid, T (&shared)[S], bool sync = true
-) {
+__device__ void cuda_load_two_streams_shared(A a, unsigned a_count,B b, unsigned b_count, unsigned tid, T (&shared)[S], bool sync = true ) {
   // Load into register then make an unconditional strided store into memory.
   auto x = cuda_load_two_streams_reg<nt, vt, T>(a, a_count, b, b_count, tid);
   cuda_reg_to_shared_strided<nt>(x, tid, shared, sync);
@@ -191,9 +180,7 @@ __device__ void cuda_load_two_streams_shared(A a, unsigned a_count,
 
 /** @private */
 template<unsigned nt, unsigned vt, typename T>
-__device__ auto cuda_gather_two_streams_strided(const T* a,
-  unsigned a_count, const T* b, unsigned b_count, cudaArray<unsigned, vt> indices,
-  unsigned tid) {
+__device__ auto cuda_gather_two_streams_strided(const T* a, unsigned a_count, const T* b, unsigned b_count, cudaArray<unsigned, vt> indices, unsigned tid) {
 
   ptrdiff_t b_offset = b - a - a_count;
   auto count = a_count + b_count;
@@ -211,11 +198,8 @@ __device__ auto cuda_gather_two_streams_strided(const T* a,
 /** @private */
 template<unsigned nt, unsigned vt, typename T, typename a_it, typename b_it>
 __device__
-std::enable_if_t<
-  !(std::is_pointer<a_it>::value && std::is_pointer<b_it>::value),
-  cudaArray<T, vt>
-> cuda_gather_two_streams_strided(a_it a,
-  unsigned a_count, b_it b, unsigned b_count, cudaArray<unsigned, vt> indices, unsigned tid) {
+std::enable_if_t<!(std::is_pointer<a_it>::value && std::is_pointer<b_it>::value), cudaArray<T, vt>> 
+                       cuda_gather_two_streams_strided(a_it a, unsigned a_count, b_it b, unsigned b_count, cudaArray<unsigned, vt> indices, unsigned tid) {
 
   b -= a_count;
   cudaArray<T, vt> x;
@@ -228,15 +212,10 @@ std::enable_if_t<
 
 /** @private */
 template<unsigned nt, unsigned vt, typename a_it, typename b_it, typename c_it>
-__device__ void cuda_transfer_two_streams_strided(
-  a_it a, unsigned a_count, b_it b, unsigned b_count,
-  cudaArray<unsigned, vt> indices, unsigned tid, c_it c
-) {
+__device__ void cuda_transfer_two_streams_strided(a_it a, unsigned a_count, b_it b, unsigned b_count, cudaArray<unsigned, vt> indices, unsigned tid, c_it c) {
 
   using T = typename std::iterator_traits<a_it>::value_type;
-  auto x = cuda_gather_two_streams_strided<nt, vt, T>(
-    a, a_count, b, b_count, indices, tid
-  );
+  auto x = cuda_gather_two_streams_strided<nt, vt, T>( a, a_count, b, b_count, indices, tid );
 
   cuda_reg_to_mem_strided<nt>(x, tid, a_count + b_count, c);
 }
@@ -250,9 +229,7 @@ no matter the indices for each. The caller should allocate at least
 nt * vt + 1 elements for
 */
 template<cudaMergeBoundType bounds, unsigned vt, typename T, typename comp_t>
-__device__ auto cuda_serial_merge(
-  const T* keys_shared, cudaMergeRange range, comp_t comp, bool sync = true
-) {
+__device__ auto cuda_serial_merge(const T* keys_shared, cudaMergeRange range, comp_t comp, bool sync = true) {
 
   auto a_key = keys_shared[range.a_begin];
   auto b_key = keys_shared[range.b_begin];
@@ -279,17 +256,10 @@ __device__ auto cuda_serial_merge(
 
 Load arrays a and b from global memory and merge unsignedo register.
 */
-template<cudaMergeBoundType bounds,
-  unsigned nt, unsigned vt,
-  typename a_it, typename b_it, typename T, typename comp_t, unsigned S
->
-__device__ auto block_merge_from_mem(
-  a_it a, b_it b, cudaMergeRange range_mem, unsigned tid, comp_t comp, T (&keys_shared)[S]
-) {
+template<cudaMergeBoundType bounds,  unsigned nt, unsigned vt, typename a_it, typename b_it, typename T, typename comp_t, unsigned S>
+__device__ auto block_merge_from_mem(  a_it a, b_it b, cudaMergeRange range_mem, unsigned tid, comp_t comp, T (&keys_shared)[S]) {
 
-  static_assert(S >= nt * vt + 1,
-    "block_merge_from_mem requires temporary storage of at "
-    "least nt * vt + 1 items");
+  static_assert(S >= nt * vt + 1, "block_merge_from_mem requires temporary storage of at least nt * vt + 1 items");
 
   // Load the data into shared memory.
   cuda_load_two_streams_shared<nt, vt>(
@@ -314,9 +284,7 @@ __device__ auto block_merge_from_mem(
 };
 
 /** @private */
-template<cudaMergeBoundType bounds,
-  typename P, typename a_keys_it, typename b_keys_it, typename comp_t
->
+template<cudaMergeBoundType bounds, typename P, typename a_keys_it, typename b_keys_it, typename comp_t>
 void cuda_merge_path_partitions(
   P&& p,
   a_keys_it a, unsigned a_count,
@@ -346,29 +314,8 @@ void cuda_merge_path_partitions(
   });
 }
 
-//template<typename segments_it>
-//auto load_balance_partitions(int64_t dest_count, segments_it segments,
-//  int num_segments, int spacing, context_t& context) ->
-//  mem_t<typename std::iterator_traits<segments_it>::value_type> {
-//
-//  typedef typename std::iterator_traits<segments_it>::value_type int_t;
-//  return merge_path_partitions<bounds_upper>(counting_iterator_t<int_t>(0),
-//    dest_count, segments, num_segments, spacing, less_t<int_t>(), context);
-//}
 
-//template<bounds_t bounds, typename keys_it>
-//mem_t<int> binary_search_partitions(keys_it keys, int count, int num_items,
-//  int spacing, context_t& context) {
-//
-//  int num_partitions = div_up(count, spacing) + 1;
-//  mem_t<int> mem(num_partitions, context);
-//  int* p = mem.data();
-//  transform([=]MGPU_DEVICE(int index) {
-//    int key = min(spacing * index, count);
-//    p[index] = binary_search<bounds>(keys, num_items, key, less_t<int>());
-//  }, num_partitions, context);
-//  return mem;
-//}
+
 
 /** @private */
 template<
@@ -395,9 +342,7 @@ void cuda_merge_loop(
 
   auto has_values = !std::is_same<V, cudaEmpty>::value;
 
-  cuda_merge_path_partitions<cudaMergeBoundType::LOWER>(
-    p, a_keys, a_count, b_keys, b_count, E::nv, comp, buf
-  );
+  cuda_merge_path_partitions<cudaMergeBoundType::LOWER>( p, a_keys, a_count, b_keys, b_count, E::nv, comp, buf );
 
   unsigned B = p.num_blocks(a_count + b_count);
 
@@ -414,20 +359,14 @@ void cuda_merge_loop(
     auto mp1 = buf[bid + 1];
     auto range = cuda_compute_merge_range(a_count, b_count, bid, E::nv, mp0, mp1);
 
-    auto merge = block_merge_from_mem<cudaMergeBoundType::LOWER, E::nt, E::vt>(
-      a_keys, b_keys, range, tid, comp, shared.keys
-    );
+    auto merge = block_merge_from_mem<cudaMergeBoundType::LOWER, E::nt, E::vt>(a_keys, b_keys, range, tid, comp, shared.keys);
 
     auto dest_offset = E::nv * bid;
-    cuda_reg_to_mem_thread<E::nt>(
-      merge.keys, tid, range.total(), c_keys + dest_offset, shared.keys
-    );
+    cuda_reg_to_mem_thread<E::nt>( merge.keys, tid, range.total(), c_keys + dest_offset, shared.keys );
 
     if(has_values) {
       // Transpose the indices from thread order to strided order.
-      auto indices = cuda_reg_thread_to_strided<E::nt>(
-        merge.indices, tid, shared.indices
-      );
+      auto indices = cuda_reg_thread_to_strided<E::nt>(  merge.indices, tid, shared.indices );
 
       // Gather the input values and merge into the output values.
       cuda_transfer_two_streams_strided<E::nt>(
@@ -561,9 +500,7 @@ void cuda_merge_by_key(
 This function is equivalent to tf::cuda_merge_by_key without values.
 
 */
-template<typename P,
-  typename a_keys_it, typename b_keys_it, typename c_keys_it, typename C
->
+template<typename P,typename a_keys_it, typename b_keys_it, typename c_keys_it, typename C >
 void cuda_merge(
   P&& p,
   a_keys_it a_keys_first, a_keys_it a_keys_last,
