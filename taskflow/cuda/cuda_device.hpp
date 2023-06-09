@@ -13,9 +13,9 @@ namespace tf {
 @brief queries the number of available devices
 */
 inline size_t cuda_get_num_devices() {
-	int N = 0;
+  int N = 0;
   TF_CHECK_CUDA(cudaGetDeviceCount(&N), "failed to get device count");
-	return static_cast<size_t>(N);
+  return static_cast<size_t>(N);
 }
 
 /**
@@ -24,7 +24,7 @@ inline size_t cuda_get_num_devices() {
 inline int cuda_get_device() {
   int id;
   TF_CHECK_CUDA(cudaGetDevice(&id), "failed to get current device id");
-	return id;
+ return id;
 }
 
 /**
@@ -38,9 +38,7 @@ inline void cuda_set_device(int id) {
 @brief obtains the device property
 */
 inline void cuda_get_device_property(int i, cudaDeviceProp& p) {
-  TF_CHECK_CUDA(
-    cudaGetDeviceProperties(&p, i), "failed to get property of device ", i
-  );
+  TF_CHECK_CUDA(  cudaGetDeviceProperties(&p, i), "failed to get property of device ", i );
 }
 
 /**
@@ -48,9 +46,7 @@ inline void cuda_get_device_property(int i, cudaDeviceProp& p) {
 */
 inline cudaDeviceProp cuda_get_device_property(int i) {
   cudaDeviceProp p;
-  TF_CHECK_CUDA(
-    cudaGetDeviceProperties(&p, i), "failed to get property of device ", i
-  );
+  TF_CHECK_CUDA(  cudaGetDeviceProperties(&p, i), "failed to get property of device ", i);
   return p;
 }
 
@@ -101,10 +97,7 @@ inline void cuda_dump_device_property(std::ostream& os, const cudaDeviceProp& p)
 */
 inline size_t cuda_get_device_max_threads_per_block(int d) {
   int threads = 0;
-  TF_CHECK_CUDA(
-    cudaDeviceGetAttribute(&threads, cudaDevAttrMaxThreadsPerBlock, d),
-    "failed to query the maximum threads per block on device ", d
-  )
+  TF_CHECK_CUDA(  cudaDeviceGetAttribute(&threads, cudaDevAttrMaxThreadsPerBlock, d),"failed to query the maximum threads per block on device ", d )
   return threads;
 }
 
@@ -113,10 +106,7 @@ inline size_t cuda_get_device_max_threads_per_block(int d) {
 */
 inline size_t cuda_get_device_max_x_dim_per_block(int d) {
   int dim = 0;
-  TF_CHECK_CUDA(
-    cudaDeviceGetAttribute(&dim, cudaDevAttrMaxBlockDimX, d),
-    "failed to query the maximum x-dimension per block on device ", d
-  )
+  TF_CHECK_CUDA( cudaDeviceGetAttribute(&dim, cudaDevAttrMaxBlockDimX, d), "failed to query the maximum x-dimension per block on device ", d)
   return dim;
 }
 
@@ -125,10 +115,7 @@ inline size_t cuda_get_device_max_x_dim_per_block(int d) {
 */
 inline size_t cuda_get_device_max_y_dim_per_block(int d) {
   int dim = 0;
-  TF_CHECK_CUDA(
-    cudaDeviceGetAttribute(&dim, cudaDevAttrMaxBlockDimY, d),
-    "failed to query the maximum y-dimension per block on device ", d
-  )
+  TF_CHECK_CUDA(  cudaDeviceGetAttribute(&dim, cudaDevAttrMaxBlockDimY, d), "failed to query the maximum y-dimension per block on device ", d)
   return dim;
 }
 
@@ -137,10 +124,7 @@ inline size_t cuda_get_device_max_y_dim_per_block(int d) {
 */
 inline size_t cuda_get_device_max_z_dim_per_block(int d) {
   int dim = 0;
-  TF_CHECK_CUDA(
-    cudaDeviceGetAttribute(&dim, cudaDevAttrMaxBlockDimZ, d),
-    "failed to query the maximum z-dimension per block on device ", d
-  )
+  TF_CHECK_CUDA( cudaDeviceGetAttribute(&dim, cudaDevAttrMaxBlockDimZ, d), "failed to query the maximum z-dimension per block on device ", d)
   return dim;
 }
 
@@ -149,10 +133,7 @@ inline size_t cuda_get_device_max_z_dim_per_block(int d) {
 */
 inline size_t cuda_get_device_max_x_dim_per_grid(int d) {
   int dim = 0;
-  TF_CHECK_CUDA(
-    cudaDeviceGetAttribute(&dim, cudaDevAttrMaxGridDimX, d),
-    "failed to query the maximum x-dimension per grid on device ", d
-  )
+  TF_CHECK_CUDA(  cudaDeviceGetAttribute(&dim, cudaDevAttrMaxGridDimX, d), "failed to query the maximum x-dimension per grid on device ", d  )
   return dim;
 }
 
@@ -161,10 +142,7 @@ inline size_t cuda_get_device_max_x_dim_per_grid(int d) {
 */
 inline size_t cuda_get_device_max_y_dim_per_grid(int d) {
   int dim = 0;
-  TF_CHECK_CUDA(
-    cudaDeviceGetAttribute(&dim, cudaDevAttrMaxGridDimY, d),
-    "failed to query the maximum y-dimension per grid on device ", d
-  )
+  TF_CHECK_CUDA( cudaDeviceGetAttribute(&dim, cudaDevAttrMaxGridDimY, d),  "failed to query the maximum y-dimension per grid on device ", d )
   return dim;
 }
 
@@ -173,10 +151,7 @@ inline size_t cuda_get_device_max_y_dim_per_grid(int d) {
 */
 inline size_t cuda_get_device_max_z_dim_per_grid(int d) {
   int dim = 0;
-  TF_CHECK_CUDA(
-    cudaDeviceGetAttribute(&dim, cudaDevAttrMaxGridDimZ, d),
-    "failed to query the maximum z-dimension per grid on device ", d
-  )
+  TF_CHECK_CUDA(  cudaDeviceGetAttribute(&dim, cudaDevAttrMaxGridDimZ, d),  "failed to query the maximum z-dimension per grid on device ", d)
   return dim;
 }
 
@@ -185,10 +160,7 @@ inline size_t cuda_get_device_max_z_dim_per_grid(int d) {
 */
 inline size_t cuda_get_device_max_shm_per_block(int d) {
   int num = 0;
-  TF_CHECK_CUDA(
-    cudaDeviceGetAttribute(&num, cudaDevAttrMaxSharedMemoryPerBlock, d),
-    "failed to query the maximum shared memory per block on device ", d
-  )
+  TF_CHECK_CUDA( cudaDeviceGetAttribute(&num, cudaDevAttrMaxSharedMemoryPerBlock, d), "failed to query the maximum shared memory per block on device ", d )
   return num;
 }
 
@@ -197,10 +169,7 @@ inline size_t cuda_get_device_max_shm_per_block(int d) {
 */
 inline size_t cuda_get_device_warp_size(int d) {
   int num = 0;
-  TF_CHECK_CUDA(
-    cudaDeviceGetAttribute(&num, cudaDevAttrWarpSize, d),
-    "failed to query the warp size per block on device ", d
-  )
+  TF_CHECK_CUDA( cudaDeviceGetAttribute(&num, cudaDevAttrWarpSize, d), "failed to query the warp size per block on device ", d)
   return num;
 }
 
@@ -209,10 +178,7 @@ inline size_t cuda_get_device_warp_size(int d) {
 */
 inline int cuda_get_device_compute_capability_major(int d) {
   int num = 0;
-  TF_CHECK_CUDA(
-    cudaDeviceGetAttribute(&num, cudaDevAttrComputeCapabilityMajor, d),
-    "failed to query the major number of compute capability of device ", d
-  )
+  TF_CHECK_CUDA(  cudaDeviceGetAttribute(&num, cudaDevAttrComputeCapabilityMajor, d), "failed to query the major number of compute capability of device ", d)
   return num;
 }
 
@@ -221,10 +187,7 @@ inline int cuda_get_device_compute_capability_major(int d) {
 */
 inline int cuda_get_device_compute_capability_minor(int d) {
   int num = 0;
-  TF_CHECK_CUDA(
-    cudaDeviceGetAttribute(&num, cudaDevAttrComputeCapabilityMinor, d),
-    "failed to query the minor number of compute capability of device ", d
-  )
+  TF_CHECK_CUDA( cudaDeviceGetAttribute(&num, cudaDevAttrComputeCapabilityMinor, d),  "failed to query the minor number of compute capability of device ", d)
   return num;
 }
 
@@ -233,10 +196,7 @@ inline int cuda_get_device_compute_capability_minor(int d) {
 */
 inline bool cuda_get_device_unified_addressing(int d) {
   int num = 0;
-  TF_CHECK_CUDA(
-    cudaDeviceGetAttribute(&num, cudaDevAttrUnifiedAddressing, d),
-    "failed to query unified addressing status on device ", d
-  )
+  TF_CHECK_CUDA( cudaDeviceGetAttribute(&num, cudaDevAttrUnifiedAddressing, d), "failed to query unified addressing status on device ", d )
   return num;
 }
 
@@ -249,10 +209,7 @@ inline bool cuda_get_device_unified_addressing(int d) {
 */
 inline int cuda_get_driver_version() {
   int num = 0;
-  TF_CHECK_CUDA(
-    cudaDriverGetVersion(&num),
-    "failed to query the latest cuda version supported by the driver"
-  );
+  TF_CHECK_CUDA( cudaDriverGetVersion(&num),"failed to query the latest cuda version supported by the driver");
   return num;
 }
 
@@ -261,9 +218,7 @@ inline int cuda_get_driver_version() {
 */
 inline int cuda_get_runtime_version() {
   int num = 0;
-  TF_CHECK_CUDA(
-    cudaRuntimeGetVersion(&num), "failed to query cuda runtime version"
-  );
+  TF_CHECK_CUDA( cudaRuntimeGetVersion(&num), "failed to query cuda runtime version");
   return num;
 }
 

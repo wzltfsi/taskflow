@@ -7,18 +7,20 @@
 
 namespace tf {
 namespace dsl {
-template <typename F, typename T> class Connection {
+template <typename F, typename T> 
+class Connection {
   using FROMs = typename TaskTrait<F>::TaskList;
-  using TOs = typename TaskTrait<T>::TaskList;
+  using TOs   = typename TaskTrait<T>::TaskList;
 
 public:
   using FromTaskList = Unique_t<Flatten_t<FROMs>>;
-  using ToTaskList = Unique_t<Flatten_t<TOs>>;
+  using ToTaskList   = Unique_t<Flatten_t<TOs>>;
 };
 
 template <typename T, typename OUT = TypeList<>> struct Chain;
 
-template <typename F, typename OUT> struct Chain<auto (*)(F)->void, OUT> {
+template <typename F, typename OUT> 
+struct Chain<auto (*)(F)->void, OUT> {
   using From = F;
   using type = OUT;
 };
@@ -30,22 +32,20 @@ private:
 
 public:
   using From = F;
-  using type = typename Chain<
-      T, typename OUT::template appendTo<Connection<From, To>>>::type;
+  using type = typename Chain< T, typename OUT::template appendTo<Connection<From, To>>>::type;
 };
 
-template <typename FROM, typename TO> struct OneToOneLink {
-  template <typename TasksCB> struct InstanceType {
+template <typename FROM, typename TO> 
+struct OneToOneLink {
+
+  template <typename TasksCB> 
+  struct InstanceType {
     constexpr void build(TasksCB &tasksCb) {
-      constexpr size_t TasksCBSize = std::tuple_size<TasksCB>::value;
-      constexpr size_t FromTaskIndex =
-          TupleElementByF_v<TasksCB, IsTask<FROM>::template apply>;
-      constexpr size_t ToTaskIndex =
-          TupleElementByF_v<TasksCB, IsTask<TO>::template apply>;
-      static_assert(FromTaskIndex < TasksCBSize && ToTaskIndex < TasksCBSize,
-                    "fatal: not find TaskCb in TasksCB");
-      std::get<FromTaskIndex>(tasksCb).task_.precede(
-          std::get<ToTaskIndex>(tasksCb).task_);
+      constexpr size_t TasksCBSize   = std::tuple_size<TasksCB>::value;
+      constexpr size_t FromTaskIndex = TupleElementByF_v<TasksCB, IsTask<FROM>::template apply>;
+      constexpr size_t ToTaskIndex   = TupleElementByF_v<TasksCB, IsTask<TO>::template apply>;
+      static_assert(FromTaskIndex < TasksCBSize && ToTaskIndex < TasksCBSize,   "fatal: not find TaskCb in TasksCB");
+      std::get<FromTaskIndex>(tasksCb).task_.precede( std::get<ToTaskIndex>(tasksCb).task_);
     }
   };
 };

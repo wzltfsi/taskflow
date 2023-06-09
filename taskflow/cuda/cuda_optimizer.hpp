@@ -22,15 +22,15 @@ class cudaFlowOptimizerBase {
 
   protected:
 
-    std::vector<cudaFlowNode*> _toposort(cudaFlowGraph&);
-    std::vector<std::vector<cudaFlowNode*>> _levelize(cudaFlowGraph&);
+    std::vector<cudaFlowNode*>               _toposort(cudaFlowGraph&);
+    std::vector<std::vector<cudaFlowNode*>>  _levelize(cudaFlowGraph&);
 };
 
 // Function: _toposort
 inline std::vector<cudaFlowNode*> cudaFlowOptimizerBase::_toposort(cudaFlowGraph& graph) {
 
-  std::vector<cudaFlowNode*> res;
-  std::queue<cudaFlowNode*> bfs;
+  std::vector<cudaFlowNode*>  res;
+  std::queue<cudaFlowNode*>   bfs;
 
   res.reserve(graph._nodes.size());
 
@@ -75,7 +75,7 @@ cudaFlowOptimizerBase::_levelize(cudaFlowGraph& graph) {
   // insert the first level of nodes into the queue
   for(auto& u : graph._nodes) {
 
-    auto hu = std::get_if<cudaFlowNode::Capture>(&u->_handle);
+    auto hu   = std::get_if<cudaFlowNode::Capture>(&u->_handle);
     hu->level = u->_dependents.size();
 
     if(hu->level == 0) {
@@ -109,10 +109,6 @@ cudaFlowOptimizerBase::_levelize(cudaFlowGraph& graph) {
     auto hu = std::get_if<cudaFlowNode::Capture>(&u->_handle);
     hu->lid = level_graph[hu->level].size();
     level_graph[hu->level].emplace_back(u.get());
-
-    //for(auto s : u->_successors) {
-    //  assert(hu.level < std::get_if<cudaFlowNode::Capture>(&s->_handle)->level);
-    //}
   }
 
   return level_graph;
@@ -127,8 +123,7 @@ cudaFlowOptimizerBase::_levelize(cudaFlowGraph& graph) {
 
 @brief class to capture a CUDA graph using a sequential stream
 
-A sequential capturing algorithm finds a topological order of
-the described graph and captures dependent GPU tasks using a single stream.
+A sequential capturing algorithm finds a topological order ofthe described graph and captures dependent GPU tasks using a single stream.
 All GPU tasks run sequentially without breaking inter dependencies.
 */
 class cudaFlowSequentialOptimizer : public cudaFlowOptimizerBase {
@@ -149,8 +144,7 @@ class cudaFlowSequentialOptimizer : public cudaFlowOptimizerBase {
 
 inline cudaGraph_t cudaFlowSequentialOptimizer::_optimize(cudaFlowGraph& graph) {
 
-  // acquire per-thread stream and turn it into capture mode
-  // we must use ThreadLocal mode to avoid clashing with CUDA global states
+  // acquire per-thread stream and turn it into capture mode. we must use ThreadLocal mode to avoid clashing with CUDA global states
   
   cudaStream stream;
 
@@ -173,8 +167,7 @@ inline cudaGraph_t cudaFlowSequentialOptimizer::_optimize(cudaFlowGraph& graph) 
 
 @brief class to capture a linear CUDA graph using a sequential stream
 
-A linear capturing algorithm is a special case of tf::cudaFlowSequentialOptimizer
-and assumes the input task graph to be a single linear chain of tasks
+A linear capturing algorithm is a special case of tf::cudaFlowSequentialOptimizer and assumes the input task graph to be a single linear chain of tasks
 (i.e., a straight line).
 This assumption allows faster optimization during the capturing process.
 If the input task graph is not a linear chain, the behavior is undefined.
@@ -197,8 +190,7 @@ class cudaFlowLinearOptimizer : public cudaFlowOptimizerBase {
 
 inline cudaGraph_t cudaFlowLinearOptimizer::_optimize(cudaFlowGraph& graph) {
 
-  // acquire per-thread stream and turn it into capture mode
-  // we must use ThreadLocal mode to avoid clashing with CUDA global states
+  // acquire per-thread stream and turn it into capture mode,  we must use ThreadLocal mode to avoid clashing with CUDA global states
   cudaStream stream;
 
   stream.begin_capture(cudaStreamCaptureModeThreadLocal);
@@ -229,16 +221,13 @@ inline cudaGraph_t cudaFlowLinearOptimizer::_optimize(cudaFlowGraph& graph) {
 
 @brief class to capture a CUDA graph using a round-robin algorithm
 
-A round-robin capturing algorithm levelizes the user-described graph
-and assign streams to nodes in a round-robin order level by level.
+A round-robin capturing algorithm levelizes the user-described graph and assign streams to nodes in a round-robin order level by level.
 The algorithm is based on the following paper published in Euro-Par 2021:
   + Dian-Lun Lin and Tsung-Wei Huang, &quot;Efficient GPU Computation using %Task Graph Parallelism,&quot; <i>European Conference on Parallel and Distributed Computing (Euro-Par)</i>, 2021
 
-The round-robin optimization algorithm is best suited for large %cudaFlow graphs
-that compose hundreds of or thousands of GPU operations
+The round-robin optimization algorithm is best suited for large %cudaFlow graphs that compose hundreds of or thousands of GPU operations
 (e.g., kernels and memory copies) with many of them being able to run in parallel.
-You can configure the number of streams to the optimizer to adjust the
-maximum kernel currency in the captured CUDA graph.
+You can configure the number of streams to the optimizer to adjust the maximum kernel currency in the captured CUDA graph.
 */
 class cudaFlowRoundRobinOptimizer : public cudaFlowOptimizerBase {
 
@@ -298,9 +287,7 @@ inline void cudaFlowRoundRobinOptimizer::num_streams(size_t n) {
   _num_streams = n;
 }
 
-inline void cudaFlowRoundRobinOptimizer::_reset(
-  std::vector<std::vector<cudaFlowNode*>>& graph
-) {
+inline void cudaFlowRoundRobinOptimizer::_reset( std::vector<std::vector<cudaFlowNode*>>& graph) {
   //level == global id
   //idx == stream id we want to skip
   size_t id{0};
@@ -355,8 +342,7 @@ inline cudaGraph_t cudaFlowRoundRobinOptimizer::_optimize(cudaFlowGraph& graph) 
         //level == global id
         //idx == stream id we want to skip
         if(psid == hn->idx) {
-          if(wait_node == nullptr ||
-             std::get_if<cudaFlowNode::Capture>(&wait_node->_handle)->level < phn->level) {
+          if(wait_node == nullptr ||  std::get_if<cudaFlowNode::Capture>(&wait_node->_handle)->level < phn->level) {
             wait_node = pn;
           }
         }

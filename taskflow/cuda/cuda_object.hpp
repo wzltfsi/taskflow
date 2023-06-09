@@ -11,28 +11,20 @@ namespace tf {
 @tparam C function object to create a library object
 @tparam D function object to delete a library object
 
-A CUDA device object has a lifetime associated with a device,
-for example, @c cudaStream_t, @c cublasHandle_t, etc.
-Creating a device object is typically expensive (e.g., 10-200 ms)
-and destroying it may trigger implicit device synchronization.
-For applications tha intensively make use of device objects,
-it is desirable to reuse them as much as possible.
+A CUDA device object has a lifetime associated with a device, for example, @c cudaStream_t, @c cublasHandle_t, etc.
+Creating a device object is typically expensive (e.g., 10-200 ms) and destroying it may trigger implicit device synchronization.
+For applications tha intensively make use of device objects, it is desirable to reuse them as much as possible.
 
-There exists an one-to-one relationship between CUDA devices in CUDA Runtime API
-and CUcontexts in the CUDA Driver API within a process.
-The specific context which the CUDA Runtime API uses for a device
-is called the device's primary context.
-From the perspective of the CUDA Runtime API,
-a device and its primary context are synonymous.
+There exists an one-to-one relationship between CUDA devices in CUDA Runtime API and CUcontexts in the CUDA Driver API within a process.
+The specific context which the CUDA Runtime API uses for a device is called the device's primary context.
+From the perspective of the CUDA Runtime API, a device and its primary context are synonymous.
 
 We design the device object pool in a decentralized fashion by keeping
 (1) a global pool to keep track of potentially usable objects and
 (2) a per-thread pool to footprint objects with shared ownership.
 The global pool does not own the object and therefore does not destruct any of them.
-The per-thread pool keeps the footprints of objects with shared ownership
-and will destruct them if the thread holds the last reference count after it joins.
-The motivation of this decentralized control is to avoid device objects
-from being destroyed while the context had been destroyed due to driver shutdown.
+The per-thread pool keeps the footprints of objects with shared ownership and will destruct them if the thread holds the last reference count after it joins.
+The motivation of this decentralized control is to avoid device objects from being destroyed while the context had been destroyed due to driver shutdown.
 
 */
 template <typename H, typename C, typename D>
@@ -58,11 +50,8 @@ class cudaPerThreadDeviceObjectPool {
   private:
 
   // Master thread hold the storage to the pool.
-  // Due to some ordering, cuda context may be destroyed when the master
-  // program thread destroys the cuda object.
-  // Therefore, we use a decentralized approach to let child thread
-  // destroy cuda objects while the master thread only keeps a weak reference
-  // to those objects for reuse.
+  // Due to some ordering, cuda context may be destroyed when the master program thread destroys the cuda object.
+  // Therefore, we use a decentralized approach to let child thread destroy cuda objects while the master thread only keeps a weak reference to those objects for reuse.
   struct cudaGlobalDeviceObjectPool {
 
     std::shared_ptr<Object> acquire(int);
@@ -106,8 +95,7 @@ class cudaPerThreadDeviceObjectPool {
 // ----------------------------------------------------------------------------
 
 template <typename H, typename C, typename D>
-cudaPerThreadDeviceObjectPool<H, C, D>::Object::Object(int d) :
-  device {d} {
+cudaPerThreadDeviceObjectPool<H, C, D>::Object::Object(int d) : device {d} {
   cudaScopedDevice ctx(device);
   value = C{}();
 }
@@ -139,9 +127,7 @@ cudaPerThreadDeviceObjectPool<H, C, D>::cudaGlobalDeviceObjectPool::acquire(int 
 }
 
 template <typename H, typename C, typename D>
-void cudaPerThreadDeviceObjectPool<H, C, D>::cudaGlobalDeviceObjectPool::release(
-  int d, std::weak_ptr<Object> ptr
-) {
+void cudaPerThreadDeviceObjectPool<H, C, D>::cudaGlobalDeviceObjectPool::release( int d, std::weak_ptr<Object> ptr) {
   std::scoped_lock<std::mutex> lock(mutex);
   pool[d].push_back(ptr);
 }
@@ -153,20 +139,15 @@ void cudaPerThreadDeviceObjectPool<H, C, D>::cudaGlobalDeviceObjectPool::release
 template <typename H, typename C, typename D>
 std::shared_ptr<typename cudaPerThreadDeviceObjectPool<H, C, D>::Object>
 cudaPerThreadDeviceObjectPool<H, C, D>::acquire(int d) {
-
   auto ptr = _shared_pool.acquire(d);
-
   if(!ptr) {
     ptr = std::make_shared<Object>(d);
   }
-
   return ptr;
 }
 
 template <typename H, typename C, typename D>
-void cudaPerThreadDeviceObjectPool<H, C, D>::release(
-  std::shared_ptr<Object>&& ptr
-) {
+void cudaPerThreadDeviceObjectPool<H, C, D>::release( std::shared_ptr<Object>&& ptr) {
   _shared_pool.release(ptr->device, ptr);
   _footprint.insert(std::move(ptr));
 }

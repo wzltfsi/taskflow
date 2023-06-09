@@ -7,9 +7,14 @@
 
 namespace tf {
 namespace dsl {
+
 struct EmptyContext {};
-template <typename CONTEXT = EmptyContext, typename... Chains> class TaskDsl {
-  using Links = Unique_t<Flatten_t<TypeList<typename Chain<Chains>::type...>>>;
+
+template <typename CONTEXT = EmptyContext, typename... Chains> 
+class TaskDsl {
+
+  using Links    = Unique_t<Flatten_t<TypeList<typename Chain<Chains>::type...>>>;
+
   using Analyzer = typename Links::template exportTo<TaskAnalyzer>;
 
   using AllTasks = typename Analyzer::AllTasks;
@@ -17,37 +22,34 @@ template <typename CONTEXT = EmptyContext, typename... Chains> class TaskDsl {
   template <typename TASK> struct TaskCbWithContext {
     using type = TaskCb<TASK, CONTEXT>;
   };
-  using TasksCB =
-      typename Map_t<AllTasks,
-                     TaskCbWithContext>::template exportTo<std::tuple>;
+  using TasksCB =  typename Map_t< AllTasks,  TaskCbWithContext>::template exportTo<std::tuple>;
 
   using OneToOneLinkSet = typename Analyzer::OneToOneLinkSet;
-  template <typename OneToOneLink> struct OneToOneLinkInstanceType {
+ 
+  template <typename OneToOneLink> 
+  struct OneToOneLinkInstanceType {
     using type = typename OneToOneLink::template InstanceType<TasksCB>;
   };
-  using OneToOneLinkInstances =
-      typename Map_t<OneToOneLinkSet,
-                     OneToOneLinkInstanceType>::template exportTo<std::tuple>;
+
+  using OneToOneLinkInstances =   typename Map_t<OneToOneLinkSet,   OneToOneLinkInstanceType>::template exportTo<std::tuple>;
 
 public:
   constexpr TaskDsl(FlowBuilder &flow_builder, const CONTEXT &context = {}) {
-    build_tasks_cb(flow_builder, context,
-                   std::make_index_sequence<AllTasks::size>{});
+    build_tasks_cb(flow_builder, context,   std::make_index_sequence<AllTasks::size>{});
     build_links(std::make_index_sequence<OneToOneLinkSet::size>{});
   }
 
-  template <typename TASK> Task &get_task() {
+  template <typename TASK> 
+  Task &get_task() {
     constexpr size_t TasksCBSize = std::tuple_size<TasksCB>::value;
-    constexpr size_t TaskIndex =
-        TupleElementByF_v<TasksCB, IsTask<TASK>::template apply>;
+    constexpr size_t TaskIndex   = TupleElementByF_v<TasksCB, IsTask<TASK>::template apply>;
     static_assert(TaskIndex < TasksCBSize, "fatal: not find TaskCb in TasksCB");
     return std::get<TaskIndex>(tasksCb_).task_;
   }
 
 private:
   template <size_t... Is>
-  void build_tasks_cb(FlowBuilder &flow_builder, const CONTEXT &context,
-                      std::index_sequence<Is...>) {
+  void build_tasks_cb(FlowBuilder &flow_builder, const CONTEXT &context,  std::index_sequence<Is...>) {
     auto _ = {0, (std::get<Is>(tasksCb_).build(flow_builder, context), 0)...};
     (void)_;
   }
@@ -62,9 +64,9 @@ private:
   OneToOneLinkInstances links_;
 };
 
+
 template <typename = void, typename... Chains, typename CONTEXT = EmptyContext>
-constexpr TaskDsl<CONTEXT, Chains...> taskDsl(FlowBuilder &flow_builder,
-                                              CONTEXT &&context = {}) {
+constexpr TaskDsl<CONTEXT, Chains...> taskDsl(FlowBuilder &flow_builder,  CONTEXT &&context = {}) {
   return {flow_builder, context};
 }
 

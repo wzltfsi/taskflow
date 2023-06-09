@@ -19,21 +19,13 @@ namespace tf {
 @brief enumeration of all %cudaTask types
 */
 enum class cudaTaskType : int {
-  /** @brief empty task type */
   EMPTY = 0,
-  /** @brief host task type */
   HOST,
-  /** @brief memory set task type */
   MEMSET,
-  /** @brief memory copy task type */
   MEMCPY,
-  /** @brief memory copy task type */
   KERNEL,
-  /** @brief subflow (child graph) task type */
   SUBFLOW,
-  /** @brief capture task type */
   CAPTURE,
-  /** @brief undefined task type */
   UNDEFINED
 };
 
@@ -72,28 +64,15 @@ class cudaTask {
 
   public:
 
-    /**
-    @brief constructs an empty cudaTask
-    */
+  
     cudaTask() = default;
-
-    /**
-    @brief copy-constructs a cudaTask
-    */
     cudaTask(const cudaTask&) = default;
-
-    /**
-    @brief copy-assigns a cudaTask
-    */
     cudaTask& operator = (const cudaTask&) = default;
 
     /**
     @brief adds precedence links from this to other tasks
-
     @tparam Ts parameter pack
-
     @param tasks one or multiple tasks
-
     @return @c *this
     */
     template <typename... Ts>
@@ -101,9 +80,7 @@ class cudaTask {
 
     /**
     @brief adds precedence links from other tasks to this
-
     @tparam Ts parameter pack
-
     @param tasks one or multiple tasks
 
     @return @c *this
@@ -113,9 +90,7 @@ class cudaTask {
 
     /**
     @brief assigns a name to the task
-
     @param name a @std_string acceptable string
-
     @return @c *this
     */
     cudaTask& name(const std::string& name);
@@ -174,8 +149,7 @@ class cudaTask {
 };
 
 // Constructor
-inline cudaTask::cudaTask(cudaFlowNode* node) : _node {node} {
-}
+inline cudaTask::cudaTask(cudaFlowNode* node) : _node {node} {}
 
 // Function: precede
 template <typename... Ts>

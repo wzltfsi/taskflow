@@ -15,9 +15,7 @@ namespace tf {
 /**
 @brief gets the memcpy node parameter of a copy task
 */
-template <typename T,
-  std::enable_if_t<!std::is_same_v<T, void>, void>* = nullptr
->
+template <typename T,std::enable_if_t<!std::is_same_v<T, void>, void>* = nullptr>
 cudaMemcpy3DParms cuda_get_copy_parms(T* tgt, const T* src, size_t num) {
 
   using U = std::decay_t<T>;
@@ -39,9 +37,7 @@ cudaMemcpy3DParms cuda_get_copy_parms(T* tgt, const T* src, size_t num) {
 /**
 @brief gets the memcpy node parameter of a memcpy task (untyped)
 */
-inline cudaMemcpy3DParms cuda_get_memcpy_parms(
-  void* tgt, const void* src, size_t bytes
-)  {
+inline cudaMemcpy3DParms cuda_get_memcpy_parms(void* tgt, const void* src, size_t bytes)  {
 
   // Parameters in cudaPitchedPtr
   // d   - Pointer to allocated memory
@@ -67,14 +63,12 @@ inline cudaMemcpy3DParms cuda_get_memcpy_parms(
 inline cudaMemsetParams cuda_get_memset_parms(void* dst, int ch, size_t count) {
 
   cudaMemsetParams p;
-  p.dst = dst;
-  p.value = ch;
-  p.pitch = 0;
-  //p.elementSize = (count & 1) == 0 ? ((count & 3) == 0 ? 4 : 2) : 1;
-  //p.width = (count & 1) == 0 ? ((count & 3) == 0 ? count >> 2 : count >> 1) : count;
+  p.dst         = dst;
+  p.value       = ch;
+  p.pitch       = 0;
   p.elementSize = 1;  // either 1, 2, or 4
-  p.width = count;
-  p.height = 1;
+  p.width       = count;
+  p.height      = 1;
 
   return p;
 }
@@ -106,9 +100,7 @@ cudaMemsetParams cuda_get_fill_parms(T* dst, T value, size_t count) {
 /**
 @brief gets the memset node parameter of a zero task (typed)
 */
-template <typename T, std::enable_if_t<
-  is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>* = nullptr
->
+template <typename T, std::enable_if_t<  is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>* = nullptr>
 cudaMemsetParams cuda_get_zero_parms(T* dst, size_t count) {
 
   cudaMemsetParams p;
@@ -127,10 +119,7 @@ cudaMemsetParams cuda_get_zero_parms(T* dst, size_t count) {
 */
 inline size_t cuda_graph_get_num_root_nodes(cudaGraph_t graph) {
   size_t num_nodes;
-  TF_CHECK_CUDA(
-    cudaGraphGetRootNodes(graph, nullptr, &num_nodes),
-    "failed to get native graph root nodes"
-  );
+  TF_CHECK_CUDA(cudaGraphGetRootNodes(graph, nullptr, &num_nodes),  "failed to get native graph root nodes" );
   return num_nodes;
 }
 
@@ -139,10 +128,7 @@ inline size_t cuda_graph_get_num_root_nodes(cudaGraph_t graph) {
 */
 inline size_t cuda_graph_get_num_nodes(cudaGraph_t graph) {
   size_t num_nodes;
-  TF_CHECK_CUDA(
-    cudaGraphGetNodes(graph, nullptr, &num_nodes),
-    "failed to get native graph nodes"
-  );
+  TF_CHECK_CUDA( cudaGraphGetNodes(graph, nullptr, &num_nodes), "failed to get native graph nodes" );
   return num_nodes;
 }
 
@@ -151,10 +137,7 @@ inline size_t cuda_graph_get_num_nodes(cudaGraph_t graph) {
 */
 inline size_t cuda_graph_get_num_edges(cudaGraph_t graph) {
   size_t num_edges;
-  TF_CHECK_CUDA(
-    cudaGraphGetEdges(graph, nullptr, nullptr, &num_edges),
-    "failed to get native graph edges"
-  );
+  TF_CHECK_CUDA(  cudaGraphGetEdges(graph, nullptr, nullptr, &num_edges), "failed to get native graph edges" );
   return num_edges;
 }
 
@@ -164,10 +147,7 @@ inline size_t cuda_graph_get_num_edges(cudaGraph_t graph) {
 inline std::vector<cudaGraphNode_t> cuda_graph_get_nodes(cudaGraph_t graph) {
   size_t num_nodes = cuda_graph_get_num_nodes(graph);
   std::vector<cudaGraphNode_t> nodes(num_nodes);
-  TF_CHECK_CUDA(
-    cudaGraphGetNodes(graph, nodes.data(), &num_nodes),
-    "failed to get native graph nodes"
-  );
+  TF_CHECK_CUDA( cudaGraphGetNodes(graph, nodes.data(), &num_nodes), "failed to get native graph nodes");
   return nodes;
 }
 
@@ -177,10 +157,7 @@ inline std::vector<cudaGraphNode_t> cuda_graph_get_nodes(cudaGraph_t graph) {
 inline std::vector<cudaGraphNode_t> cuda_graph_get_root_nodes(cudaGraph_t graph) {
   size_t num_nodes = cuda_graph_get_num_root_nodes(graph);
   std::vector<cudaGraphNode_t> nodes(num_nodes);
-  TF_CHECK_CUDA(
-    cudaGraphGetRootNodes(graph, nodes.data(), &num_nodes),
-    "failed to get native graph nodes"
-  );
+  TF_CHECK_CUDA( cudaGraphGetRootNodes(graph, nodes.data(), &num_nodes), "failed to get native graph nodes");
   return nodes;
 }
 
@@ -191,10 +168,7 @@ inline std::vector<std::pair<cudaGraphNode_t, cudaGraphNode_t>>
 cuda_graph_get_edges(cudaGraph_t graph) {
   size_t num_edges = cuda_graph_get_num_edges(graph);
   std::vector<cudaGraphNode_t> froms(num_edges), tos(num_edges);
-  TF_CHECK_CUDA(
-    cudaGraphGetEdges(graph, froms.data(), tos.data(), &num_edges),
-    "failed to get native graph edges"
-  );
+  TF_CHECK_CUDA( cudaGraphGetEdges(graph, froms.data(), tos.data(), &num_edges), "failed to get native graph edges" );
   std::vector<std::pair<cudaGraphNode_t, cudaGraphNode_t>> edges(num_edges);
   for(size_t i=0; i<num_edges; i++) {
     edges[i] = std::make_pair(froms[i], tos[i]);
@@ -425,10 +399,7 @@ class cudaGraphExec :
   */
   void instantiate(cudaGraph_t graph) {
     cudaGraphExecDeleter {} (object);
-    TF_CHECK_CUDA(
-      cudaGraphInstantiate(&object, graph, nullptr, nullptr, 0),
-      "failed to create an executable graph"
-    );
+    TF_CHECK_CUDA(cudaGraphInstantiate(&object, graph, nullptr, nullptr, 0),"failed to create an executable graph" );
   }
   
   /**
@@ -445,9 +416,7 @@ class cudaGraphExec :
   @brief launchs the executable graph via the given stream
   */
   void launch(cudaStream_t stream) {
-    TF_CHECK_CUDA(
-      cudaGraphLaunch(object, stream), "failed to launch a CUDA executable graph"
-    );
+    TF_CHECK_CUDA(  cudaGraphLaunch(object, stream), "failed to launch a CUDA executable graph"  );
   }
 };
 
@@ -656,12 +625,7 @@ inline void cudaFlowNode::_precede(cudaFlowNode* v) {
 
   // capture node doesn't have the native graph yet
   if(_handle.index() != cudaFlowNode::CAPTURE) {
-    TF_CHECK_CUDA(
-      cudaGraphAddDependencies(
-        _cfg._native_handle, &_native_handle, &v->_native_handle, 1
-      ),
-      "failed to add a preceding link ", this, "->", v
-    );
+    TF_CHECK_CUDA(   cudaGraphAddDependencies(  _cfg._native_handle, &_native_handle, &v->_native_handle, 1  ), "failed to add a preceding link ", this, "->", v  );
   }
 }
 
@@ -690,17 +654,10 @@ cudaFlowNode* cudaFlowGraph::emplace_back(ArgsT&&... args) {
   auto node = std::make_unique<cudaFlowNode>(std::forward<ArgsT>(args)...);
   _nodes.emplace_back(std::move(node));
   return _nodes.back().get();
-
-  // TODO: use object pool to save memory
-  //auto node = new cudaFlowNode(std::forward<ArgsT>(args)...);
-  //_nodes.push_back(node);
-  //return node;
 }
 
 // Procedure: dump the graph to a DOT format
-inline void cudaFlowGraph::dump(
-  std::ostream& os, const void* root, const std::string& root_name
-) const {
+inline void cudaFlowGraph::dump( std::ostream& os, const void* root, const std::string& root_name) const {
 
   // recursive dump with stack
   std::stack<std::tuple<const cudaFlowGraph*, const cudaFlowNode*, int>> stack;
@@ -756,9 +713,7 @@ inline void cudaFlowGraph::dump(
         break;
 
         case cudaFlowNode::SUBFLOW:
-          stack.push(std::make_tuple(
-            &(std::get_if<cudaFlowNode::Subflow>(&v->_handle)->cfg), v, l+1)
-          );
+          stack.push(std::make_tuple( &(std::get_if<cudaFlowNode::Subflow>(&v->_handle)->cfg), v, l+1));
           os << " style=\"filled\""
              << " color=\"black\" fillcolor=\"purple\""
              << " fontcolor=\"white\""

@@ -54,15 +54,11 @@ class cudaStream :
 
     /**
     @brief constructs an RAII-styled object from the given CUDA stream
-
     Constructs a cudaStream object which owns @c stream.
     */
     explicit cudaStream(cudaStream_t stream) : cudaObject(stream) {
     }
-    
-    /**
-    @brief default constructor
-    */
+ 
     cudaStream() = default;
     
     /**
@@ -72,36 +68,20 @@ class cudaStream :
     until this stream has completed all operations.
     */
     void synchronize() const {
-      TF_CHECK_CUDA(
-        cudaStreamSynchronize(object), "failed to synchronize a CUDA stream"
-      );
+      TF_CHECK_CUDA( cudaStreamSynchronize(object), "failed to synchronize a CUDA stream"
+  );
     }
     
     /**
     @brief begins graph capturing on the stream
 
-    When a stream is in capture mode, all operations pushed into the stream 
-    will not be executed, but will instead be captured into a graph, 
-    which will be returned via cudaStream::end_capture. 
+    When a stream is in capture mode, all operations pushed into the stream   will not be executed, but will instead be captured into a graph,  which will be returned via cudaStream::end_capture. 
 
     A thread's mode can be one of the following:
-    + @c cudaStreamCaptureModeGlobal: This is the default mode. 
-      If the local thread has an ongoing capture sequence that was not initiated 
-      with @c cudaStreamCaptureModeRelaxed at @c cuStreamBeginCapture, 
-      or if any other thread has a concurrent capture sequence initiated with 
-      @c cudaStreamCaptureModeGlobal, this thread is prohibited from potentially 
-      unsafe API calls.
-
-    + @c cudaStreamCaptureModeThreadLocal: If the local thread has an ongoing capture 
-      sequence not initiated with @c cudaStreamCaptureModeRelaxed, 
-      it is prohibited from potentially unsafe API calls. 
-      Concurrent capture sequences in other threads are ignored.
-
-    + @c cudaStreamCaptureModeRelaxed: The local thread is not prohibited 
-      from potentially unsafe API calls. Note that the thread is still prohibited 
-      from API calls which necessarily conflict with stream capture, for example, 
-      attempting @c cudaEventQuery on an event that was last recorded 
-      inside a capture sequence.
+    + @c cudaStreamCaptureModeGlobal: This is the default mode.    If the local thread has an ongoing capture sequence that was not initiated  with @c cudaStreamCaptureModeRelaxed at @c cuStreamBeginCapture,  or if any other thread has a concurrent capture sequence initiated with 
+      @c cudaStreamCaptureModeGlobal, this thread is prohibited from potentially   unsafe API calls.
+    + @c cudaStreamCaptureModeThreadLocal: If the local thread has an ongoing capture  sequence not initiated with @c cudaStreamCaptureModeRelaxed,  it is prohibited from potentially unsafe API calls.    Concurrent capture sequences in other threads are ignored.
+    + @c cudaStreamCaptureModeRelaxed: The local thread is not prohibited  from potentially unsafe API calls. Note that the thread is still prohibited   from API calls which necessarily conflict with stream capture, for example,   attempting @c cudaEventQuery on an event that was last recorded   inside a capture sequence.
     */
     void begin_capture(cudaStreamCaptureMode m = cudaStreamCaptureModeGlobal) const {
       TF_CHECK_CUDA(
@@ -113,45 +93,32 @@ class cudaStream :
     /**
     @brief ends graph capturing on the stream
     
-    Equivalently calling @c cudaStreamEndCapture to
-    end capture on stream and returning the captured graph. 
+    Equivalently calling @c cudaStreamEndCapture to end capture on stream and returning the captured graph.   
     Capture must have been initiated on stream via a call to cudaStream::begin_capture. 
-    If capture was invalidated, due to a violation of the rules of stream capture, 
-    then a NULL graph will be returned.
+     If capture was invalidated, due to a violation of the rules of stream capture,   then a NULL graph will be returned.
     */
     cudaGraph_t end_capture() const {
       cudaGraph_t native_g;
-      TF_CHECK_CUDA(
-        cudaStreamEndCapture(object, &native_g), 
-        "failed to end capture on stream ", object
-      );
+      TF_CHECK_CUDA(  cudaStreamEndCapture(object, &native_g),    "failed to end capture on stream ", object );
       return native_g;
     }
     
     /**
     @brief records an event on the stream
 
-    Equivalently calling @c cudaEventRecord to record an event on this stream,
-    both of which must be on the same CUDA context.
+    Equivalently calling @c cudaEventRecord to record an event on this stream,  both of which must be on the same CUDA context.
     */
     void record(cudaEvent_t event) const {
-      TF_CHECK_CUDA(
-        cudaEventRecord(event, object), 
-        "failed to record event ", event, " on stream ", object
-      );
+      TF_CHECK_CUDA(  cudaEventRecord(event, object),     "failed to record event ", event, " on stream ", object  );
     }
     
     /**
     @brief waits on an event
 
-    Equivalently calling @c cudaStreamWaitEvent to make all future work 
-    submitted to stream wait for all work captured in event.
+    Equivalently calling @c cudaStreamWaitEvent to make all future work  submitted to stream wait for all work captured in event.
     */
     void wait(cudaEvent_t event) const {
-      TF_CHECK_CUDA(
-        cudaStreamWaitEvent(object, event, 0), 
-        "failed to wait for event ", event, " on stream ", object
-      );
+      TF_CHECK_CUDA( cudaStreamWaitEvent(object, event, 0),  "failed to wait for event ", event, " on stream ", object  );
     }
 };
 
@@ -172,10 +139,7 @@ struct cudaEventCreator {
   
   cudaEvent_t operator () (unsigned int flag) const {
     cudaEvent_t event;
-    TF_CHECK_CUDA(
-      cudaEventCreateWithFlags(&event, flag),
-      "failed to create a CUDA event with flag=", flag
-    );
+    TF_CHECK_CUDA( cudaEventCreateWithFlags(&event, flag),   "failed to create a CUDA event with flag=", flag );
     return event;
   }
 };

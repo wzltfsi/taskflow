@@ -19,9 +19,7 @@ namespace tf {
 inline size_t cuda_get_free_mem(int d) {
   cudaScopedDevice ctx(d);
   size_t free, total;
-  TF_CHECK_CUDA(
-    cudaMemGetInfo(&free, &total), "failed to get mem info on device ", d
-  );
+  TF_CHECK_CUDA(cudaMemGetInfo(&free, &total), "failed to get mem info on device ", d);
   return free;
 }
 
@@ -31,9 +29,7 @@ inline size_t cuda_get_free_mem(int d) {
 inline size_t cuda_get_total_mem(int d) {
   cudaScopedDevice ctx(d);
   size_t free, total;
-  TF_CHECK_CUDA(
-    cudaMemGetInfo(&free, &total), "failed to get mem info on device ", d
-  );
+  TF_CHECK_CUDA(cudaMemGetInfo(&free, &total), "failed to get mem info on device ", d );
   return total;
 }
 
@@ -48,10 +44,7 @@ template <typename T>
 T* cuda_malloc_device(size_t N, int d) {
   cudaScopedDevice ctx(d);
   T* ptr {nullptr};
-  TF_CHECK_CUDA(
-    cudaMalloc(&ptr, N*sizeof(T)),
-    "failed to allocate memory (", N*sizeof(T), "bytes) on device ", d
-  )
+  TF_CHECK_CUDA( cudaMalloc(&ptr, N*sizeof(T)), "failed to allocate memory (", N*sizeof(T), "bytes) on device ", d)
   return ptr;
 }
 
@@ -64,10 +57,7 @@ with the caller.
 template <typename T>
 T* cuda_malloc_device(size_t N) {
   T* ptr {nullptr};
-  TF_CHECK_CUDA(
-    cudaMalloc(&ptr, N*sizeof(T)), 
-    "failed to allocate memory (", N*sizeof(T), "bytes)"
-  )
+  TF_CHECK_CUDA( cudaMalloc(&ptr, N*sizeof(T)), "failed to allocate memory (", N*sizeof(T), "bytes)" )
   return ptr;
 }
 
@@ -80,9 +70,7 @@ of memory and returns a pointer to the starting address of the shared memory.
 template <typename T>
 T* cuda_malloc_shared(size_t N) {
   T* ptr {nullptr};
-  TF_CHECK_CUDA(
-    cudaMallocManaged(&ptr, N*sizeof(T)),
-    "failed to allocate shared memory (", N*sizeof(T), "bytes)"
+  TF_CHECK_CUDA( cudaMallocManaged(&ptr, N*sizeof(T)), "failed to allocate shared memory (", N*sizeof(T), "bytes)"
   )
   return ptr;
 }
@@ -129,12 +117,8 @@ The method calls @c cudaMemcpyAsync with the given @c stream
 using @c cudaMemcpyDefault to infer the memory space of the source and
 the destination pointers. The memory areas may not overlap.
 */
-inline void cuda_memcpy_async(
-  cudaStream_t stream, void* dst, const void* src, size_t count
-) {
-  TF_CHECK_CUDA(
-    cudaMemcpyAsync(dst, src, count, cudaMemcpyDefault, stream),
-    "failed to perform cudaMemcpyAsync"
+inline void cuda_memcpy_async(cudaStream_t stream, void* dst, const void* src, size_t count) {
+  TF_CHECK_CUDA( cudaMemcpyAsync(dst, src, count, cudaMemcpyDefault, stream),  "failed to perform cudaMemcpyAsync"
   );
 }
 
@@ -150,13 +134,8 @@ The method calls @c cudaMemsetAsync with the given @c stream
 to fill the first @c count bytes of the memory area pointed to by @c devPtr
 with the constant byte value @c value.
 */
-inline void cuda_memset_async(
-  cudaStream_t stream, void* devPtr, int value, size_t count
-){
-  TF_CHECK_CUDA(
-    cudaMemsetAsync(devPtr, value, count, stream),
-    "failed to perform cudaMemsetAsync"
-  );
+inline void cuda_memset_async( cudaStream_t stream, void* devPtr, int value, size_t count){
+  TF_CHECK_CUDA(  cudaMemsetAsync(devPtr, value, count, stream), "failed to perform cudaMemsetAsync");
 }
 
 // ----------------------------------------------------------------------------
@@ -323,16 +302,7 @@ struct cudaSharedMemory <unsigned long>
   }
 };
 
-//template <>
-//struct cudaSharedMemory <size_t>
-//{
-//  __device__ size_t *get()
-//  {
-//    extern __shared__ size_t s_sizet[];
-//    return s_sizet;
-//  }
-//};
-
+ 
 /**
 @private
 */
@@ -394,40 +364,14 @@ class cudaDeviceAllocator {
 
   public:
 
-  /**
-  @brief element type
-  */
-  using value_type = T;
 
-  /**
-  @brief element pointer type
-  */
-  using pointer = T*;
-
-  /**
-  @brief element reference type
-  */
-  using reference = T&;
-
-  /**
-  @brief const element pointer type
-  */
-  using const_pointer = const T*;
-
-  /**
-  @brief constant element reference type
-  */
-  using const_reference = const T&;
-
-  /**
-  @brief size type
-  */
-  using size_type = std::size_t;
-  
-  /**
-  @brief pointer difference type
-  */
-  using difference_type = std::ptrdiff_t;
+  using value_type         = T;
+  using pointer            = T*;
+  using reference          = T&;
+  using const_pointer      = const T*;
+  using const_reference    = const T&;
+  using size_type          = std::size_t;
+  using difference_type    = std::ptrdiff_t;
 
   /**
   @brief its member type @c U is the equivalent allocator type to allocate elements of type U
@@ -501,10 +445,7 @@ class cudaDeviceAllocator {
   pointer allocate( size_type n, std::allocator<void>::const_pointer = 0 )
   {
     void* ptr = NULL;
-    TF_CHECK_CUDA(
-      cudaMalloc( &ptr, n*sizeof(T) ),
-      "failed to allocate ", n, " elements (", n*sizeof(T), "bytes)"
-    )
+    TF_CHECK_CUDA(  cudaMalloc( &ptr, n*sizeof(T) ), "failed to allocate ", n, " elements (", n*sizeof(T), "bytes)")
     return static_cast<pointer>(ptr);
   }
 
@@ -590,40 +531,13 @@ class cudaUSMAllocator {
 
   public:
 
-  /**
-  @brief element type
-  */
-  using value_type = T;
-
-  /**
-  @brief element pointer type
-  */
-  using pointer = T*;
-
-  /**
-  @brief element reference type
-  */
-  using reference = T&;
-
-  /**
-  @brief const element pointer type
-  */
-  using const_pointer = const T*;
-
-  /**
-  @brief constant element reference type
-  */
-  using const_reference = const T&;
-
-  /**
-  @brief size type
-  */
-  using size_type = std::size_t;
-  
-  /**
-  @brief pointer difference type
-  */
-  using difference_type = std::ptrdiff_t;
+  using value_type         = T;
+  using pointer            = T*;
+  using reference          = T&;
+  using const_pointer      = const T*;
+  using const_reference    = const T&;
+  using size_type          = std::size_t;
+  using difference_type    = std::ptrdiff_t;
 
   /**
   @brief its member type @c U is the equivalent allocator type to allocate elements of type U
@@ -647,8 +561,7 @@ class cudaUSMAllocator {
   cudaUSMAllocator( const cudaUSMAllocator& ) noexcept {}
 
   /**
-  @brief Constructs a device allocator object from another device allocator 
-         object with a different element type.
+  @brief Constructs a device allocator object from another device allocator  object with a different element type.
   */
   template<typename U>
   cudaUSMAllocator( const cudaUSMAllocator<U>& ) noexcept {}
@@ -681,15 +594,9 @@ class cudaUSMAllocator {
   /** 
   @brief allocates block of storage.
   
-  Attempts to allocate a block of storage with a size large enough to contain 
-  @c n elements of member type, @c value_type, and returns a pointer 
-  to the first element.
-  
-  The storage is aligned appropriately for object of type @c value_type, 
-  but they are not constructed.
-  
-  The block of storage is allocated using cudaMalloc and throws std::bad_alloc 
-  if it cannot allocate the total amount of storage requested.
+  Attempts to allocate a block of storage with a size large enough to contain @c n elements of member type, @c value_type, and returns a pointer to the first element.
+  The storage is aligned appropriately for object of type @c value_type, but they are not constructed.
+  The block of storage is allocated using cudaMalloc and throws std::bad_alloc  if it cannot allocate the total amount of storage requested.
   
   @param n number of elements (each of size sizeof(value_type)) to be allocated
   @return a pointer to the initial element in the block of storage.
@@ -697,15 +604,12 @@ class cudaUSMAllocator {
   pointer allocate( size_type n, std::allocator<void>::const_pointer = 0 )
   {
     void* ptr {nullptr};
-    TF_CHECK_CUDA(
-      cudaMallocManaged( &ptr, n*sizeof(T) ),
-      "failed to allocate ", n, " elements (", n*sizeof(T), "bytes)"
-    )
+    TF_CHECK_CUDA(cudaMallocManaged( &ptr, n*sizeof(T) ),   "failed to allocate ", n, " elements (", n*sizeof(T), "bytes)" )
     return static_cast<pointer>(ptr);
   }
 
   /** 
-  @brief Releases a block of storage previously allocated with member allocate and not yet released
+  @brief Releases a block of storage previously allocated with member allocate and not yet released.
   
   The elements in the array are not destroyed by a call to this member function.
   
@@ -719,22 +623,17 @@ class cudaUSMAllocator {
   }
 
   /**
-  @brief returns the maximum number of elements that could potentially 
-         be allocated by this allocator
+  @brief returns the maximum number of elements that could potentially  be allocated by this allocator.
   
-  A call to member allocate with the value returned by this function 
-  can still fail to allocate the requested storage.
+  A call to member allocate with the value returned by this function can still fail to allocate the requested storage.
   
-  @return the nubmer of elements that might be allcoated as maximum 
-          by a call to member allocate
+  @return the nubmer of elements that might be allcoated as maximum  by a call to member allocate
   */
   size_type max_size() const noexcept { return size_type {-1}; }
 
   /**
   @brief Constructs an element object on the location pointed by ptr.
-  @param ptr pointer to a location with enough storage soace to contain 
-             an element of type @c value_type
-
+  @param ptr pointer to a location with enough storage soace to contain  an element of type @c value_type
   @param val value to initialize the constructed element to
   */
   void construct( pointer ptr, const_reference val ) {
@@ -742,10 +641,9 @@ class cudaUSMAllocator {
   }
 
   /**
-  @brief destroys in-place the object pointed by @c ptr
+  @brief destroys in-place the object pointed by @c ptr.
   
-  Notice that this does not deallocate the storage for the element but calls
-  its destructor.
+  Notice that this does not deallocate the storage for the element but calls its destructor.
 
   @param ptr pointer to the object to be destroye
   */
@@ -756,9 +654,7 @@ class cudaUSMAllocator {
   /**
   @brief compares two allocator of different types using @c ==
 
-  USM allocators of different types are always equal to each other
-  because the storage allocated by the allocator @c a1 can be deallocated 
-  through @c a2. 
+  USM allocators of different types are always equal to each other because the storage allocated by the allocator @c a1 can be deallocated through @c a2. 
   */
   template <typename U>
   bool operator == (const cudaUSMAllocator<U>&) const noexcept {
@@ -768,9 +664,7 @@ class cudaUSMAllocator {
   /**
   @brief compares two allocator of different types using @c !=
 
-  USM allocators of different types are always equal to each other
-  because the storage allocated by the allocator @c a1 can be deallocated 
-  through @c a2. 
+  USM allocators of different types are always equal to each other  because the storage allocated by the allocator @c a1 can be deallocated  through @c a2. 
   */
   template <typename U>
   bool operator != (const cudaUSMAllocator<U>&) const noexcept {
@@ -782,12 +676,6 @@ class cudaUSMAllocator {
 // ----------------------------------------------------------------------------
 // GPU vector object
 // ----------------------------------------------------------------------------
-
-//template <typename T>
-//using cudaDeviceVector = std::vector<NoInit<T>, cudaDeviceAllocator<NoInit<T>>>;
-
-//template <typename T>
-//using cudaUSMVector = std::vector<T, cudaUSMAllocator<T>>;
 
 /**
 @private
@@ -801,10 +689,7 @@ class cudaDeviceVector {
 
     cudaDeviceVector(size_t N) : _N {N} {
       if(N) {
-        TF_CHECK_CUDA(
-          cudaMalloc(&_data, N*sizeof(T)),
-          "failed to allocate device memory (", N*sizeof(T), " bytes)"
-        );
+        TF_CHECK_CUDA(  cudaMalloc(&_data, N*sizeof(T)), "failed to allocate device memory (", N*sizeof(T), " bytes)" );
       }
     }
     

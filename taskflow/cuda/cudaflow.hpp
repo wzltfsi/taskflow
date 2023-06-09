@@ -20,13 +20,9 @@ namespace tf {
 
 @brief class to create a %cudaFlow task dependency graph
 
-A %cudaFlow is a high-level interface over CUDA Graph to perform GPU operations
-using the task dependency graph model.
-The class provides a set of methods for creating and launch different tasks
-on one or multiple CUDA devices,
-for instance, kernel tasks, data transfer tasks, and memory operation tasks.
-The following example creates a %cudaFlow of two kernel tasks, @c task1 and
-@c task2, where @c task1 runs before @c task2.
+A %cudaFlow is a high-level interface over CUDA Graph to perform GPU operations using the task dependency graph model.
+The class provides a set of methods for creating and launch different tasks on one or multiple CUDA devices, for instance, kernel tasks, data transfer tasks, and memory operation tasks.
+The following example creates a %cudaFlow of two kernel tasks, @c task1 and @c task2, where @c task1 runs before @c task2.
 
 @code{.cpp}
 tf::Taskflow taskflow;
@@ -44,12 +40,9 @@ taskflow.emplace([&](tf::cudaFlow& cf){
 executor.run(taskflow).wait();
 @endcode
 
-A %cudaFlow is a task (tf::Task) created from tf::Taskflow
-and will be run by @em one worker thread in the executor.
-That is, the callable that describes a %cudaFlow
-will be executed sequentially.
-Inside a %cudaFlow task, different GPU tasks (tf::cudaTask) may run
-in parallel scheduled by the CUDA runtime.
+A %cudaFlow is a task (tf::Task) created from tf::Taskflow and will be run by @em one worker thread in the executor.
+That is, the callable that describes a %cudaFlow will be executed sequentially.
+Inside a %cudaFlow task, different GPU tasks (tf::cudaTask) may run in parallel scheduled by the CUDA runtime.
 
 Please refer to @ref GPUTaskingcudaFlow for details.
 */
@@ -57,25 +50,15 @@ class cudaFlow {
   
   public:
 
-    /**
-    @brief constructs a %cudaFlow
-    */
     cudaFlow();
 
     /**
-    @brief destroys the %cudaFlow and its associated native CUDA graph
-           and executable graph
+    @brief destroys the %cudaFlow and its associated native CUDA graph  and executable graph
      */
     ~cudaFlow() = default;
 
-    /**
-    @brief default move constructor
-    */
     cudaFlow(cudaFlow&&) = default;
-    
-    /**
-    @brief default move assignment operator
-    */
+ 
     cudaFlow& operator = (cudaFlow&&) = default;
 
     /**
@@ -94,17 +77,14 @@ class cudaFlow {
     void clear();
 
     /**
-    @brief dumps the %cudaFlow graph into a DOT format through an
-           output stream
+    @brief dumps the %cudaFlow graph into a DOT format through an  output stream
     */
     void dump(std::ostream& os) const;
 
     /**
-    @brief dumps the native CUDA graph into a DOT format through an
-           output stream
+    @brief dumps the native CUDA graph into a DOT format through an  output stream
 
-    The native CUDA graph may be different from the upper-level %cudaFlow
-    graph when flow capture is involved.
+    The native CUDA graph may be different from the upper-level %cudaFlow graph when flow capture is involved.
     */
     void dump_native_graph(std::ostream& os) const;
 
@@ -117,12 +97,8 @@ class cudaFlow {
 
     @return a tf::cudaTask handle
 
-    An empty node performs no operation during execution,
-    but can be used for transitive ordering.
-    For example, a phased execution graph with 2 groups of @c n nodes
-    with a barrier between them can be represented using an empty node
-    and @c 2*n dependency edges,
-    rather than no empty node and @c n^2 dependency edges.
+    An empty node performs no operation during execution,  but can be used for transitive ordering.
+    For example, a phased execution graph with 2 groups of @c n nodes with a barrier between them can be represented using an empty node  and @c 2*n dependency edges, rather than no empty node and @c n^2 dependency edges.
     */
     cudaTask noop();
 
@@ -131,22 +107,18 @@ class cudaFlow {
 
     @tparam C callable type
 
-    @param callable a callable object with neither arguments nor return
-    (i.e., constructible from @c std::function<void()>)
+    @param callable a callable object with neither arguments nor return  (i.e., constructible from @c std::function<void()>)
 
     @return a tf::cudaTask handle
 
-    A host task can only execute CPU-specific functions and cannot do any CUDA calls
-    (e.g., @c cudaMalloc).
+    A host task can only execute CPU-specific functions and cannot do any CUDA calls (e.g., @c cudaMalloc).
     */
     template <typename C>
     cudaTask host(C&& callable);
 
     /**
     @brief updates parameters of a host task
-
-    The method is similar to tf::cudaFlow::host but operates on a task
-    of type tf::cudaTaskType::HOST.
+    The method is similar to tf::cudaFlow::host but operates on a task of type tf::cudaTaskType::HOST.
     */
     template <typename C>
     void host(cudaTask task, C&& callable);
@@ -171,14 +143,11 @@ class cudaFlow {
     /**
     @brief updates parameters of a kernel task
 
-    The method is similar to tf::cudaFlow::kernel but operates on a task
-    of type tf::cudaTaskType::KERNEL.
+    The method is similar to tf::cudaFlow::kernel but operates on a task of type tf::cudaTaskType::KERNEL.
     The kernel function name must NOT change.
     */
     template <typename F, typename... ArgsT>
-    void kernel(
-      cudaTask task, dim3 g, dim3 b, size_t shm, F f, ArgsT... args
-    );
+    void kernel(  cudaTask task, dim3 g, dim3 b, size_t shm, F f, ArgsT... args );
 
     /**
     @brief creates a memset task that fills untyped data with a byte value
@@ -189,19 +158,15 @@ class cudaFlow {
 
     @return a tf::cudaTask handle
 
-    A memset task fills the first @c count bytes of device memory area
-    pointed by @c dst with the byte value @c v.
+    A memset task fills the first @c count bytes of device memory area pointed by @c dst with the byte value @c v.
     */
     cudaTask memset(void* dst, int v, size_t count);
 
     /**
     @brief updates parameters of a memset task
 
-    The method is similar to tf::cudaFlow::memset but operates on a task
-    of type tf::cudaTaskType::MEMSET.
-    The source/destination memory may have different address values but
-    must be allocated from the same contexts as the original
-    source/destination memory.
+    The method is similar to tf::cudaFlow::memset but operates on a task  of type tf::cudaTaskType::MEMSET.
+    The source/destination memory may have different address values but must be allocated from the same contexts as the original v source/destination memory.
     */
     void memset(cudaTask task, void* dst, int ch, size_t count);
 
@@ -214,19 +179,15 @@ class cudaFlow {
 
     @return a tf::cudaTask handle
 
-    A memcpy task transfers @c bytes of data from a source location
-    to a target location. Direction can be arbitrary among CPUs and GPUs.
+    A memcpy task transfers @c bytes of data from a source location  to a target location. Direction can be arbitrary among CPUs and GPUs.
     */
     cudaTask memcpy(void* tgt, const void* src, size_t bytes);
 
     /**
     @brief updates parameters of a memcpy task
 
-    The method is similar to tf::cudaFlow::memcpy but operates on a task
-    of type tf::cudaTaskType::MEMCPY.
-    The source/destination memory may have different address values but
-    must be allocated from the same contexts as the original
-    source/destination memory.
+    The method is similar to tf::cudaFlow::memcpy but operates on a task of type tf::cudaTaskType::MEMCPY.
+    The source/destination memory may have different address values but must be allocated from the same contexts as the original  source/destination memory.
     */
     void memcpy(cudaTask task, void* tgt, const void* src, size_t bytes);
 
@@ -239,27 +200,18 @@ class cudaFlow {
 
     @return a tf::cudaTask handle
 
-    A zero task zeroes the first @c count elements of type @c T
-    in a device memory area pointed by @c dst.
+    A zero task zeroes the first @c count elements of type @c T  in a device memory area pointed by @c dst.
     */
-    template <typename T, std::enable_if_t<
-      is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>* = nullptr
-    >
+    template <typename T, std::enable_if_t<  is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>* = nullptr  >
     cudaTask zero(T* dst, size_t count);
 
     /**
     @brief updates parameters of a memset task to a zero task
 
-    The method is similar to tf::cudaFlow::zero but operates on
-    a task of type tf::cudaTaskType::MEMSET.
-
-    The source/destination memory may have different address values but
-    must be allocated from the same contexts as the original
-    source/destination memory.
+    The method is similar to tf::cudaFlow::zero but operates on a task of type tf::cudaTaskType::MEMSET.
+    The source/destination memory may have different address values but must be allocated from the same contexts as the original source/destination memory.
     */
-    template <typename T, std::enable_if_t<
-      is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>* = nullptr
-    >
+    template <typename T, std::enable_if_t< is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>* = nullptr >
     void zero(cudaTask task, T* dst, size_t count);
 
     /**
@@ -273,28 +225,19 @@ class cudaFlow {
 
     @return a tf::cudaTask handle
 
-    A fill task fills the first @c count elements of type @c T with @c value
-    in a device memory area pointed by @c dst.
+    A fill task fills the first @c count elements of type @c T with @c value  in a device memory area pointed by @c dst.
     The value to fill is interpreted in type @c T rather than byte.
     */
-    template <typename T, std::enable_if_t<
-      is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>* = nullptr
-    >
+    template <typename T, std::enable_if_t<is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>* = nullptr >
     cudaTask fill(T* dst, T value, size_t count);
 
     /**
     @brief updates parameters of a memset task to a fill task
 
-    The method is similar to tf::cudaFlow::fill but operates on a task
-    of type tf::cudaTaskType::MEMSET.
-
-    The source/destination memory may have different address values but
-    must be allocated from the same contexts as the original
-    source/destination memory.
+    The method is similar to tf::cudaFlow::fill but operates on a task of type tf::cudaTaskType::MEMSET.
+    The source/destination memory may have different address values but  must be allocated from the same contexts as the original source/destination memory.
     */
-    template <typename T, std::enable_if_t<
-      is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>* = nullptr
-    >
+    template <typename T, std::enable_if_t<  is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>* = nullptr >
     void fill(cudaTask task, T* dst, T value, size_t count);
 
     /**
@@ -308,8 +251,7 @@ class cudaFlow {
 
     @return a tf::cudaTask handle
 
-    A copy task transfers <tt>num*sizeof(T)</tt> bytes of data from a source location
-    to a target location. Direction can be arbitrary among CPUs and GPUs.
+    A copy task transfers <tt>num*sizeof(T)</tt> bytes of data from a source location to a target location. Direction can be arbitrary among CPUs and GPUs.
     */
     template <typename T,
       std::enable_if_t<!std::is_same_v<T, void>, void>* = nullptr
@@ -319,15 +261,10 @@ class cudaFlow {
     /**
     @brief updates parameters of a memcpy task to a copy task
 
-    The method is similar to tf::cudaFlow::copy but operates on a task
-    of type tf::cudaTaskType::MEMCPY.
-    The source/destination memory may have different address values but
-    must be allocated from the same contexts as the original
-    source/destination memory.
+    The method is similar to tf::cudaFlow::copy but operates on a task of type tf::cudaTaskType::MEMCPY.
+    The source/destination memory may have different address values but must be allocated from the same contexts as the original source/destination memory.
     */
-    template <typename T,
-      std::enable_if_t<!std::is_same_v<T, void>, void>* = nullptr
-    >
+    template <typename T,  std::enable_if_t<!std::is_same_v<T, void>, void>* = nullptr >
     void copy(cudaTask task, T* tgt, const T* src, size_t num);
 
     // ------------------------------------------------------------------------
@@ -338,12 +275,10 @@ class cudaFlow {
 
     @param stream stream for performing this operation
 
-    Offloads the present %cudaFlow onto a GPU asynchronously via
-    the given stream.
+    Offloads the present %cudaFlow onto a GPU asynchronously via the given stream.
 
     An offloaded %cudaFlow forces the underlying graph to be instantiated.
-    After the instantiation, you should not modify the graph topology
-    but update node parameters.
+    After the instantiation, you should not modify the graph topology v but update node parameters.
     */
     void run(cudaStream_t stream);
 
@@ -376,8 +311,7 @@ class cudaFlow {
     /**
     @brief updates a single-threaded kernel task
 
-    This method is similar to cudaFlow::single_task but operates
-    on an existing task.
+    This method is similar to cudaFlow::single_task but operates on an existing task.
     */
     template <typename C>
     void single_task(cudaTask task, C c);
@@ -409,8 +343,7 @@ class cudaFlow {
     @brief updates parameters of a kernel task created from
            tf::cudaFlow::for_each
 
-    The type of the iterators and the callable must be the same as
-    the task created from tf::cudaFlow::for_each.
+    The type of the iterators and the callable must be the same as  the task created from tf::cudaFlow::for_each.
     */
     template <typename I, typename C>
     void for_each(cudaTask task, I first, I last, C callable);
@@ -446,21 +379,17 @@ class cudaFlow {
     cudaTask for_each_index(I first, I last, I step, C callable);
 
     /**
-    @brief updates parameters of a kernel task created from
-           tf::cudaFlow::for_each_index
+    @brief updates parameters of a kernel task creatge
 
-    The type of the iterators and the callable must be the same as
-    the task created from tf::cudaFlow::for_each_index.
+    @tparam I input iterator typeed from  tf::cudaFlow::for_each_index
+
+    The type of the iterators and the callable must be the same as the task created from tf::cudaFlow::for_each_index.
     */
     template <typename I, typename C>
-    void for_each_index(
-      cudaTask task, I first, I last, I step, C callable
-    );
+    void for_each_index(   cudaTask task, I first, I last, I step, C callable  );
 
     /**
-    @brief applies a callable to a source range and stores the result in a target range
-
-    @tparam I input iterator type
+    @brief applies a callable to a source range and stores the result in a target ran
     @tparam O output iterator type
     @tparam C unary operator type
 
@@ -483,11 +412,9 @@ class cudaFlow {
     cudaTask transform(I first, I last, O output, C op);
 
     /**
-    @brief updates parameters of a kernel task created from
-           tf::cudaFlow::transform
+    @brief updates parameters of a kernel task created from  tf::cudaFlow::transform
 
-    The type of the iterators and the callable must be the same as
-    the task created from tf::cudaFlow::for_each.
+    The type of the iterators and the callable must be the same as the task created from tf::cudaFlow::for_each.
     */
     template <typename I, typename O, typename C>
     void transform(cudaTask task, I first, I last, O output, C c);
@@ -504,8 +431,7 @@ class cudaFlow {
     @param last1 iterator to the end of the input range
     @param first2 iterato
     @param output iterator to the beginning of the output range
-    @param op binary operator to apply to transform each pair of items in the
-              two input ranges
+    @param op binary operator to apply to transform each pair of items in the two input ranges
 
     @return cudaTask handle
 
@@ -521,16 +447,12 @@ class cudaFlow {
     cudaTask transform(I1 first1, I1 last1, I2 first2, O output, C op);
 
     /**
-    @brief updates parameters of a kernel task created from
-           tf::cudaFlow::transform
+    @brief updates parameters of a kernel task created from  tf::cudaFlow::transform
 
-    The type of the iterators and the callable must be the same as
-    the task created from tf::cudaFlow::for_each.
+    The type of the iterators and the callable must be the same as the task created from tf::cudaFlow::for_each.
     */
     template <typename I1, typename I2, typename O, typename C>
-    void transform(
-      cudaTask task, I1 first1, I1 last1, I2 first2, O output, C c
-    );
+    void transform(  cudaTask task, I1 first1, I1 last1, I2 first2, O output, C c );
 
     // ------------------------------------------------------------------------
     // subflow
@@ -539,16 +461,13 @@ class cudaFlow {
     /**
     @brief constructs a subflow graph through tf::cudaFlowCapturer
 
-    @tparam C callable type constructible from
-              @c std::function<void(tf::cudaFlowCapturer&)>
+    @tparam C callable type constructible from @c std::function<void(tf::cudaFlowCapturer&)>
 
     @param callable the callable to construct a capture flow
 
     @return a tf::cudaTask handle
 
-    A captured subflow forms a sub-graph to the %cudaFlow and can be used to
-    capture custom (or third-party) kernels that cannot be directly constructed
-    from the %cudaFlow.
+    A captured subflow forms a sub-graph to the %cudaFlow and can be used to   capture custom (or third-party) kernels that cannot be directly constructed   from the %cudaFlow.
 
     Example usage:
 
@@ -574,10 +493,8 @@ class cudaFlow {
     /**
     @brief updates the captured child graph
 
-    The method is similar to tf::cudaFlow::capture but operates on a task
-    of type tf::cudaTaskType::SUBFLOW.
-    The new captured graph must be topologically identical to the original
-    captured graph.
+    The method is similar to tf::cudaFlow::capture but operates on a task of type tf::cudaTaskType::SUBFLOW.
+    The new captured graph must be topologically identical to the original captured graph.
     */
     template <typename C>
     void capture(cudaTask task, C callable);
@@ -627,16 +544,9 @@ inline void cudaFlow::dump_native_graph(std::ostream& os) const {
 // Function: noop
 inline cudaTask cudaFlow::noop() {
 
-  auto node = _cfg.emplace_back(
-    _cfg, std::in_place_type_t<cudaFlowNode::Empty>{}
-  );
+  auto node = _cfg.emplace_back(_cfg, std::in_place_type_t<cudaFlowNode::Empty>{});
 
-  TF_CHECK_CUDA(
-    cudaGraphAddEmptyNode(
-      &node->_native_handle, _cfg._native_handle, nullptr, 0
-    ),
-    "failed to create a no-operation (empty) node"
-  );
+  TF_CHECK_CUDA(  cudaGraphAddEmptyNode(  &node->_native_handle, _cfg._native_handle, nullptr, 0  ),  "failed to create a no-operation (empty) node" );
 
   return cudaTask(node);
 }
@@ -645,9 +555,7 @@ inline cudaTask cudaFlow::noop() {
 template <typename C>
 cudaTask cudaFlow::host(C&& c) {
 
-  auto node = _cfg.emplace_back(
-    _cfg, std::in_place_type_t<cudaFlowNode::Host>{}, std::forward<C>(c)
-  );
+  auto node = _cfg.emplace_back(  _cfg, std::in_place_type_t<cudaFlowNode::Host>{}, std::forward<C>(c) );
 
   auto h = std::get_if<cudaFlowNode::Host>(&node->_handle);
 
@@ -655,25 +563,16 @@ cudaTask cudaFlow::host(C&& c) {
   p.fn = cudaFlowNode::Host::callback;
   p.userData = h;
 
-  TF_CHECK_CUDA(
-    cudaGraphAddHostNode(
-      &node->_native_handle, _cfg._native_handle, nullptr, 0, &p
-    ),
-    "failed to create a host node"
-  );
+  TF_CHECK_CUDA( cudaGraphAddHostNode(   &node->_native_handle, _cfg._native_handle, nullptr, 0, &p ), "failed to create a host node" );
 
   return cudaTask(node);
 }
 
 // Function: kernel
 template <typename F, typename... ArgsT>
-cudaTask cudaFlow::kernel(
-  dim3 g, dim3 b, size_t s, F f, ArgsT... args
-) {
+cudaTask cudaFlow::kernel(dim3 g, dim3 b, size_t s, F f, ArgsT... args) {
 
-  auto node = _cfg.emplace_back(
-    _cfg, std::in_place_type_t<cudaFlowNode::Kernel>{}, (void*)f
-  );
+  auto node = _cfg.emplace_back(  _cfg, std::in_place_type_t<cudaFlowNode::Kernel>{}, (void*)f );
 
   cudaKernelNodeParams p;
   void* arguments[sizeof...(ArgsT)] = { (void*)(&args)... };
@@ -684,65 +583,39 @@ cudaTask cudaFlow::kernel(
   p.kernelParams = arguments;
   p.extra = nullptr;
 
-  TF_CHECK_CUDA(
-    cudaGraphAddKernelNode(
-      &node->_native_handle, _cfg._native_handle, nullptr, 0, &p
-    ),
-    "failed to create a kernel task"
-  );
+  TF_CHECK_CUDA( cudaGraphAddKernelNode(  &node->_native_handle, _cfg._native_handle, nullptr, 0, &p ), "failed to create a kernel task" );
 
   return cudaTask(node);
 }
 
 // Function: zero
-template <typename T, std::enable_if_t<
-  is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>*
->
+template <typename T, std::enable_if_t< is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>* >
 cudaTask cudaFlow::zero(T* dst, size_t count) {
 
-  auto node = _cfg.emplace_back(
-    _cfg, std::in_place_type_t<cudaFlowNode::Memset>{}
-  );
+  auto node = _cfg.emplace_back( _cfg, std::in_place_type_t<cudaFlowNode::Memset>{});
 
   auto p = cuda_get_zero_parms(dst, count);
 
-  TF_CHECK_CUDA(
-    cudaGraphAddMemsetNode(
-      &node->_native_handle, _cfg._native_handle, nullptr, 0, &p
-    ),
-    "failed to create a memset (zero) task"
-  );
+  TF_CHECK_CUDA( cudaGraphAddMemsetNode(   &node->_native_handle, _cfg._native_handle, nullptr, 0, &p  ), "failed to create a memset (zero) task" );
 
   return cudaTask(node);
 }
 
 // Function: fill
-template <typename T, std::enable_if_t<
-  is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>*
->
+template <typename T, std::enable_if_t< is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>*>
 cudaTask cudaFlow::fill(T* dst, T value, size_t count) {
 
-  auto node = _cfg.emplace_back(
-    _cfg, std::in_place_type_t<cudaFlowNode::Memset>{}
-  );
+  auto node = _cfg.emplace_back(  _cfg, std::in_place_type_t<cudaFlowNode::Memset>{}  );
 
   auto p = cuda_get_fill_parms(dst, value, count);
 
-  TF_CHECK_CUDA(
-    cudaGraphAddMemsetNode(
-      &node->_native_handle, _cfg._native_handle, nullptr, 0, &p
-    ),
-    "failed to create a memset (fill) task"
-  );
+  TF_CHECK_CUDA( cudaGraphAddMemsetNode(   &node->_native_handle, _cfg._native_handle, nullptr, 0, &p ),  "failed to create a memset (fill) task");
 
   return cudaTask(node);
 }
 
 // Function: copy
-template <
-  typename T,
-  std::enable_if_t<!std::is_same_v<T, void>, void>*
->
+template < typename T, std::enable_if_t<!std::is_same_v<T, void>, void>*>
 cudaTask cudaFlow::copy(T* tgt, const T* src, size_t num) {
 
   auto node = _cfg.emplace_back(
@@ -764,18 +637,11 @@ cudaTask cudaFlow::copy(T* tgt, const T* src, size_t num) {
 // Function: memset
 inline cudaTask cudaFlow::memset(void* dst, int ch, size_t count) {
 
-  auto node = _cfg.emplace_back(
-    _cfg, std::in_place_type_t<cudaFlowNode::Memset>{}
-  );
+  auto node = _cfg.emplace_back(   _cfg, std::in_place_type_t<cudaFlowNode::Memset>{} );
 
   auto p = cuda_get_memset_parms(dst, ch, count);
 
-  TF_CHECK_CUDA(
-    cudaGraphAddMemsetNode(
-      &node->_native_handle, _cfg._native_handle, nullptr, 0, &p
-    ),
-    "failed to create a memset task"
-  );
+  TF_CHECK_CUDA(  cudaGraphAddMemsetNode(   &node->_native_handle, _cfg._native_handle, nullptr, 0, &p  ), "failed to create a memset task" );
 
   return cudaTask(node);
 }
@@ -783,18 +649,11 @@ inline cudaTask cudaFlow::memset(void* dst, int ch, size_t count) {
 // Function: memcpy
 inline cudaTask cudaFlow::memcpy(void* tgt, const void* src, size_t bytes) {
 
-  auto node = _cfg.emplace_back(
-    _cfg, std::in_place_type_t<cudaFlowNode::Memcpy>{}
-  );
+  auto node = _cfg.emplace_back(_cfg, std::in_place_type_t<cudaFlowNode::Memcpy>{}  );
 
   auto p = cuda_get_memcpy_parms(tgt, src, bytes);
 
-  TF_CHECK_CUDA(
-    cudaGraphAddMemcpyNode(
-      &node->_native_handle, _cfg._native_handle, nullptr, 0, &p
-    ),
-    "failed to create a memcpy task"
-  );
+  TF_CHECK_CUDA(   cudaGraphAddMemcpyNode(     &node->_native_handle, _cfg._native_handle, nullptr, 0, &p ), "failed to create a memcpy task");
 
   return cudaTask(node);
 }
@@ -818,9 +677,7 @@ void cudaFlow::host(cudaTask task, C&& c) {
 
 // Function: update kernel parameters
 template <typename F, typename... ArgsT>
-void cudaFlow::kernel(
-  cudaTask task, dim3 g, dim3 b, size_t s, F f, ArgsT... args
-) {
+void cudaFlow::kernel( cudaTask task, dim3 g, dim3 b, size_t s, F f, ArgsT... args) {
 
   if(task.type() != cudaTaskType::KERNEL) {
     TF_THROW(task, " is not a kernel task");
@@ -836,10 +693,7 @@ void cudaFlow::kernel(
   p.kernelParams = arguments;
   p.extra = nullptr;
 
-  TF_CHECK_CUDA(
-    cudaGraphExecKernelNodeSetParams(_exe, task._node->_native_handle, &p),
-    "failed to update kernel parameters on ", task
-  );
+  TF_CHECK_CUDA( cudaGraphExecKernelNodeSetParams(_exe, task._node->_native_handle, &p), "failed to update kernel parameters on ", task );
 }
 
 // Function: update copy parameters
@@ -852,16 +706,11 @@ void cudaFlow::copy(cudaTask task, T* tgt, const T* src, size_t num) {
 
   auto p = cuda_get_copy_parms(tgt, src, num);
 
-  TF_CHECK_CUDA(
-    cudaGraphExecMemcpyNodeSetParams(_exe, task._node->_native_handle, &p),
-    "failed to update memcpy parameters on ", task
-  );
+  TF_CHECK_CUDA( cudaGraphExecMemcpyNodeSetParams(_exe, task._node->_native_handle, &p), "failed to update memcpy parameters on ", task );
 }
 
 // Function: update memcpy parameters
-inline void cudaFlow::memcpy(
-  cudaTask task, void* tgt, const void* src, size_t bytes
-) {
+inline void cudaFlow::memcpy( cudaTask task, void* tgt, const void* src, size_t bytes ) {
 
   if(task.type() != cudaTaskType::MEMCPY) {
     TF_THROW(task, " is not a memcpy task");
@@ -869,10 +718,7 @@ inline void cudaFlow::memcpy(
 
   auto p = cuda_get_memcpy_parms(tgt, src, bytes);
 
-  TF_CHECK_CUDA(
-    cudaGraphExecMemcpyNodeSetParams(_exe, task._node->_native_handle, &p),
-    "failed to update memcpy parameters on ", task
-  );
+  TF_CHECK_CUDA( cudaGraphExecMemcpyNodeSetParams(_exe, task._node->_native_handle, &p),  "failed to update memcpy parameters on ", task );
 }
 
 // Procedure: memset
@@ -884,16 +730,11 @@ inline void cudaFlow::memset(cudaTask task, void* dst, int ch, size_t count) {
 
   auto p = cuda_get_memset_parms(dst, ch, count);
 
-  TF_CHECK_CUDA(
-    cudaGraphExecMemsetNodeSetParams(_exe, task._node->_native_handle, &p),
-    "failed to update memset parameters on ", task
-  );
+  TF_CHECK_CUDA(  cudaGraphExecMemsetNodeSetParams(_exe, task._node->_native_handle, &p),  "failed to update memset parameters on ", task);
 }
 
 // Procedure: fill
-template <typename T, std::enable_if_t<
-  is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>*
->
+template <typename T, std::enable_if_t< is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>* >
 void cudaFlow::fill(cudaTask task, T* dst, T value, size_t count) {
 
   if(task.type() != cudaTaskType::MEMSET) {
@@ -902,16 +743,11 @@ void cudaFlow::fill(cudaTask task, T* dst, T value, size_t count) {
 
   auto p = cuda_get_fill_parms(dst, value, count);
 
-  TF_CHECK_CUDA(
-    cudaGraphExecMemsetNodeSetParams(_exe, task._node->_native_handle, &p),
-    "failed to update memset parameters on ", task
-  );
+  TF_CHECK_CUDA( cudaGraphExecMemsetNodeSetParams(_exe, task._node->_native_handle, &p), "failed to update memset parameters on ", task);
 }
 
 // Procedure: zero
-template <typename T, std::enable_if_t<
-  is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>*
->
+template <typename T, std::enable_if_t<is_pod_v<T> && (sizeof(T)==1 || sizeof(T)==2 || sizeof(T)==4), void>*>
 void cudaFlow::zero(cudaTask task, T* dst, size_t count) {
 
   if(task.type() != cudaTaskType::MEMSET) {
@@ -920,10 +756,7 @@ void cudaFlow::zero(cudaTask task, T* dst, size_t count) {
 
   auto p = cuda_get_zero_parms(dst, count);
 
-  TF_CHECK_CUDA(
-    cudaGraphExecMemsetNodeSetParams(_exe, task._node->_native_handle, &p),
-    "failed to update memset parameters on ", task
-  );
+  TF_CHECK_CUDA(   cudaGraphExecMemsetNodeSetParams(_exe, task._node->_native_handle, &p),  "failed to update memset parameters on ", task );
 }
 
 // Function: capture
@@ -937,7 +770,6 @@ void cudaFlow::capture(cudaTask task, C c) {
   // insert a subflow node
   // construct a captured flow from the callable
   auto node_handle = std::get_if<cudaFlowNode::Subflow>(&task._node->_handle);
-  //node_handle->graph.clear();
 
   cudaFlowCapturer capturer;
   c(capturer);
@@ -946,15 +778,12 @@ void cudaFlow::capture(cudaTask task, C c) {
   capturer._cfg._native_handle.reset(capturer.capture());
   node_handle->cfg = std::move(capturer._cfg);
 
-  TF_CHECK_CUDA(
-    cudaGraphExecChildGraphNodeSetParams(
-      _exe, 
-      task._node->_native_handle, 
-      node_handle->cfg._native_handle
-    ),
-    "failed to update a captured child graph"
-  );
+  TF_CHECK_CUDA(  cudaGraphExecChildGraphNodeSetParams(   _exe,   task._node->_native_handle,   node_handle->cfg._native_handle  ), "failed to update a captured child graph" );
 }
+
+
+
+
 
 // ----------------------------------------------------------------------------
 // captured flow
@@ -965,9 +794,7 @@ template <typename C>
 cudaTask cudaFlow::capture(C&& c) {
 
   // insert a subflow node
-  auto node = _cfg.emplace_back(
-    _cfg, std::in_place_type_t<cudaFlowNode::Subflow>{}
-  );
+  auto node = _cfg.emplace_back(  _cfg, std::in_place_type_t<cudaFlowNode::Subflow>{});
 
   // construct a captured flow from the callable
   auto node_handle = std::get_if<cudaFlowNode::Subflow>(&node->_handle);
@@ -982,16 +809,7 @@ cudaTask cudaFlow::capture(C&& c) {
   // move capturer's cudaFlow graph into node
   node_handle->cfg = std::move(capturer._cfg);
 
-  TF_CHECK_CUDA(
-    cudaGraphAddChildGraphNode(
-      &node->_native_handle, 
-      _cfg._native_handle, 
-      nullptr, 
-      0, 
-      node_handle->cfg._native_handle
-    ), 
-    "failed to add a cudaFlow capturer task"
-  );
+  TF_CHECK_CUDA(  cudaGraphAddChildGraphNode( &node->_native_handle, _cfg._native_handle,  nullptr, 0,  node_handle->cfg._native_handle ), "failed to add a cudaFlow capturer task"  );
 
   return cudaTask(node);
 }
