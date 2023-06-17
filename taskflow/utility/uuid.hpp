@@ -10,12 +10,9 @@
 namespace tf {
 
 // Class: UUID
-//
 // A universally unique identifier (UUID) is an identifier standard used in software construction. A UUID is simply a 128-bit value. The meaning of each bit is defined  by any of several variants.
 // For human-readable display, many systems use a canonical format using hexadecimal text with inserted hyphen characters.
-//
 // For example: 123e4567-e89b-12d3-a456-426655440000
-//
 // The intent of UUIDs is to enable distributed systems to uniquely identify information without significant central coordination.
 
 struct UUID {
@@ -37,9 +34,9 @@ struct UUID {
   UUID& operator = (UUID&&) = default;
 
   inline static size_type size();
-  inline iterator begin();
+  inline iterator       begin();
   inline const_iterator begin() const;
-  inline iterator end();
+  inline iterator       end();
   inline const_iterator end() const;
 
   inline bool is_nil() const;

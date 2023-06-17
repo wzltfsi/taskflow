@@ -51,46 +51,7 @@ void pipeline_1P(size_t L, unsigned w, tf::PipeType type) {
         j = 0;
         return counter --== 0;
       }).get();
-    }
-    // parallel pipe
-    //else if(type == tf::PipeType::PARALLEL) {
-    //
-    //  tf::Taskflow taskflow;
-
-    //  std::atomic<size_t> j = 0;
-    //  std::mutex mutex;
-    //  std::vector<int> collection;
-
-    //  tf::Pipeline pl(L, tf::Pipe{type,
-    //  [N, &j, &mutex, &collection](auto& pf) mutable {
-
-    //    auto ticket = j.fetch_add(1);
-
-    //    if(ticket >= N) {
-    //      pf.stop();
-    //      return;
-    //    }
-    //    std::scoped_lock<std::mutex> lock(mutex);
-    //    collection.push_back(ticket);
-    //  }});
-
-    //  taskflow.composed_of(pl);
-    //  executor.run(taskflow).wait();
-    //  REQUIRE(collection.size() == N);
-    //  std::sort(collection.begin(), collection.end());
-    //  for(size_t k=0; k<N; k++) {
-    //    REQUIRE(collection[k] == k);
-    //  }
-
-    //  j = 0;
-    //  collection.clear();
-    //  executor.run(taskflow).wait();
-    //  REQUIRE(collection.size() == N);
-    //  std::sort(collection.begin(), collection.end());
-    //  for(size_t k=0; k<N; k++) {
-    //    REQUIRE(collection[k] == k);
-    //  }
-    //}
+    } 
   }
 }
 

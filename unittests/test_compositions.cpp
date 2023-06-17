@@ -71,6 +71,7 @@ TEST_CASE("Composition-1" * doctest::timeout(300)) {
   }
 }
 
+
 // TESTCASE: composition-2
 TEST_CASE("Composition-2" * doctest::timeout(300)) {
 
@@ -125,6 +126,7 @@ TEST_CASE("Composition-2" * doctest::timeout(300)) {
   }
 }
 
+
 // TESTCASE: composition-3
 TEST_CASE("Composition-3" * doctest::timeout(300)) {
 
@@ -176,6 +178,7 @@ TEST_CASE("Composition-3" * doctest::timeout(300)) {
     REQUIRE(cnt == 16*100);
   }
 }
+
 
 // ----------------------------------------------------------------------------
 // ParallelCompositions

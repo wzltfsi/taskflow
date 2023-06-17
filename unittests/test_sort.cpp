@@ -26,6 +26,7 @@ struct MoveOnly1{
 // parallel sort
 // ----------------------------------------------------------------------------
 
+
 template <typename T>
 void ps_pod(size_t W, size_t N) {
 
@@ -79,8 +80,10 @@ TEST_CASE("ParallelSort.ldouble.4.100000") {
   ps_pod<long double>(4, 100000);
 }
 
-struct Object {
 
+
+struct Object {
+    
   std::array<int, 10> integers;
 
   int sum() const {

@@ -26,9 +26,7 @@ class Database {
     std::string name;
     std::vector<Segment> tasks;
 
-    WorkerData(
-      size_t e, size_t w, size_t l, std::string n, std::vector<Segment> t
-    ) :
+    WorkerData(size_t e, size_t w, size_t l, std::string n, std::vector<Segment> t ) :
       eid{e}, wid{w}, lid{l}, name {std::move(n)}, tasks{std::move(t)} {
     }
 
@@ -61,7 +59,6 @@ class Database {
     }
 
     std::optional<size_t> upper_bound(observer_stamp_t value) const {
-
       size_t slen = tasks.size();
       size_t beg, end, mid;
       std::optional<size_t> r;
@@ -84,13 +81,10 @@ class Database {
   };
 
   struct Criticality {
-
     size_t i;
     std::vector<Segment>::const_iterator key;
 
-    Criticality(size_t in_i, std::vector<Segment>::const_iterator in_key) :
-      i{in_i}, key{in_key} {
-    }
+    Criticality(size_t in_i, std::vector<Segment>::const_iterator in_key) :   i{in_i}, key{in_key} {}
   };
 
   struct CriticalityComparator {
@@ -99,9 +93,7 @@ class Database {
     }
   };
 
-  struct CriticalityHeap : public std::priority_queue<
-    Criticality, std::vector<Criticality>, CriticalityComparator
-  > {
+  struct CriticalityHeap : public std::priority_queue<Criticality, std::vector<Criticality>, CriticalityComparator> {
 
     void sort() {
       std::sort(c.begin(), c.end(), [] (const auto& a, const auto& b) {
@@ -118,14 +110,12 @@ class Database {
   };
 
   struct Cluster {
-    size_t i;
+    size_t i;  
     size_t f;  // from task
     size_t t;  // to task   (inclusive)
     observer_stamp_t::duration k;  // key
 
-    Cluster(size_t in_i, size_t in_f, size_t in_t, observer_stamp_t::duration in_k) :
-      i{in_i}, f{in_f}, t{in_t}, k{in_k} {
-    }
+    Cluster(size_t in_i, size_t in_f, size_t in_t, observer_stamp_t::duration in_k) :i{in_i}, f{in_f}, t{in_t}, k{in_k} {}
 
     using iterator_t = std::list<Cluster>::iterator;
   };
@@ -136,9 +126,7 @@ class Database {
     }
   };
 
-  using ClusterHeap = std::priority_queue<
-    Cluster::iterator_t, std::vector<Cluster::iterator_t>, ClusterComparator
-  >;
+  using ClusterHeap = std::priority_queue<Cluster::iterator_t, std::vector<Cluster::iterator_t>, ClusterComparator>;
 
   public:
 
@@ -164,18 +152,15 @@ class Database {
 
     // conver to flat data
     _num_executors = pd.timelines.size();
-    for(size_t e=0; e<pd.timelines.size(); e++) {
+    for(size_t e = 0; e < pd.timelines.size(); e++) {
       _num_workers += pd.timelines[e].segments.size();
-      for(size_t w=0; w<pd.timelines[e].segments.size(); w++) {
-        for(size_t l=0; l<pd.timelines[e].segments[w].size(); l++) {
+      for(size_t w = 0; w < pd.timelines[e].segments.size(); w++) {
+        for(size_t l = 0; l < pd.timelines[e].segments[w].size(); l++) {
           // a new worker data
-          WorkerData wd(
-            e, w, l, stringify("E", e, ".W", w, ".L", l),
-            std::move(pd.timelines[e].segments[w][l])
-          );
+          WorkerData wd(e, w, l, stringify("E", e, ".W", w, ".L", l),  std::move(pd.timelines[e].segments[w][l]) );
           if(!wd.tasks.empty()) {
             if(wd.tasks.front().beg < _minX) _minX = wd.tasks.front().beg;
-            if(wd.tasks.back().end > _maxX) _maxX = wd.tasks.back().end;
+            if(wd.tasks.back().end > _maxX)  _maxX = wd.tasks.back().end;
           }
           _num_tasks += wd.tasks.size();
           _wdmap[wd.name] = _wd.size();
@@ -215,7 +200,7 @@ class Database {
       }
 
       // range ok
-      for(size_t s=*l; s<=*r; s++) {
+      for(size_t s = *l; s <= *r; s++) {
         heap.emplace(i, _wd[w[i]].tasks.begin() + s);
         while(heap.size() > limit) {
           heap.pop();
@@ -232,7 +217,7 @@ class Database {
     // Output the segments
     bool first_worker = true;
     os << "[";
-    for(size_t i=0; i<w.size(); i++) {
+    for(size_t i = 0; i < w.size(); i++) {
 
       if(cursor < crits.size() && crits[cursor].i < i) {
         TF_THROW("impossible ...");
@@ -318,7 +303,7 @@ class Database {
 
     // bsearch the range of segments for each worker data
     // TODO: parallel_for?
-    for(size_t i=0; i<w.size(); i++) {
+    for(size_t i = 0; i < w.size(); i++) {
 
       // r = maxArg {span[0] <= zoomX[1]}
       auto r = _wd[w[i]].upper_bound(x.second);
@@ -335,17 +320,10 @@ class Database {
       // range ok
       for(size_t s=*l; s<=*r; s++) {
         if(s != *r) {
-          clusters[i].emplace_back(
-            i,
-            s,
-            s,
-            _wd[w[i]].tasks[s+1].end - _wd[w[i]].tasks[s].beg
-          );
+          clusters[i].emplace_back( i,  s, s, _wd[w[i]].tasks[s+1].end - _wd[w[i]].tasks[s].beg);
         }
         else {  // boundary
-          clusters[i].emplace_back(
-            i, s, s, observer_stamp_t::duration::max()
-          );
+          clusters[i].emplace_back(i, s, s, observer_stamp_t::duration::max());
         }
         heap.push(std::prev(clusters[i].end()));
       }
@@ -478,9 +456,6 @@ class Database {
 
     std::vector<WorkerData> _wd;
 
-    // {std::numeric_limits<size_t>::max()};
-    // {std::numeric_limits<size_t>::lowest()};
-
     observer_stamp_t _minX {observer_stamp_t::max()};
     observer_stamp_t _maxX {observer_stamp_t::min()};
 
@@ -522,6 +497,8 @@ class Database {
 
 }  // namespace tf ------------------------------------------------------------
 
+
+
 int main(int argc, char* argv[]) {
 
   // parse arguments
@@ -531,12 +508,10 @@ int main(int argc, char* argv[]) {
   app.add_option("-p,--port", port, "port to listen (default=8080)");
 
   std::string input;
-  app.add_option("-i,--input", input, "input profiling file")
-     ->required();
+  app.add_option("-i,--input", input, "input profiling file")->required();
 
   std::string mount;
-  app.add_option("-m,--mount", mount, "mount path to index.html")
-     ->required();
+  app.add_option("-m,--mount", mount, "mount path to index.html")->required();
 
   CLI11_PARSE(app, argc, argv);
 
@@ -548,10 +523,7 @@ int main(int argc, char* argv[]) {
 
   // create a database
   tf::Database db(input);
-  spdlog::info(
-    "read {} (#tasks={:d}, #executors={:d}, #workers={:d})",
-    input, db.num_tasks(), db.num_executors(), db.num_workers()
-  );
+  spdlog::info("read {} (#tasks={:d}, #executors={:d}, #workers={:d})", input, db.num_tasks(), db.num_executors(), db.num_workers());
 
   // create a http server
   httplib::Server server;

@@ -284,9 +284,7 @@ void nested_subflow_async(size_t W) {
 
       sf2.emplace([&](tf::Subflow& sf3){
         for(int i=0; i<100; i++) {
-          sf3.silent_async(
-            "named", [&](){ counter.fetch_add(1, std::memory_order_relaxed); }
-          );
+          sf3.silent_async("named", [&](){ counter.fetch_add(1, std::memory_order_relaxed); });
           sf2.silent_async([&](){ counter.fetch_add(1, std::memory_order_relaxed); });
           sf1.silent_async([&](){ counter.fetch_add(1, std::memory_order_relaxed); });
         }
@@ -324,16 +322,10 @@ void runtime_async(size_t W) {
 
   std::atomic<int> counter{0};
 
-  auto A = taskflow.emplace(
-    [&](){ counter.fetch_add(1, std::memory_order_relaxed); }
-  );
-  auto B = taskflow.emplace(
-    [&](){ counter.fetch_add(1, std::memory_order_relaxed); }
-  );
+  auto A = taskflow.emplace([&](){ counter.fetch_add(1, std::memory_order_relaxed); });
+  auto B = taskflow.emplace( [&](){ counter.fetch_add(1, std::memory_order_relaxed); });
 
-  taskflow.emplace(
-    [&](){ counter.fetch_add(1, std::memory_order_relaxed); }
-  );
+  taskflow.emplace([&](){ counter.fetch_add(1, std::memory_order_relaxed); });
 
   auto S1 = taskflow.emplace([&] (tf::Runtime& sf){
     for(int i=0; i<1000; i++) {

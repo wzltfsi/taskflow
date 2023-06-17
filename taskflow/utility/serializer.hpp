@@ -276,7 +276,7 @@ class MapItem {
 
   public:
 
-    using KeyType = std::conditional_t <std::is_lvalue_reference_v<KeyT>, KeyT, std::decay_t<KeyT>>;
+    using KeyType   = std::conditional_t <std::is_lvalue_reference_v<KeyT>, KeyT, std::decay_t<KeyT>>;
     using ValueType = std::conditional_t <std::is_lvalue_reference_v<ValueT>, ValueT, std::decay_t<ValueT>>;
 
     MapItem(KeyT&& k, ValueT&& v) : _key(std::forward<KeyT>(k)), _value(std::forward<ValueT>(v)) {}
@@ -589,6 +589,10 @@ constexpr auto is_default_deserializable_v =
   is_std_optional_v<T>       ||
   is_std_tuple_v<T>          ||
   is_std_array_v<T>;
+
+
+
+
 
 // Class: Deserializer
 template <typename Stream, typename SizeType = std::streamsize>

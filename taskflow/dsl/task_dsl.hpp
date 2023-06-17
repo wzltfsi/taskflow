@@ -54,7 +54,8 @@ private:
     (void)_;
   }
 
-  template <size_t... Is> void build_links(std::index_sequence<Is...>) {
+  template <size_t... Is> 
+  void build_links(std::index_sequence<Is...>) {
     auto _ = {0, (std::get<Is>(links_).build(tasksCb_), 0)...};
     (void)_;
   }

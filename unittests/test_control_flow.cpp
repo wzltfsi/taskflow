@@ -58,6 +58,7 @@ void conditional_spawn(
   }
 }
 
+
 void loop_cond(unsigned w) {
 
   tf::Executor executor(w);
@@ -117,6 +118,8 @@ TEST_CASE("LoopCond.3threads" * doctest::timeout(300)) {
 TEST_CASE("LoopCond.4threads" * doctest::timeout(300)) {
   loop_cond(4);
 }
+
+
 
 // ----------------------------------------------------------------------------
 // Testcase: FlipCoinCond

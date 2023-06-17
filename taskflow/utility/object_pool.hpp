@@ -320,8 +320,7 @@ size_t ObjectPool<T, S>::_bin(size_t u) const {
 // Function: _offset_in_class
 template <typename T, size_t S>
 template <class P, class Q>
-constexpr size_t ObjectPool<T, S>::_offset_in_class(
-  const Q P::*member) const {
+constexpr size_t ObjectPool<T, S>::_offset_in_class(const Q P::*member) const {
   return (size_t) &( reinterpret_cast<P*>(0)->*member);
 }
 
@@ -329,32 +328,26 @@ constexpr size_t ObjectPool<T, S>::_offset_in_class(
 // C++: parent_class_of(list_pointer,  &Block::list)
 template <typename T, size_t S>
 template <class P, class Q>
-constexpr P* ObjectPool<T, S>::_parent_class_of(
-  Q* ptr, const Q P::*member
-) {
+constexpr P* ObjectPool<T, S>::_parent_class_of( Q* ptr, const Q P::*member) {
   return (P*)( (char*)ptr - _offset_in_class(member));
 }
 
 // Function: _parent_class_of
 template <typename T, size_t S>
 template <class P, class Q>
-constexpr P* ObjectPool<T, S>::_parent_class_of(
-  const Q* ptr, const Q P::*member
-) const {
+constexpr P* ObjectPool<T, S>::_parent_class_of(const Q* ptr, const Q P::*member) const {
   return (P*)( (char*)ptr - _offset_in_class(member));
 }
 
 // Function: _block_of
 template <typename T, size_t S>
-constexpr typename ObjectPool<T, S>::Block*
-ObjectPool<T, S>::_block_of(Blocklist* list) {
+constexpr typename ObjectPool<T, S>::Block*   ObjectPool<T, S>::_block_of(Blocklist* list) {
   return _parent_class_of(list, &Block::list_node);
 }
 
 // Function: _block_of
 template <typename T, size_t S>
-constexpr typename ObjectPool<T, S>::Block*
-ObjectPool<T, S>::_block_of(const Blocklist* list) const {
+constexpr typename ObjectPool<T, S>::Block*   ObjectPool<T, S>::_block_of(const Blocklist* list) const {
   return _parent_class_of(list, &Block::list_node);
 }
 
@@ -367,9 +360,7 @@ void ObjectPool<T, S>::_blocklist_init_head(Blocklist *list) {
 
 // Procedure: _blocklist_add_impl
 // Insert a new entry between two known consecutive entries.
-//
-// This is only for internal list manipulation where we know
-// the prev/next entries already!
+// This is only for internal list manipulation where we know the prev/next entries already!
 template <typename T, size_t S>
 void ObjectPool<T, S>::_blocklist_add_impl(Blocklist *curr, Blocklist *prev, Blocklist *next) {
   next->prev = curr;
@@ -396,20 +387,15 @@ void ObjectPool<T, S>::_blocklist_push_front( Blocklist *curr, Blocklist *head) 
 //
 // Insert a new entry before the specified head.
 // This is useful for implementing queues.
-//
 template <typename T, size_t S>
 void ObjectPool<T, S>::_blocklist_push_back(Blocklist *curr, Blocklist *head) {
   _blocklist_add_impl(curr, head->prev, head);
 }
 
 // Delete a list entry by making the prev/next entries point to each other.
-//
 // This is only for internal list manipulation where we know the prev/next entries already!
-//
 template <typename T, size_t S>
-void ObjectPool<T, S>::_blocklist_del_impl(
-  Blocklist * prev, Blocklist * next
-) {
+void ObjectPool<T, S>::_blocklist_del_impl(Blocklist * prev, Blocklist * next) {
   next->prev = prev;
   prev->next = next;
 }
@@ -627,6 +613,8 @@ T* ObjectPool<T, S>::animate(ArgsT&&... args) {
   return mem;
 }
 
+
+
 // Function: destruct
 template <typename T, size_t S>
 void ObjectPool<T, S>::recycle(T* mem) {
@@ -634,15 +622,11 @@ void ObjectPool<T, S>::recycle(T* mem) {
   Block* s = static_cast<Block*>(mem->_object_pool_block);
 
   mem->~T();
-
-  
-
   // here we need a loop because when we lock the heap, other threads may have removed the superblock to another heap
   bool sync = false;
 
   do {
     LocalHeap* h = s->heap.load(std::memory_order_relaxed);
-
     // the block is in global heap
     if(h == nullptr) {
       std::lock_guard<std::mutex> glock(_gheap.mutex);
@@ -700,6 +684,7 @@ ObjectPool<T, S>::_this_heap() {
   // here we don't use thread local since object pool might be created and destroyed multiple times
   return _lheaps[ std::hash<std::thread::id>()(std::this_thread::get_id()) & _lheap_mask ];
 }
+
 
 // Function: _next_pow2
 template <typename T, size_t S>

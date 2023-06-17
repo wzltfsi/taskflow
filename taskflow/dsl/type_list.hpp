@@ -143,8 +143,12 @@ using Unique_t = typename Unique<IN>::type;
 
 template <typename IN> 
 class Unique<IN, void_t<typename IN::head>> {
-  template <typename T> struct IsDifferR {
-    template <typename R> struct apply {
+    
+  template <typename T> 
+  struct IsDifferR {
+
+    template <typename R> 
+    struct apply {
       static constexpr bool value = !std::is_same<T, R>::value;
     };
   };

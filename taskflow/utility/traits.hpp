@@ -161,19 +161,13 @@ struct stateful_index {
   using TE = std::decay_t<unwrap_ref_decay_t<E>>;
   using TS = std::decay_t<unwrap_ref_decay_t<S>>;
 
-  static_assert(
-    std::is_integral_v<TB>, "decayed beg index must be an integral type"
-  );
+  static_assert(std::is_integral_v<TB>, "decayed beg index must be an integral type");
 
-  static_assert(
-    std::is_integral_v<TE>, "decayed end index must be an integral type"
-  );
+  static_assert(std::is_integral_v<TE>, "decayed end index must be an integral type");
 
-  static_assert(
-    std::is_integral_v<TS>, "decayed step must be an integral type"
-  );
+  static_assert(std::is_integral_v<TS>, "decayed step must be an integral type");
 
-  static_assert(  std::is_same_v<TB, TE> && std::is_same_v<TE, TS>,  "decayed index and step types must match" );
+  static_assert(std::is_same_v<TB, TE> && std::is_same_v<TE, TS>,  "decayed index and step types must match" );
 
   using type = TB;
 };
@@ -228,7 +222,8 @@ void unroll(F f) {
 template <typename T, typename... Ts>
 struct filter_duplicates { using type = T; };
 
-template <template <typename...> class C, typename... Ts, typename U, typename... Us>
+template <template <typename...> 
+class C, typename... Ts, typename U, typename... Us>
 struct filter_duplicates<C<Ts...>, U, Us...>
     : std::conditional_t<(std::is_same_v<U, Ts> || ...) , filter_duplicates<C<Ts...>, Us...> , filter_duplicates<C<Ts..., U>, Us...>> {};
 

@@ -21,7 +21,8 @@ class TaskAnalyzer {
     using type = TypeList<OneToOneLink<F, Ts>...>;
   };
 
-  template <typename Link> class OneToOneLinkSetF {
+  template <typename Link> 
+  class OneToOneLinkSetF {
     using FromTaskList = typename Link::FromTaskList;
     using ToTaskList   = typename Link::ToTaskList;
 

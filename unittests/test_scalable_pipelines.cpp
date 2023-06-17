@@ -890,15 +890,15 @@ TEST_CASE("ScalablePipeline.PipelineinPipeline.5L.2W.4subL" * doctest::timeout(3
 //               o
 //            / | | \
 //          c  c  c  c -----
-//          |  |  |  |     |
-//   -----> p  p  p  p     |
-//   |     | |   |  |      |
-//   ----- c c   c  c      |
-//         | |  |  |       |
-//         o o  o  o       |
-//         \ \  | /        |
-//           \||/          |
-//            o <-----------
+//          |  |  |  |      |
+//   -----> p  p  p  p      |
+//   |      | |   |  |      |
+//   -----  c c   c  c      |
+//          | |  |  |       |
+//          o o  o  o       |
+//          \ \  | /        |
+//            \||/          |
+//             o <-----------
 //
 // each pipeline has five pipes, L lines, W workers
 // each pipeline = SPSPS

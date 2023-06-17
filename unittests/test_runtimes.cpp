@@ -82,7 +82,7 @@ TEST_CASE("Runtime.Schedule.ModuleTask" * doctest::timeout(300)) {
   module_task.composed_of(module_flow);
 
   auto entrypoint = tf.emplace([]() { return 0; }).name("entrypoint");
-  auto schedule = tf.emplace([&](tf::Runtime& runtime) {
+  auto schedule   = tf.emplace([&](tf::Runtime& runtime) {
     value++;
     runtime.schedule(module_task);
   });

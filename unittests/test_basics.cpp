@@ -1185,14 +1185,6 @@ void for_each_index(unsigned w) {
   SUBCASE("NegativeIntegerStep") {
     negative_integer_step(w);
   }
-
-  //SUBCASE("PositiveFloatingStep") {
-  //  positive_floating_step(w);
-  //}
-  //
-  //SUBCASE("NegativeFloatingStep") {
-  //  negative_floating_step(w);
-  //}
 }
 
 TEST_CASE("ParallelForIndex.1thread" * doctest::timeout(300)) {

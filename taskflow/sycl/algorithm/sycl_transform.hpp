@@ -6,7 +6,7 @@ namespace tf {
 
 // Function: _transform_cgh
 template <typename I, typename C, typename... S>
-auto syclFlow::_transform_cgh(I first, I last, C&& op, S... srcs) {
+auto syclFlow::·(I first, I last, C&& op, S... srcs) {
 
   // TODO: special case N == 0?
   size_t N = std::distance(first, last);

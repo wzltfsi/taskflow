@@ -178,11 +178,6 @@ void data_pipeline_2P_SS(size_t L, unsigned w) {
     executor.run_n(taskflow, 3, [&]() mutable {
       j1 = 0;
       j2 = 0;
-      // for(size_t i = 0; i < mybuffer.size(); ++i){
-      //   for(size_t j = 0; j < mybuffer[0].size(); ++j){
-      //     mybuffer[i][j] = 0;
-      //   }
-      // }
       cnt++;
     }).get();
   }

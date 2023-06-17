@@ -40,8 +40,7 @@ class syclFlow {
     /**
     @brief constructs a standalone %syclFlow from the given queue
 
-    A standalone %syclFlow does not go through any taskflow and
-    can be run by the caller thread using explicit offload methods 
+    A standalone %syclFlow does not go through any taskflow and can be run by the caller thread using explicit offload methods 
     (e.g., tf::syclFlow::offload).
     */
     syclFlow(sycl::queue& queue);
@@ -69,8 +68,7 @@ class syclFlow {
     @brief creates a task that launches the given command group function object
 
     @tparam F type of command group function object
-    @param func function object that is constructible from 
-                std::function<void(sycl::handler&)>
+    @param func function object that is constructible from   std::function<void(sycl::handler&)>
     
     Creates a task that is associated from the given command group.
     In SYCL, each command group function object is given a unique  command group handler object to perform all the necessary work   required to correctly process data on a device using a kernel.
@@ -79,8 +77,7 @@ class syclFlow {
     syclTask on(F&& func);
     
     /**
-    @brief updates the task to the given command group function object
-    Similar to tf::syclFlow::on but operates on an existing task.
+    @brief updates the task to the given command group function object  Similar to tf::syclFlow::on but operates on an existing task.
     */
     template <typename F, std::enable_if_t< std::is_invocable_r_v<void, F, sycl::handler&>, void>* = nullptr >
     void on(syclTask task, F&& func);
@@ -374,9 +371,9 @@ class syclFlow {
     
     sycl::queue& _queue;
     
-    handle_t _handle;
+    handle_t     _handle;
     
-    syclGraph& _graph;
+    syclGraph&   _graph;
   
     std::vector<syclNode*> _tpg;
     std::queue<syclNode*> _bfs;

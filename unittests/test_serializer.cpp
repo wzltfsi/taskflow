@@ -19,7 +19,7 @@ inline std::default_random_engine& random_engine() {
 template <typename T>
 std::enable_if_t<std::is_floating_point<T>::value, T> random(
   const T from = -1.0,
-  const T to = 1.0
+  const T to   = 1.0
 ) {
   return std::uniform_real_distribution<T>(from, to)(random_engine());
 }
@@ -29,7 +29,7 @@ std::enable_if_t<std::is_floating_point<T>::value, T> random(
 template <typename T>
 std::enable_if_t<std::is_integral<T>::value, T> random(
   const T from = std::numeric_limits<T>::lowest(),
-  const T to = std::numeric_limits<T>::max()
+  const T to   = std::numeric_limits<T>::max()
 ) {
   return std::uniform_int_distribution<T>(from, to)(random_engine());
 }
@@ -39,8 +39,8 @@ std::enable_if_t<std::is_integral<T>::value, T> random(
 template <typename T>
 std::enable_if_t<std::is_same<T, std::string>::value, T> random(
   const std::string::value_type from = ' ',
-  const std::string::value_type to = '~',
-  const std::string::size_type len = 16
+  const std::string::value_type to   = '~',
+  const std::string::size_type  len  = 16
 ) {
   std::string str(len, ' ');
   for(auto& c : str) {
@@ -156,9 +156,10 @@ void test_pod() {
   REQUIRE(o_double == i_double);
 }
 
+
+
 // Procedure: test_struct
-// The templated procedure for testing POD. Caller must specify the output
-// and input archiver type.
+// The templated procedure for testing POD. Caller must specify the output and input archiver type.
 void test_struct() {
 
   for(size_t i=0; i<64; ++i) {
@@ -183,6 +184,8 @@ void test_struct() {
     REQUIRE(o_pods == i_pods);
   }
 }
+
+
 
 // Procedure: test_string
 // Template for testing basic strings. Caller must specify the output and input archiver type.
@@ -361,13 +364,13 @@ void test_array() {
   for(size_t i=0; i<64; ++i) {
 
     // Output
-    std::array<char, 1> ochar;
-    std::array<int, 512> oint;
-    std::array<double, 1024> odouble;
+    std::array<char, 1>           ochar;
+    std::array<int, 512>          oint;
+    std::array<double, 1024>      odouble;
     std::array<std::string, 2048> ostring;
 
-    for(auto &i : ochar) i = random<int>();
-    for(auto &i : oint) i = random<int>();
+    for(auto &i : ochar)   i = random<int>();
+    for(auto &i : oint)    i = random<int>();
     for(auto &i : odouble) i = random<double>();
     for(auto &i : ostring) i = random<std::string>();
 
@@ -376,9 +379,9 @@ void test_array() {
     auto osz = oar(ochar, oint, odouble, ostring);
 
     // Input
-    std::array<char, 1> ichar;
-    std::array<int, 512> iint;
-    std::array<double, 1024> idouble;
+    std::array<char, 1>           ichar;
+    std::array<int, 512>          iint;
+    std::array<double, 1024>      idouble;
     std::array<std::string, 2048> istring;
 
     std::istringstream is(os.str());
@@ -387,9 +390,9 @@ void test_array() {
     auto isz = iar(ichar, iint, idouble, istring);
     REQUIRE(0 == is.rdbuf()->in_avail());
 
-    REQUIRE(osz == isz);
-    REQUIRE(ochar == ichar);
-    REQUIRE(oint == iint);
+    REQUIRE(osz     == isz);
+    REQUIRE(ochar   == ichar);
+    REQUIRE(oint    == iint);
     REQUIRE(odouble == idouble);
     REQUIRE(ostring == istring);
   }
@@ -481,6 +484,7 @@ void test_time_point() {
     REQUIRE(o_dur3 == i_dur3);
   }
 }
+
 
 // Procedure: test_optional
 void test_optional() {

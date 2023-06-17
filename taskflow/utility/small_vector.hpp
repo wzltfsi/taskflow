@@ -122,7 +122,6 @@ class SmallVectorTemplateCommon : public SmallVectorBase {
   };
 
   // Allocate raw space for N elements of type T.  If T has a ctor or dtor, we don't want it to be automatically run, so we need to represent the space as something else.  Use an array of char of sufficient alignment.
-  
   // deprecated in c++23
   //typedef typename std::aligned_union<1, T>::type U;
   typedef AlignedUnionType<T> U;
@@ -165,23 +164,23 @@ class SmallVectorTemplateCommon : public SmallVectorBase {
   typedef const T        *const_pointer;
 
   // forward iterator creation methods.
-  inline iterator begin() { return (iterator)this->BeginX; }
+  inline iterator       begin()       { return (iterator)this->BeginX; }
   inline const_iterator begin() const { return (const_iterator)this->BeginX; }
-  inline iterator end() { return (iterator)this->EndX; }
-  inline const_iterator end() const { return (const_iterator)this->EndX; }
+  inline iterator       end()         { return (iterator)this->EndX; }
+  inline const_iterator end() const   { return (const_iterator)this->EndX; }
 
   protected:
 
-  iterator capacity_ptr() { return (iterator)this->CapacityX; }
+  iterator       capacity_ptr()       { return (iterator)this->CapacityX; }
   const_iterator capacity_ptr() const { return (const_iterator)this->CapacityX;}
 
   public:
 
   // reverse iterator creation methods.
-  reverse_iterator rbegin()            { return reverse_iterator(end()); }
-  const_reverse_iterator rbegin() const{ return const_reverse_iterator(end()); }
-  reverse_iterator rend()              { return reverse_iterator(begin()); }
-  const_reverse_iterator rend() const { return const_reverse_iterator(begin());}
+  reverse_iterator       rbegin()       { return reverse_iterator(end()); }
+  const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+  reverse_iterator       rend()         { return reverse_iterator(begin()); }
+  const_reverse_iterator rend()   const { return const_reverse_iterator(begin());}
 
   inline size_type size() const { return end()-begin(); }
   inline size_type max_size() const { return size_type(-1) / sizeof(T); }
@@ -305,6 +304,7 @@ void SmallVectorTemplateBase<T, isPodLike>::grow(size_t MinSize) {
   this->CapacityX = this->begin()+NewCapacity;
 }
 
+
 /**
 @private
 */
@@ -334,8 +334,7 @@ protected:
   /// Copy the range [I, E) onto the uninitialized memory
   /// starting with "Dest", constructing elements into it as needed.
   template <typename T1, typename T2>
-  static void uninitialized_copy(
-      T1 *I, T1 *E, T2 *Dest,  typename std::enable_if<std::is_same<typename std::remove_const<T1>::type,  T2>::value>::type * = nullptr) {
+  static void uninitialized_copy( T1 *I, T1 *E, T2 *Dest,  typename std::enable_if<std::is_same<typename std::remove_const<T1>::type,  T2>::value>::type * = nullptr) {
     // Use memcpy for PODs iterated by pointers (which includes SmallVector iterators): std::uninitialized_copy optimizes to memmove, but we can use memcpy here. Note that I and E are iterators and thus might be invalid for memcpy if they are equal.
     if (I != E)
       memcpy(Dest, I, (E - I) * sizeof(T));
@@ -358,6 +357,7 @@ public:
   }
 };
 
+
 /**
 @private
 */
@@ -368,9 +368,9 @@ class SmallVectorImpl : public SmallVectorTemplateBase<T, IsPod<T>::value> {
   SmallVectorImpl(const SmallVectorImpl&) = delete;
 
 public:
-  typedef typename SuperClass::iterator iterator;
+  typedef typename SuperClass::iterator       iterator;
   typedef typename SuperClass::const_iterator const_iterator;
-  typedef typename SuperClass::size_type size_type;
+  typedef typename SuperClass::size_type      size_type;
 
 protected:
   // Default ctor - Initialize to empty.
@@ -665,7 +665,8 @@ public:
     insert(I, IL.begin(), IL.end());
   }
 
-  template <typename... ArgTypes> void emplace_back(ArgTypes &&... Args) {
+  template <typename... ArgTypes> 
+  void emplace_back(ArgTypes &&... Args) {
     if (TF_UNLIKELY(this->EndX >= this->CapacityX))
       this->grow();
     ::new ((void *)this->end()) T(std::forward<ArgTypes>(Args)...);
@@ -689,9 +690,7 @@ public:
   }
 
   /// Set the array size to \p N, which the current array must have enough capacity for.
-  ///
   /// This does not construct or destroy any elements in the vector.
-  ///
   /// Clients can use this in conjunction with capacity() to write past the end of the buffer when they know that more elements are available, and only update the size later. This avoids the cost of value initializing elements which will only be overwritten.
   void set_size(size_type N) {
     //assert(N <= this->capacity());
@@ -778,8 +777,7 @@ SmallVectorImpl<T> &SmallVectorImpl<T>::
   }
 
   // Copy construct the new elements in place.
-  this->uninitialized_copy(RHS.begin()+CurSize, RHS.end(),
-                           this->begin()+CurSize);
+  this->uninitialized_copy(RHS.begin()+CurSize, RHS.end(), this->begin()+CurSize);
 
   // Set end.
   this->setEnd(this->begin()+RHSSize);
@@ -795,8 +793,8 @@ SmallVectorImpl<T> &SmallVectorImpl<T>::operator=(SmallVectorImpl<T> &&RHS) {
   if (!RHS.isSmall()) {
     this->destroy_range(this->begin(), this->end());
     if (!this->isSmall()) std::free(this->begin());
-    this->BeginX = RHS.BeginX;
-    this->EndX = RHS.EndX;
+    this->BeginX    = RHS.BeginX;
+    this->EndX      = RHS.EndX;
     this->CapacityX = RHS.CapacityX;
     RHS.resetToSmall();
     return *this;
@@ -838,8 +836,7 @@ SmallVectorImpl<T> &SmallVectorImpl<T>::operator=(SmallVectorImpl<T> &&RHS) {
   }
 
   // Move-construct the new elements in place.
-  this->uninitialized_move(RHS.begin()+CurSize, RHS.end(),
-                           this->begin()+CurSize);
+  this->uninitialized_move(RHS.begin()+CurSize, RHS.end(),  this->begin()+CurSize);
 
   // Set end.
   this->setEnd(this->begin()+RHSSize);
@@ -847,6 +844,7 @@ SmallVectorImpl<T> &SmallVectorImpl<T>::operator=(SmallVectorImpl<T> &&RHS) {
   RHS.clear();
   return *this;
 }
+
 
 /**
 @private
@@ -859,15 +857,18 @@ struct SmallVectorStorage {
   typename SmallVectorTemplateCommon<T>::U InlineElts[N - 1];
 };
 
-/**
-@private
-*/
-template <typename T> struct SmallVectorStorage<T, 1> {};
 
 /**
 @private
 */
-template <typename T> struct SmallVectorStorage<T, 0> {};
+template <typename T> 
+struct SmallVectorStorage<T, 1> {};
+
+/**
+@private
+*/
+template <typename T> 
+struct SmallVectorStorage<T, 0> {};
 
 /**
 @brief class to define a vector optimized for small array
@@ -981,6 +982,8 @@ static inline size_t capacity_in_bytes(const SmallVector<T, N> &X) {
 }
 
 } // end tf namespace ---------------------------------------------------------
+
+
 
 namespace std {
   /// Implement std::swap in terms of SmallVector swap.
